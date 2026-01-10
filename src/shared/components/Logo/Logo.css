@@ -1,0 +1,14 @@
+.logo {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  align-items: baseline;
+}
+
+.logo-vaia {
+  font-weight: 700;
+}
+
+.logo-core {
+  font-weight: 300;
+}

@@ -1,0 +1,8 @@
+.articles {
+  padding: 1rem;
+}
+
+.articles h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}

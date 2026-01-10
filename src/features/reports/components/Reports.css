@@ -1,0 +1,8 @@
+.reports {
+  padding: 1rem;
+}
+
+.reports h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}

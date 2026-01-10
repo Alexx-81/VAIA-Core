@@ -1,0 +1,8 @@
+.qualities {
+  padding: 1rem;
+}
+
+.qualities h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}

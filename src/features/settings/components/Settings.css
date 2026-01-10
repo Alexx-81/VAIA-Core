@@ -1,0 +1,8 @@
+.settings {
+  padding: 1rem;
+}
+
+.settings h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}

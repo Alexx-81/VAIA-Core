@@ -1,0 +1,32 @@
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0.625rem 1.25rem;
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-color);
+}
+
+.tab-active {
+  background-color: var(--vaia-color);
+  color: white;
+}
+
+.tab-active:hover {
+  background-color: var(--vaia-color);
+  opacity: 0.9;
+}

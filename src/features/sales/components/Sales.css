@@ -1,0 +1,8 @@
+.sales {
+  padding: 1rem;
+}
+
+.sales h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}

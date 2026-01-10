@@ -1,0 +1,8 @@
+.dashboard {
+  padding: 1rem;
+}
+
+.dashboard h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}

@@ -1,0 +1,8 @@
+.inventory {
+  padding: 1rem;
+}
+
+.inventory h1 {
+  margin-bottom: 1rem;
+  color: var(--vaia-color);
+}
