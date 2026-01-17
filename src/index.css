@@ -12,6 +12,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
 }
 
 body {
@@ -27,6 +28,16 @@ body {
 h1 {
   font-size: 2rem;
   font-weight: 600;
+}
+
+/* Global select styling for dark theme */
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
 }
 
 button {
