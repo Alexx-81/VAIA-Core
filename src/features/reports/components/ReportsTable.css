@@ -1,0 +1,174 @@
+.reports-table-container {
+  background: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.reports-table-container__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--background-color);
+}
+
+.reports-table__wrapper {
+  overflow-x: auto;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.reports-table th,
+.reports-table td {
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.reports-table th {
+  background: var(--background-color);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.reports-table tbody tr:hover {
+  background: var(--hover-color);
+}
+
+.reports-table tfoot {
+  background: var(--background-color);
+}
+
+.reports-table tfoot td {
+  border-top: 2px solid var(--border-color);
+  border-bottom: none;
+}
+
+/* Alignment */
+.reports-table .text-right {
+  text-align: right;
+}
+
+.reports-table .font-medium {
+  font-weight: 600;
+}
+
+.reports-table .text-positive {
+  color: #10b981;
+}
+
+.reports-table .text-negative {
+  color: #ef4444;
+}
+
+.reports-table .text-warning {
+  color: #f59e0b;
+}
+
+.reports-table .highlight-cell {
+  background: rgba(255, 122, 0, 0.05);
+}
+
+/* Badge */
+.reports-table__badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.reports-table__badge--yes {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.reports-table__badge--no {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Payment badge */
+.reports-table__payment {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.reports-table__payment--cash {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.reports-table__payment--card {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.reports-table__payment--other {
+  background: rgba(156, 163, 175, 0.1);
+  color: #6b7280;
+}
+
+/* Action button */
+.reports-table__action-btn {
+  padding: 0.35rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.reports-table__action-btn:hover {
+  background: var(--vaia-color);
+  border-color: var(--vaia-color);
+}
+
+/* Empty state */
+.reports-table__empty {
+  text-align: center !important;
+  padding: 2rem !important;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Detailed table adjustments */
+.reports-table--detailed th,
+.reports-table--detailed td {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.reports-table--detailed th {
+  font-size: 0.65rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .reports-table {
+    font-size: 0.75rem;
+  }
+  
+  .reports-table th,
+  .reports-table td {
+    padding: 0.5rem 0.5rem;
+  }
+}
