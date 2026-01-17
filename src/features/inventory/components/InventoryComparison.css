@@ -1,0 +1,231 @@
+.comparison-table-container {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.comparison-table__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comparison-table__title-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  background-color: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.comparison-table__wrapper {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.comparison-table th {
+  padding: 0.75rem 0.875rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.comparison-table th.text-right {
+  text-align: right;
+}
+
+.comparison-table th.text-center {
+  text-align: center;
+}
+
+.comparison-table th.real {
+  color: var(--vaia-color);
+}
+
+.comparison-table th.acc {
+  color: #3b82f6;
+}
+
+.comparison-table td {
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  vertical-align: middle;
+}
+
+.comparison-table tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table tbody tr.warning {
+  background-color: rgba(234, 179, 8, 0.05);
+}
+
+.comparison-table tbody tr.critical {
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.comparison-table .text-right {
+  text-align: right;
+}
+
+.comparison-table .text-center {
+  text-align: center;
+}
+
+.comparison-table .text-muted {
+  color: var(--text-secondary);
+}
+
+.comparison-table .font-semibold {
+  font-weight: 600;
+}
+
+/* Difference styling */
+.comparison-table__diff {
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.comparison-table__diff.positive {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.comparison-table__diff.negative {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.comparison-table__diff.zero {
+  color: var(--text-secondary);
+}
+
+/* Status badge */
+.comparison-table__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.comparison-table__status.ok {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.comparison-table__status.warning {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #ca8a04;
+}
+
+.comparison-table__status.critical {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Real value styling */
+.comparison-table__real {
+  color: var(--vaia-color);
+}
+
+/* Accounting value styling */
+.comparison-table__acc {
+  color: #3b82f6;
+}
+
+/* Empty state */
+.comparison-table__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.comparison-table__empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.comparison-table__empty h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-color);
+}
+
+.comparison-table__empty p {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 400px;
+}
+
+/* Summary */
+.comparison-table__summary {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 1.25rem;
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+  gap: 2rem;
+}
+
+.comparison-table__summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.comparison-table__summary-icon {
+  font-size: 1rem;
+}
+
+.comparison-table__summary-count {
+  font-weight: 700;
+}
+
+.comparison-table__summary-count.ok {
+  color: #22c55e;
+}
+
+.comparison-table__summary-count.warning {
+  color: #ca8a04;
+}
+
+.comparison-table__summary-count.critical {
+  color: #ef4444;
+}

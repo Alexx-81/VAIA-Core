@@ -1,0 +1,327 @@
+.inventory-table-container {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.inventory-table__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.inventory-table__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inventory-table__title-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.inventory-table__title-badge.real {
+  background-color: rgba(255, 122, 0, 0.15);
+  color: var(--vaia-color);
+}
+
+.inventory-table__title-badge.accounting {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.inventory-table__wrapper {
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.inventory-table th {
+  padding: 0.75rem 0.875rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.inventory-table th.text-right {
+  text-align: right;
+}
+
+.inventory-table th.text-center {
+  text-align: center;
+}
+
+.inventory-table td {
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  vertical-align: middle;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.inventory-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.inventory-table tbody tr.depleted {
+  opacity: 0.6;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.inventory-table tbody tr.below-minimum {
+  background-color: rgba(234, 179, 8, 0.05);
+}
+
+.inventory-table tbody tr.negative {
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.inventory-table .text-right {
+  text-align: right;
+}
+
+.inventory-table .text-center {
+  text-align: center;
+}
+
+.inventory-table .text-muted {
+  color: var(--text-secondary);
+}
+
+.inventory-table .font-semibold {
+  font-weight: 600;
+}
+
+/* ID button */
+.inventory-table__id-btn {
+  background: none;
+  border: none;
+  color: var(--vaia-color);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  margin: -0.25rem -0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.inventory-table__id-btn:hover {
+  background-color: rgba(255, 122, 0, 0.1);
+  text-decoration: underline;
+}
+
+/* Invoice badge */
+.inventory-table__invoice-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.inventory-table__invoice-badge.yes {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.inventory-table__invoice-badge.no {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #ca8a04;
+}
+
+/* Stock remaining */
+.inventory-table__stock {
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.inventory-table__stock.in-stock {
+  color: #22c55e;
+}
+
+.inventory-table__stock.below-minimum {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #ca8a04;
+}
+
+.inventory-table__stock.depleted {
+  background-color: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+.inventory-table__stock.negative {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Percent remaining */
+.inventory-table__percent {
+  font-size: 0.8rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.inventory-table__percent.high {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.inventory-table__percent.medium {
+  background-color: rgba(234, 179, 8, 0.12);
+  color: #ca8a04;
+}
+
+.inventory-table__percent.low {
+  background-color: rgba(249, 115, 22, 0.12);
+  color: #f97316;
+}
+
+.inventory-table__percent.zero {
+  background-color: rgba(107, 114, 128, 0.12);
+  color: #6b7280;
+}
+
+/* Earned (пари изкарани) */
+.inventory-table__earned {
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.inventory-table__earned.positive {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.inventory-table__earned.negative {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.inventory-table__earned.neutral {
+  color: var(--text-secondary);
+}
+
+/* Actions */
+.inventory-table__actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.inventory-table__action-btn {
+  padding: 0.35rem 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.inventory-table__action-btn.view {
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.15) 0%, rgba(255, 122, 0, 0.08) 100%);
+  color: var(--vaia-color);
+  box-shadow: inset 0 0 0 1px rgba(255, 122, 0, 0.3);
+}
+
+.inventory-table__action-btn.view:hover {
+  background: linear-gradient(135deg, var(--vaia-color) 0%, #FF9A33 100%);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.inventory-table__action-btn.sales {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+  color: #3b82f6;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+.inventory-table__action-btn.sales:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Empty state */
+.inventory-table__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.inventory-table__empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.inventory-table__empty h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-color);
+}
+
+.inventory-table__empty p {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 400px;
+}
+
+/* Footer totals */
+.inventory-table__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+  gap: 2rem;
+}
+
+.inventory-table__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.inventory-table__total-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inventory-table__total-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.inventory-table__total-value.success {
+  color: #22c55e;
+}
