@@ -1,0 +1,342 @@
+.sale-detail {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+/* Header */
+.sale-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  gap: 2rem;
+}
+
+.sale-detail__header-left {
+  flex: 1;
+}
+
+.sale-detail__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sale-detail__subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sale-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.sale-detail__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sale-detail__meta-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sale-detail__meta-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.sale-detail__header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.sale-detail__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sale-detail__btn--secondary {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.sale-detail__btn--secondary:hover {
+  background-color: var(--surface-hover);
+}
+
+/* Payment badge */
+.sale-detail__payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.sale-detail__payment-badge.cash {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.sale-detail__payment-badge.card {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.sale-detail__payment-badge.other {
+  background-color: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+/* Lines section */
+.sale-detail__lines-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sale-detail__lines-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.sale-detail__lines-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background-color: var(--surface-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+}
+
+/* Lines table */
+.sale-detail__lines-wrapper {
+  overflow-x: auto;
+}
+
+.sale-detail__lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.sale-detail__lines-table th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.sale-detail__lines-table th.text-right {
+  text-align: right;
+}
+
+.sale-detail__lines-table th.text-center {
+  text-align: center;
+}
+
+.sale-detail__lines-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  vertical-align: middle;
+}
+
+.sale-detail__lines-table tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.sale-detail__lines-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sale-detail__lines-table .text-right {
+  text-align: right;
+}
+
+.sale-detail__lines-table .text-center {
+  text-align: center;
+}
+
+.sale-detail__lines-table .text-muted {
+  color: var(--text-secondary);
+}
+
+.sale-detail__lines-table .font-semibold {
+  font-weight: 600;
+}
+
+/* Profit styling */
+.sale-detail__profit {
+  font-weight: 600;
+}
+
+.sale-detail__profit.positive {
+  color: #22c55e;
+}
+
+.sale-detail__profit.negative {
+  color: #ef4444;
+}
+
+/* Margin badge */
+.sale-detail__margin-badge {
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.sale-detail__margin-badge.high {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.sale-detail__margin-badge.medium {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.sale-detail__margin-badge.low {
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.sale-detail__margin-badge.negative {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Delivery badge */
+.sale-detail__delivery-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background-color: rgba(255, 122, 0, 0.1);
+  color: var(--vaia-color);
+}
+
+.sale-detail__delivery-badge.accounting {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+/* Totals */
+.sale-detail__totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+}
+
+.sale-detail__totals-block {
+  background-color: var(--surface-color);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-color);
+}
+
+.sale-detail__totals-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sale-detail__totals-title.real {
+  color: var(--vaia-color);
+}
+
+.sale-detail__totals-title.accounting {
+  color: #3b82f6;
+}
+
+.sale-detail__totals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.sale-detail__total-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sale-detail__total-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.sale-detail__total-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.sale-detail__total-value.profit {
+  color: #22c55e;
+}
+
+.sale-detail__total-value.negative {
+  color: #ef4444;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .sale-detail__totals {
+    grid-template-columns: 1fr;
+  }
+  
+  .sale-detail__totals-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
