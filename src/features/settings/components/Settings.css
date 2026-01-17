@@ -1,8 +1,165 @@
 .settings {
-  padding: 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.settings h1 {
-  margin-bottom: 1rem;
+/* Header */
+.settings__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.settings__title-section {
+  flex: 1;
+}
+
+.settings__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.5rem 0;
+}
+
+.settings__subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.settings__header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.settings__btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.settings__btn--primary {
+  background: var(--vaia-color);
+  color: white;
+  border: 1px solid var(--vaia-color);
+}
+
+.settings__btn--primary:hover:not(:disabled) {
+  background: #e06d00;
+  border-color: #e06d00;
+}
+
+.settings__btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings__btn--secondary {
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.settings__btn--secondary:hover {
+  background: var(--hover-color);
+}
+
+.settings__btn--outline {
+  background: transparent;
   color: var(--vaia-color);
+  border: 1px solid var(--vaia-color);
+}
+
+.settings__btn--outline:hover {
+  background: rgba(255, 122, 0, 0.1);
+}
+
+/* Message */
+.settings__message {
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.settings__message--success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.settings__message--error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Sections container */
+.settings__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Section actions */
+.settings-section__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Backup section */
+.settings__backup-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--background-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.settings__backup-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.settings__backup-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.settings__backup-warning {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #b45309;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settings__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .settings__header-actions {
+    justify-content: flex-end;
+  }
 }
