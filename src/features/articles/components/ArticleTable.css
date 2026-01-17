@@ -172,10 +172,10 @@
 }
 
 .article-table__action-btn--edit:hover {
-  background: linear-gradient(135deg, #0B4F8A 0%, #1565C0 100%);
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9A33 100%);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(11, 79, 138, 0.35);
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.35);
 }
 
 .article-table__action-btn--edit:active {
