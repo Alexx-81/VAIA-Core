@@ -13,6 +13,9 @@
   padding: 1.5rem 2rem;
   background-color: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .layout-main {
