@@ -8,9 +8,11 @@
 
 .layout-header {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1rem 2rem;
   background-color: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
