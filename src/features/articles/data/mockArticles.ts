@@ -1,84 +1,40 @@
 import type { Article } from '../types';
 
-// Mock данни за артикули
+// Артикули от системата
 export const mockArticles: Article[] = [
-  {
-    id: '1',
-    name: 'Тениски',
-    gramsPerPiece: 200, // 0.200 kg
-    isActive: true,
-    createdAt: new Date('2025-01-10'),
-    lastSoldAt: new Date('2026-01-15'),
-  },
-  {
-    id: '2',
-    name: 'Дънки мъжки дълги',
-    gramsPerPiece: 650, // 0.650 kg
-    isActive: true,
-    createdAt: new Date('2025-01-12'),
-    lastSoldAt: new Date('2026-01-16'),
-  },
-  {
-    id: '3',
-    name: 'Рокли дебели',
-    gramsPerPiece: 450, // 0.450 kg
-    isActive: true,
-    createdAt: new Date('2025-02-05'),
-    lastSoldAt: new Date('2026-01-14'),
-  },
-  {
-    id: '4',
-    name: 'Блузи дамски',
-    gramsPerPiece: 180, // 0.180 kg
-    isActive: true,
-    createdAt: new Date('2025-03-01'),
-    lastSoldAt: new Date('2026-01-10'),
-  },
-  {
-    id: '5',
-    name: 'Якета зимни',
-    gramsPerPiece: 850, // 0.850 kg
-    isActive: true,
-    createdAt: new Date('2025-04-15'),
-    lastSoldAt: new Date('2026-01-08'),
-  },
-  {
-    id: '6',
-    name: 'Поли къси',
-    gramsPerPiece: 150, // 0.150 kg
-    isActive: true,
-    createdAt: new Date('2025-05-20'),
-    lastSoldAt: new Date('2026-01-12'),
-  },
-  {
-    id: '7',
-    name: 'Панталони летни',
-    gramsPerPiece: 280, // 0.280 kg
-    isActive: true,
-    createdAt: new Date('2025-06-10'),
-    lastSoldAt: new Date('2026-01-11'),
-  },
-  {
-    id: '8',
-    name: 'Ризи мъжки',
-    gramsPerPiece: 220, // 0.220 kg
-    isActive: false, // Неактивен
-    createdAt: new Date('2025-02-20'),
-    lastSoldAt: new Date('2025-12-01'),
-  },
-  {
-    id: '9',
-    name: 'Пуловери',
-    gramsPerPiece: 380, // 0.380 kg
-    isActive: true,
-    createdAt: new Date('2025-07-01'),
-  },
-  {
-    id: '10',
-    name: 'Шорти спортни',
-    gramsPerPiece: 120, // 0.120 kg
-    isActive: false, // Неактивен
-    createdAt: new Date('2025-01-05'),
-    lastSoldAt: new Date('2025-11-15'),
-  },
+  { id: '1', name: 'Дънки мъжки дълги', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '2', name: 'Тениски', gramsPerPiece: 200, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '3', name: 'Блузи', gramsPerPiece: 400, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '4', name: 'Якета тънки', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '5', name: 'Рокли тънки', gramsPerPiece: 250, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '6', name: 'Рокли дебели', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '7', name: 'Дамски сака', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '8', name: 'Дамски панталони дълги', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '9', name: 'Дамски гащеризони', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '10', name: 'Дълги рокли', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '11', name: 'Къси клинове', gramsPerPiece: 200, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '12', name: 'Дълги клинове', gramsPerPiece: 250, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '13', name: 'Дамски панталони къси', gramsPerPiece: 250, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '14', name: 'Дамски къси дънкови панталони', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '15', name: 'Къси мъжки панталони', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '16', name: 'Анцузи долнище', gramsPerPiece: 400, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '17', name: 'Дамски блузи ефирни', gramsPerPiece: 140, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '18', name: 'Дънки дамски дълги', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '19', name: 'Спортна тънка блуза', gramsPerPiece: 170, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '20', name: 'Мъжки къси спортни панталони', gramsPerPiece: 250, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '21', name: 'Мъжки дълги спортни панталони', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '22', name: 'Детски къси спортни панталони', gramsPerPiece: 170, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '23', name: 'Мъжки дълги панталони', gramsPerPiece: 400, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '24', name: 'Ветровка', gramsPerPiece: 200, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '25', name: 'Суитчер', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '26', name: 'Панталон мъжки', gramsPerPiece: 330, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '27', name: 'Мъжка риза', gramsPerPiece: 250, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '28', name: 'Пола', gramsPerPiece: 300, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '29', name: 'Изкуствени палта', gramsPerPiece: 900, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '30', name: 'Дамско палто', gramsPerPiece: 1000, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '31', name: 'Неупреново яке', gramsPerPiece: 600, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '32', name: 'Яке зимно', gramsPerPiece: 900, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '33', name: 'Елек', gramsPerPiece: 400, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '34', name: 'Дамски пуловери', gramsPerPiece: 350, isActive: true, createdAt: new Date('2025-01-01') },
+  { id: '35', name: 'Суитчер ватиран', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
 ];

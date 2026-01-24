@@ -94,3 +94,21 @@ export interface DeliveryFormWarning {
   type: 'invoice-id-mismatch';
   message: string;
 }
+
+// Типове за импортиране от Excel
+export interface DeliveryImportRow {
+  deliveryId: number;
+  date: string;
+  quality: string;
+  kilograms: number;
+  pricePerKg: number;
+  totalAmount: number;
+  invoiceNumber: string;
+}
+
+export interface ImportResult {
+  success: boolean;
+  imported: number;
+  errors: string[];
+  deliveries: Delivery[];
+}

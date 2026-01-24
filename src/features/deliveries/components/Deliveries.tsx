@@ -4,7 +4,8 @@ import { DeliveryFiltersBar } from './DeliveryFiltersBar';
 import { DeliveryTable } from './DeliveryTable';
 import { DeliveryDialog } from './DeliveryDialog';
 import { DeliveryDetail } from './DeliveryDetail';
-import type { DeliveryWithComputed, DeliveryView, DeliveryFormData } from '../types';
+import { ImportDeliveriesDialog } from './ImportDeliveriesDialog';
+import type { DeliveryWithComputed, DeliveryView, DeliveryFormData, Delivery } from '../types';
 import './Deliveries.css';
 
 export const Deliveries = () => {
@@ -18,10 +19,12 @@ export const Deliveries = () => {
     updateDateRange,
     createDelivery,
     updateDelivery,
+    importDeliveries,
     getDeliveryById,
     getSalesForDelivery,
     existingDisplayIds,
     stats,
+    qualities,
   } = useDeliveries();
 
   // View state
@@ -32,6 +35,9 @@ export const Deliveries = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<DeliveryWithComputed | undefined>();
   const [dialogKey, setDialogKey] = useState(0);
+
+  // Import dialog state
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Handlers for list view
   const handleNewDelivery = useCallback(() => {
@@ -65,6 +71,19 @@ export const Deliveries = () => {
     },
     [editingDelivery, createDelivery, updateDelivery]
   );
+
+  // Import handlers
+  const handleOpenImportDialog = useCallback(() => {
+    setImportDialogOpen(true);
+  }, []);
+
+  const handleCloseImportDialog = useCallback(() => {
+    setImportDialogOpen(false);
+  }, []);
+
+  const handleImportDeliveries = useCallback((importedDeliveries: Delivery[]) => {
+    importDeliveries(importedDeliveries);
+  }, [importDeliveries]);
 
   // Handlers for detail view
   const handleBackToList = useCallback(() => {
@@ -136,6 +155,7 @@ export const Deliveries = () => {
         onFilterChange={updateFilters}
         onDateRangeChange={updateDateRange}
         onNewDelivery={handleNewDelivery}
+        onImportDeliveries={handleOpenImportDialog}
         qualities={availableQualities}
         hasInactiveQualities={hasInactiveQualities}
         totalCount={allDeliveries.length}
@@ -157,6 +177,14 @@ export const Deliveries = () => {
         existingDisplayIds={existingDisplayIds}
         onSubmit={handleSubmit}
         onClose={handleCloseDialog}
+      />
+
+      <ImportDeliveriesDialog
+        isOpen={importDialogOpen}
+        onClose={handleCloseImportDialog}
+        onImport={handleImportDeliveries}
+        existingDisplayIds={existingDisplayIds}
+        qualities={qualities}
       />
     </div>
   );

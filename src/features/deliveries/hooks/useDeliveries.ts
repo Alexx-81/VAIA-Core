@@ -239,6 +239,11 @@ export const useDeliveries = () => {
     };
   }, [filteredDeliveries]);
 
+  // Импортиране на доставки от Excel
+  const importDeliveries = useCallback((newDeliveries: Delivery[]) => {
+    setDeliveries((prev) => [...prev, ...newDeliveries]);
+  }, []);
+
   return {
     // Данни
     deliveries: filteredDeliveries,
@@ -255,6 +260,7 @@ export const useDeliveries = () => {
     // Операции
     createDelivery,
     updateDelivery,
+    importDeliveries,
     getDeliveryById,
     getSalesForDelivery,
     

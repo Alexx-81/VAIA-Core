@@ -4,9 +4,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: clamp(8px, 0.6rem + 0.2vw, 10px) clamp(14px, 0.9rem + 0.6vw, 20px);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: clamp(15px, 0.95rem + 0.35vw, 18px);
+  line-height: 1.2;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -124,13 +125,13 @@
 
 /* Size Variants */
 .btn-sm {
-  padding: 8px 16px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
 }
 
 .btn-lg {
-  padding: 16px 32px;
-  font-size: 16px;
+  padding: 12px 24px;
+  font-size: 1.125rem;
 }
 
 /* Icon Button */

@@ -241,8 +241,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
+  padding: clamp(0.4rem, 0.35rem + 0.2vw, 0.55rem) clamp(0.8rem, 0.7rem + 0.4vw, 1.05rem);
+  font-size: clamp(0.95rem, 0.9rem + 0.4vw, 1.1rem);
+  line-height: 1.2;
   font-weight: 500;
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -784,7 +785,7 @@
   .action-btn {
     width: 100%;
     justify-content: center;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.9rem;
   }
 
   .kpi-cards {

@@ -7,6 +7,7 @@ interface DeliveryFiltersBarProps {
   onFilterChange: (partial: Partial<DeliveryFilters>) => void;
   onDateRangeChange: (range: DateRange) => void;
   onNewDelivery: () => void;
+  onImportDeliveries?: () => void;
   qualities: Quality[];
   hasInactiveQualities: boolean;
   totalCount: number;
@@ -39,6 +40,7 @@ export const DeliveryFiltersBar = ({
   onFilterChange,
   onDateRangeChange,
   onNewDelivery,
+  onImportDeliveries,
   qualities,
   hasInactiveQualities,
   totalCount,
@@ -208,13 +210,19 @@ export const DeliveryFiltersBar = ({
         {/* Spacer */}
         <div className="delivery-filters__spacer"></div>
 
-        {/* Статистика и бутон */}
+        {/* Статистика и бутони */}
         <div className="delivery-filters__actions">
           <span className="delivery-filters__count">
             {filteredCount === totalCount
               ? `${totalCount} доставки`
               : `${filteredCount} от ${totalCount}`}
           </span>
+          {onImportDeliveries && (
+            <button className="delivery-filters__btn-import" onClick={onImportDeliveries}>
+              <span className="delivery-filters__btn-icon">📥</span>
+              Импорт
+            </button>
+          )}
           <button className="delivery-filters__btn-new" onClick={onNewDelivery}>
             <span className="delivery-filters__btn-icon">+</span>
             Нова доставка
