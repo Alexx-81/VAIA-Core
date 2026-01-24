@@ -192,21 +192,24 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  background: var(--vaia-color);
+  font-weight: 600;
+  background: linear-gradient(135deg, #FF7A00 0%, #ff9a3c 100%);
   color: white;
-  border: 1px solid var(--vaia-color);
+  border: 2px solid #FF7A00;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
 }
 
 .delivery-filters__btn-new:hover {
-  background: #0a4577;
-  border-color: #0a4577;
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  border-color: #0B4F8A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
 }
 
 .delivery-filters__btn-icon {

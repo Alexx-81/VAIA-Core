@@ -1,7 +1,11 @@
 .tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-xs);
   flex-wrap: wrap;
+  padding: var(--space-xs);
+  background: var(--surface-hover);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
 }
 
 .tab {
@@ -9,24 +13,92 @@
   background-color: transparent;
   color: var(--text-secondary);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .tab:hover {
-  background-color: var(--surface-hover);
   color: var(--text-color);
+  background: var(--surface-color);
 }
 
 .tab-active {
-  background-color: var(--vaia-color);
   color: white;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--vaia-color) 0%, var(--vaia-light, var(--vaia-color)) 100%);
 }
 
 .tab-active:hover {
-  background-color: var(--vaia-color);
-  opacity: 0.9;
+  color: white;
+}
+
+/* Tablet - scrollable tabs */
+@media (max-width: 1024px) {
+  .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Mobile - vertical menu */
+@media (max-width: 768px) {
+  .tabs {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: var(--space-sm);
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+  
+  .tab {
+    display: block;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    text-align: left;
+    border-radius: var(--radius-lg);
+    background: var(--surface-hover);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .tab:hover,
+  .tab:active {
+    background: var(--surface-color);
+  }
+  
+  .tab-active {
+    background: linear-gradient(135deg, var(--vaia-color) 0%, var(--vaia-light, var(--vaia-color)) 100%);
+  }
+  
+  .tab-active:hover,
+  .tab-active:active {
+    background: linear-gradient(135deg, var(--vaia-color) 0%, var(--vaia-light, var(--vaia-color)) 100%);
+    transform: translateX(4px);
+  }
+}
 }

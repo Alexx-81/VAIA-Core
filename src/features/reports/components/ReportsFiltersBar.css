@@ -100,14 +100,17 @@
 }
 
 .reports-filters__btn--primary {
-  background: var(--vaia-color);
+  background: linear-gradient(135deg, #FF7A00 0%, #ff9a3c 100%);
   color: white;
-  border-color: var(--vaia-color);
+  border: 2px solid #FF7A00;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
 }
 
 .reports-filters__btn--primary:hover:not(:disabled) {
-  background: #e06d00;
-  border-color: #e06d00;
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  border-color: #0B4F8A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
 }
 
 .reports-filters__btn--primary:disabled {
@@ -116,12 +119,17 @@
 }
 
 .reports-filters__btn--export {
-  background: var(--surface-color);
-  color: var(--text-color);
+  background: transparent;
+  color: #FF7A00;
+  border: 2px solid #FF7A00;
 }
 
 .reports-filters__btn--export:hover {
-  background: var(--hover-color);
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  color: #ffffff;
+  border-color: #0B4F8A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
 }
 
 /* Export dropdown */

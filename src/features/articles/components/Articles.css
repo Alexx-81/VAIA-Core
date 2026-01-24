@@ -1,35 +1,42 @@
 .articles {
-  padding: 1.5rem;
-  max-width: 1400px;
+  padding: var(--space-lg);
+  max-width: var(--container-xl);
   margin: 0 auto;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .articles__header {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-lg);
 }
 
 .articles__title-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-xs);
 }
 
 .articles__title {
-  font-size: 1.75rem;
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
   font-weight: 600;
   color: var(--text-color);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .articles__subtitle {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
   margin: 0;
 }
 
 @media (max-width: 768px) {
   .articles {
-    padding: 1rem;
+    padding: var(--space-md);
   }
 
   .articles__title {

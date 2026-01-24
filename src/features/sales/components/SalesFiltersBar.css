@@ -89,21 +89,24 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, var(--vaia-color) 0%, #FF9A33 100%);
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #FF7A00 0%, #ff9a3c 100%);
   color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border: 2px solid #FF7A00;
+  border-radius: 8px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
 }
 
 .sales-filters__btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.35);
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  border-color: #0B4F8A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
 }
 
 .sales-filters__btn-primary:active {

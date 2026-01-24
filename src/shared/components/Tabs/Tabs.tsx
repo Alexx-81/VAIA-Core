@@ -8,17 +8,23 @@ interface TabsProps {
 }
 
 export const Tabs = ({ activeTab, onTabChange }: TabsProps) => {
+  const handleClick = (tabId: TabId) => {
+    console.log('Tab clicked:', tabId);
+    onTabChange(tabId);
+  };
+
   return (
-    <nav className="tabs">
+    <div className="tabs">
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          type="button"
           className={`tab ${activeTab === tab.id ? 'tab-active' : ''}`}
-          onClick={() => onTabChange(tab.id)}
+          onClick={() => handleClick(tab.id)}
         >
           {tab.label}
         </button>
       ))}
-    </nav>
+    </div>
   );
 };

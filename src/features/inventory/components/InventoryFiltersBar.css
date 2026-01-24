@@ -95,25 +95,42 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
+.inventory-filters__btn--primary {
+  background: linear-gradient(135deg, #FF7A00 0%, #ff9a3c 100%);
+  color: white;
+  border: 2px solid #FF7A00;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+}
+
+.inventory-filters__btn--primary:hover {
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  border-color: #0B4F8A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
+}
+
 .inventory-filters__btn--export {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
+  background: transparent;
+  color: #FF7A00;
+  border: 2px solid #FF7A00;
 }
 
 .inventory-filters__btn--export:hover {
-  background-color: var(--surface-hover);
-  border-color: var(--vaia-color);
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  color: #ffffff;
+  border-color: #0B4F8A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
 }
 
 .inventory-filters__btn--link {

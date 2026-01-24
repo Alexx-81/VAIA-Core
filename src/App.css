@@ -1,25 +1,50 @@
 .app {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .theme-dark {
-  --bg-color: #1a1a1a;
-  --surface-color: #2d2d2d;
-  --surface-hover: #3a3a3a;
-  --text-color: #e0e0e0;
-  --text-secondary: #a0a0a0;
-  --border-color: #404040;
+  --bg-color: #0f0f0f;
+  --bg-gradient: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  --surface-color: #1a1a1a;
+  --surface-elevated: #242424;
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --text-color: #f5f5f5;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
   --vaia-color: #FF7A00;
+  --vaia-light: #FF9633;
+  --vaia-dark: #CC6200;
   --core-color: #FF7A00;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+  --glass-bg: rgba(26, 26, 26, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 .theme-light {
-  --bg-color: #f5f5f5;
+  --bg-color: #f8fafc;
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   --surface-color: #ffffff;
-  --surface-hover: #f0f0f0;
-  --text-color: #2d2d2d;
-  --text-secondary: #666666;
-  --border-color: #e0e0e0;
+  --surface-elevated: #ffffff;
+  --surface-hover: rgba(0, 0, 0, 0.03);
+  --text-color: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
   --vaia-color: #FF7A00;
+  --vaia-light: #FF9633;
+  --vaia-dark: #CC6200;
   --core-color: #FF7A00;
+  --success-color: #16a34a;
+  --warning-color: #d97706;
+  --error-color: #dc2626;
+  --info-color: #2563eb;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.08);
 }
