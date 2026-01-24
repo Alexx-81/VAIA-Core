@@ -1,4 +1,4 @@
-import { useState, useCallback, useId } from 'react';
+import { useState, useCallback } from 'react';
 import { useArticles } from '../hooks/useArticles';
 import { ArticleFiltersBar } from './ArticleFiltersBar';
 import { ArticleTable } from './ArticleTable';
