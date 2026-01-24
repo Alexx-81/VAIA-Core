@@ -22,8 +22,8 @@
 }
 
 .tab:hover {
-  color: var(--text-color);
-  background: var(--surface-color);
+  color: #FF7A00;
+  background: #0B4F8A;
 }
 
 .tab-active {
