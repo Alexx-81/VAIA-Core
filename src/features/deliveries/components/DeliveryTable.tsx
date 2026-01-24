@@ -1,5 +1,6 @@
 import type { DeliveryWithComputed } from '../types';
 import { formatDate, formatKg, formatEur } from '../utils/deliveryUtils';
+import { DataCards } from '../../../shared/components/DataCards';
 import './DeliveryTable.css';
 
 interface DeliveryTableProps {
@@ -48,7 +49,8 @@ export const DeliveryTable = ({
         <h2 className="delivery-table__title">Доставки</h2>
       </div>
       
-      <div className="delivery-table__wrapper">
+      {/* Desktop Table View */}
+      <div className="delivery-table__wrapper desktop-only">
         <table className="delivery-table">
           <thead>
             <tr>
@@ -122,6 +124,57 @@ export const DeliveryTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Card View */}
+      <DataCards
+        data={deliveries}
+        keyExtractor={(d) => d.id}
+        onItemClick={(d) => onViewDetail(d)}
+        cardClassName={(d) => (d.kgRemainingReal <= 0 ? 'inactive' : '')}
+        fields={[
+          {
+            key: 'kgIn',
+            label: 'kg вход',
+            render: (d) => formatKg(d.kgIn),
+          },
+          {
+            key: 'kgRemainingReal',
+            label: 'kg налични',
+            render: (d) => (
+              <span className={`delivery-table__stock ${getStockStatusClass(d)}`}>
+                {formatKg(d.kgRemainingReal)}
+              </span>
+            ),
+          },
+          {
+            key: 'totalCostEur',
+            label: 'Обща сума',
+            render: (d) => <strong>{formatEur(d.totalCostEur)} €</strong>,
+          },
+        ]}
+        renderCardTitle={(d) => (
+          <>
+            <span className="delivery-card__id">{d.displayId}</span>
+            <span className="delivery-card__date">{formatDate(d.date)}</span>
+          </>
+        )}
+        renderCardSubtitle={(d) => d.qualityName}
+        renderCardBadge={(d) => (
+          <span className={`delivery-table__invoice-badge ${d.isInvoiced ? 'yes' : 'no'}`}>
+            {d.isInvoiced ? 'Фактурна' : 'Без фактура'}
+          </span>
+        )}
+        renderCardActions={(d) => (
+          <>
+            <button className="edit" onClick={() => onViewDetail(d)}>
+              👁️ Детайл
+            </button>
+            <button className="warning" onClick={() => onEdit(d)}>
+              ✏️ Редакция
+            </button>
+          </>
+        )}
+      />
     </div>
   );
 };

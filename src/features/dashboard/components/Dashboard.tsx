@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { TabId } from '../../../shared/components/Tabs';
+import { DataCards } from '../../../shared/components/DataCards';
 import './Dashboard.css';
 
 // Types
@@ -505,7 +506,9 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
               </button>
             </div>
           </div>
-          <div className="table-wrapper">
+          
+          {/* Desktop Table View */}
+          <div className="table-wrapper desktop-only">
             <table className="data-table sales-table">
               <thead>
                 <tr>
@@ -560,6 +563,53 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <DataCards
+            data={mockSales}
+            keyExtractor={(s) => s.id}
+            onItemClick={(s) => handleOpenSale(s.id)}
+            fields={[
+              {
+                key: 'kg',
+                label: 'Количество',
+                render: (s) => `${formatNumber(s.pieces)} бр. / ${formatNumber(s.kg, 1)} kg`,
+              },
+              {
+                key: 'revenue',
+                label: 'Оборот',
+                render: (s) => <strong>{formatCurrency(s.revenue)}</strong>,
+              },
+              {
+                key: 'profit',
+                label: 'Печалба',
+                render: (s) => (
+                  <span className="text-profit">{formatCurrency(s.profit)} ({formatPercent(s.margin)})</span>
+                ),
+              },
+            ]}
+            renderCardTitle={(s) => (
+              <>
+                <span className="sale-number">{s.saleNumber}</span>
+              </>
+            )}
+            renderCardSubtitle={(s) => formatDateTime(s.datetime)}
+            renderCardBadge={(s) => (
+              <span className={`payment-badge ${s.paymentMethod}`}>
+                {getPaymentMethodLabel(s.paymentMethod)}
+              </span>
+            )}
+            renderCardActions={(s) => (
+              <>
+                <button className="edit" onClick={() => handleOpenSale(s.id)}>
+                  👁️ Отвори
+                </button>
+                <button className="danger" onClick={() => handleVoidSale(s.id)}>
+                  ✕ Сторно
+                </button>
+              </>
+            )}
+          />
         </div>
 
         {/* Low Stock Deliveries Table */}
@@ -572,7 +622,9 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
               </span>
             </div>
           </div>
-          <div className="table-wrapper">
+          
+          {/* Desktop Table View */}
+          <div className="table-wrapper desktop-only">
             <table className="data-table low-stock-table">
               <thead>
                 <tr>
@@ -622,6 +674,54 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <DataCards
+            data={mockLowStockDeliveries}
+            keyExtractor={(d) => d.id}
+            onItemClick={(d) => handleOpenDelivery(d.id)}
+            cardClassName={(d) => (d.kgRemaining <= 3 ? 'critical' : '')}
+            fields={[
+              {
+                key: 'kgRemaining',
+                label: 'kg налични',
+                render: (d) => (
+                  <span className="text-warning">{formatNumber(d.kgRemaining, 1)} kg</span>
+                ),
+              },
+              {
+                key: 'percentRemaining',
+                label: '% оставащи',
+                render: (d) => (
+                  <span className={`percent-badge ${d.percentRemaining <= 10 ? 'critical' : 'warning'}`}>
+                    {formatPercent(d.percentRemaining)}
+                  </span>
+                ),
+              },
+              {
+                key: 'costPerKg',
+                label: 'Цена',
+                render: (d) => `${formatCurrency(d.costPerKg)}/kg`,
+              },
+            ]}
+            renderCardTitle={(d) => (
+              <>
+                <span className="delivery-id">{d.deliveryId}</span>
+              </>
+            )}
+            renderCardSubtitle={(d) => `${d.quality} • ${formatDate(d.date)}`}
+            renderCardBadge={(d) => (
+              <span className={`invoice-badge ${d.isInvoiced ? 'yes' : 'no'}`}>
+                {d.isInvoiced ? 'Фактурна' : 'Без факт.'}
+              </span>
+            )}
+            renderCardActions={(d) => (
+              <button className="edit" onClick={() => handleOpenDelivery(d.id)}>
+                📦 Отвори доставка
+              </button>
+            )}
+          />
+
           {mockLowStockDeliveries.length === 0 && (
             <div className="empty-state">
               ✅ Няма доставки с ниска наличност

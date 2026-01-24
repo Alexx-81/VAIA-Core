@@ -1,5 +1,6 @@
 import type { InventoryRealRow, InventoryAccRow, InventoryStats, InventoryTab } from '../types';
 import { formatKg, formatEur, formatPercent, formatDate, getStockStatusClass, getEarnedClass } from '../utils/inventoryUtils';
+import { DataCards } from '../../../shared/components/DataCards';
 import './InventoryTable.css';
 
 interface InventoryTableProps {
@@ -63,7 +64,8 @@ export const InventoryTable = ({
         </h2>
       </div>
       
-      <div className="inventory-table__wrapper">
+      {/* Desktop Table View */}
+      <div className="inventory-table__wrapper desktop-only">
         <table className="inventory-table">
           <thead>
             <tr>
@@ -154,6 +156,85 @@ export const InventoryTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Card View */}
+      <DataCards
+        data={data as (InventoryRealRow | InventoryAccRow)[]}
+        keyExtractor={(row) => row.deliveryId}
+        onItemClick={(row) => onViewDelivery(row.deliveryId)}
+        cardClassName={(row) => {
+          const kgRemaining = isReal 
+            ? (row as InventoryRealRow).kgRemainingReal 
+            : (row as InventoryAccRow).kgRemainingAcc;
+          return kgRemaining <= 0 ? 'inactive' : '';
+        }}
+        fields={[
+          {
+            key: 'kgIn',
+            label: 'kg вход',
+            render: (row) => formatKg(row.kgIn),
+          },
+          {
+            key: 'kgRemaining',
+            label: `kg налични (${typeLabel})`,
+            render: (row) => {
+              const kgRemaining = isReal 
+                ? (row as InventoryRealRow).kgRemainingReal 
+                : (row as InventoryAccRow).kgRemainingAcc;
+              return (
+                <span className={`inventory-table__stock ${getStockStatusClass(kgRemaining, minKgThreshold)}`}>
+                  {formatKg(kgRemaining)}
+                </span>
+              );
+            },
+          },
+          {
+            key: 'percentRemaining',
+            label: '% остатък',
+            render: (row) => (
+              <span className={`inventory-table__percent ${getPercentClass(row.percentRemaining)}`}>
+                {formatPercent(row.percentRemaining)}
+              </span>
+            ),
+          },
+          {
+            key: 'earned',
+            label: `Пари изкарани (${typeLabel})`,
+            render: (row) => {
+              const earned = isReal 
+                ? (row as InventoryRealRow).earnedRealEur 
+                : (row as InventoryAccRow).earnedAccEur;
+              return (
+                <span className={`inventory-table__earned ${getEarnedClass(earned)}`}>
+                  {formatEur(earned)} €
+                </span>
+              );
+            },
+          },
+        ]}
+        renderCardTitle={(row) => (
+          <>
+            <span className="inventory-card__id">{row.displayId}</span>
+            <span className="inventory-card__date">{formatDate(row.date)}</span>
+          </>
+        )}
+        renderCardSubtitle={(row) => row.qualityName}
+        renderCardBadge={(row) => (
+          <span className={`inventory-table__invoice-badge ${row.isInvoiced ? 'yes' : 'no'}`}>
+            {row.isInvoiced ? 'Фактурна' : 'Без факт.'}
+          </span>
+        )}
+        renderCardActions={(row) => (
+          <>
+            <button className="edit" onClick={() => onViewDelivery(row.deliveryId)}>
+              📦 Доставка
+            </button>
+            <button className="success" onClick={() => onViewSales(row.deliveryId, type)}>
+              🛒 Продажби
+            </button>
+          </>
+        )}
+      />
 
       <div className="inventory-table__footer">
         <div className="inventory-table__total">

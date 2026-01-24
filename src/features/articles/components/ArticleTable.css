@@ -248,8 +248,19 @@
   color: var(--text-muted);
 }
 
+/* Desktop only class */
+.desktop-only {
+  display: block;
+}
+
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
   .article-table__wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -257,17 +268,5 @@
 
   .article-table {
     min-width: 700px;
-  }
-}
-
-@media (max-width: 600px) {
-  .article-table th,
-  .article-table td {
-    padding: 0.75rem var(--space-sm);
-  }
-
-  .article-table__th-date,
-  .article-table__td-date {
-    display: none;
   }
 }

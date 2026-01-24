@@ -50,4 +50,18 @@
   .logo {
     gap: var(--space-sm);
   }
+
+  .logo-text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-xs);
+  }
+
+  .logo-vaia {
+    font-size: 1.125rem;
+  }
+
+  .logo-core {
+    font-size: 0.875rem;
+  }
 }

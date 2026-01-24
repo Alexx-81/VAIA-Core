@@ -669,7 +669,17 @@
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Desktop only class */
+.desktop-only {
+  display: block;
+}
+
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
   .qualities {
     padding: 1rem;
   }
@@ -703,9 +713,12 @@
     justify-content: center;
   }
 
-  .data-table th,
-  .data-table td {
-    padding: 0.6rem 0.75rem;
+  .table-header {
+    padding: 1rem;
+  }
+
+  .table-title {
+    font-size: 0.95rem;
   }
 
   .quality-note {

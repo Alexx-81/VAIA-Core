@@ -1,5 +1,6 @@
 import type { SaleWithComputed } from '../types';
 import { formatDateTime, formatEur, formatKg, formatPercent, getPaymentMethodLabel, getProfitClass, getMarginClass } from '../utils/salesUtils';
+import { DataCards } from '../../../shared/components/DataCards';
 import './SalesTable.css';
 
 interface SalesTableProps {
@@ -51,7 +52,8 @@ export const SalesTable = ({
         <h2 className="sales-table__title">Продажби</h2>
       </div>
       
-      <div className="sales-table__wrapper">
+      {/* Desktop Table View */}
+      <div className="sales-table__wrapper desktop-only">
         <table className="sales-table">
           <thead>
             <tr>
@@ -116,6 +118,47 @@ export const SalesTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Card View */}
+      <DataCards
+        data={sales}
+        keyExtractor={(s) => s.id}
+        onItemClick={(s) => onViewDetail(s)}
+        fields={[
+          {
+            key: 'quantity',
+            label: 'Количество',
+            render: (s) => `${s.totalPieces} бр. / ${formatKg(s.totalKg)} kg`,
+          },
+          {
+            key: 'totalRevenueEur',
+            label: 'Оборот',
+            render: (s) => <strong>{formatEur(s.totalRevenueEur)} €</strong>,
+          },
+          {
+            key: 'totalProfitRealEur',
+            label: 'Печалба',
+            render: (s) => (
+              <span className={`sales-table__profit ${getProfitClass(s.totalProfitRealEur)}`}>
+                {formatEur(s.totalProfitRealEur)} € ({formatPercent(s.totalMarginRealPercent)})
+              </span>
+            ),
+          },
+        ]}
+        renderCardTitle={(s) => s.saleNumber}
+        renderCardSubtitle={(s) => formatDateTime(s.dateTime)}
+        renderCardBadge={(s) => (
+          <span className={`sales-table__payment-badge ${s.paymentMethod}`}>
+            {getPaymentIcon(s.paymentMethod)}
+            {getPaymentMethodLabel(s.paymentMethod)}
+          </span>
+        )}
+        renderCardActions={(s) => (
+          <button className="edit" onClick={() => onViewDetail(s)}>
+            👁️ Виж детайл
+          </button>
+        )}
+      />
 
       <div className="sales-table__footer">
         <div className="sales-table__total">

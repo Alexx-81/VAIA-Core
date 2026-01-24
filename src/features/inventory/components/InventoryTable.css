@@ -325,3 +325,47 @@
 .inventory-table__total-value.success {
   color: #22c55e;
 }
+
+/* Desktop only class */
+.desktop-only {
+  display: block;
+}
+
+/* Mobile Card Styles */
+.inventory-card__id {
+  font-weight: 700;
+  color: var(--vaia-color);
+  margin-right: 8px;
+}
+
+.inventory-card__date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .inventory-table__header {
+    padding: 1rem;
+  }
+  
+  .inventory-table__title {
+    font-size: 0.95rem;
+  }
+  
+  .inventory-table__footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .inventory-table__total {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

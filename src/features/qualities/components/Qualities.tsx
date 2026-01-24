@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { DataCards } from '../../../shared/components/DataCards';
 import './Qualities.css';
 
 // Types
@@ -303,70 +304,123 @@ export const Qualities = () => {
             )}
           </div>
         ) : (
-          <div className="table-wrapper">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Име на качество</th>
-                  <th className="text-center">Статус</th>
-                  <th className="text-center">Брой доставки</th>
-                  <th className="text-center">Последна доставка</th>
-                  <th className="text-center">Създадено на</th>
-                  <th className="text-center">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredQualities.map(quality => (
-                  <tr key={quality.id} className={!quality.isActive ? 'inactive-row' : ''}>
-                    <td>
-                      <button 
-                        className="quality-name-btn"
-                        onClick={() => handleOpenEditDialog(quality)}
-                        title="Редактирай"
-                      >
-                        {quality.name}
-                      </button>
-                      {quality.note && (
-                        <div className="quality-note">{quality.note}</div>
-                      )}
-                    </td>
-                    <td className="text-center">
-                      <span className={`status-badge ${quality.isActive ? 'active' : 'inactive'}`}>
-                        {quality.isActive ? 'Активно' : 'Неактивно'}
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <span className="deliveries-count">
-                        {quality.deliveriesCount}
-                      </span>
-                    </td>
-                    <td className="text-center text-muted">
-                      {formatDate(quality.lastDeliveryDate)}
-                    </td>
-                    <td className="text-center text-muted">
-                      {formatDate(quality.createdAt)}
-                    </td>
-                    <td className="text-center actions-cell">
-                      <button 
-                        className="row-action-btn edit"
-                        onClick={() => handleOpenEditDialog(quality)}
-                        title="Редакция"
-                      >
-                        ✏️
-                      </button>
-                      <button 
-                        className={`row-action-btn ${quality.isActive ? 'deactivate' : 'activate'}`}
-                        onClick={() => handleToggleStatus(quality.id, quality.isActive)}
-                        title={quality.isActive ? 'Деактивирай' : 'Активирай'}
-                      >
-                        {quality.isActive ? '⏸️' : '▶️'}
-                      </button>
-                    </td>
+          <>
+            {/* Desktop Table View */}
+            <div className="table-wrapper desktop-only">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Име на качество</th>
+                    <th className="text-center">Статус</th>
+                    <th className="text-center">Брой доставки</th>
+                    <th className="text-center">Последна доставка</th>
+                    <th className="text-center">Създадено на</th>
+                    <th className="text-center">Действия</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredQualities.map(quality => (
+                    <tr key={quality.id} className={!quality.isActive ? 'inactive-row' : ''}>
+                      <td>
+                        <button 
+                          className="quality-name-btn"
+                          onClick={() => handleOpenEditDialog(quality)}
+                          title="Редактирай"
+                        >
+                          {quality.name}
+                        </button>
+                        {quality.note && (
+                          <div className="quality-note">{quality.note}</div>
+                        )}
+                      </td>
+                      <td className="text-center">
+                        <span className={`status-badge ${quality.isActive ? 'active' : 'inactive'}`}>
+                          {quality.isActive ? 'Активно' : 'Неактивно'}
+                        </span>
+                      </td>
+                      <td className="text-center">
+                        <span className="deliveries-count">
+                          {quality.deliveriesCount}
+                        </span>
+                      </td>
+                      <td className="text-center text-muted">
+                        {formatDate(quality.lastDeliveryDate)}
+                      </td>
+                      <td className="text-center text-muted">
+                        {formatDate(quality.createdAt)}
+                      </td>
+                      <td className="text-center actions-cell">
+                        <button 
+                          className="row-action-btn edit"
+                          onClick={() => handleOpenEditDialog(quality)}
+                          title="Редакция"
+                        >
+                          ✏️
+                        </button>
+                        <button 
+                          className={`row-action-btn ${quality.isActive ? 'deactivate' : 'activate'}`}
+                          onClick={() => handleToggleStatus(quality.id, quality.isActive)}
+                          title={quality.isActive ? 'Деактивирай' : 'Активирай'}
+                        >
+                          {quality.isActive ? '⏸️' : '▶️'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <DataCards
+              data={filteredQualities}
+              keyExtractor={(q) => q.id}
+              onItemClick={(q) => handleOpenEditDialog(q)}
+              cardClassName={(q) => (!q.isActive ? 'inactive' : '')}
+              fields={[
+                {
+                  key: 'deliveriesCount',
+                  label: 'Брой доставки',
+                  render: (q) => (
+                    <span className="deliveries-count">{q.deliveriesCount}</span>
+                  ),
+                },
+                {
+                  key: 'lastDeliveryDate',
+                  label: 'Последна доставка',
+                  render: (q) => formatDate(q.lastDeliveryDate),
+                },
+                {
+                  key: 'createdAt',
+                  label: 'Създадено',
+                  render: (q) => formatDate(q.createdAt),
+                },
+              ]}
+              renderCardTitle={(q) => q.name}
+              renderCardSubtitle={(q) => q.note || undefined}
+              renderCardBadge={(q) => (
+                <span className={`status-badge ${q.isActive ? 'active' : 'inactive'}`}>
+                  {q.isActive ? 'Активно' : 'Неактивно'}
+                </span>
+              )}
+              renderCardActions={(q) => (
+                <>
+                  <button
+                    className="edit"
+                    onClick={() => handleOpenEditDialog(q)}
+                  >
+                    ✏️ Редакция
+                  </button>
+                  <button
+                    className={q.isActive ? 'warning' : 'success'}
+                    onClick={() => handleToggleStatus(q.id, q.isActive)}
+                  >
+                    {q.isActive ? '⏸️ Деактивирай' : '▶️ Активирай'}
+                  </button>
+                </>
+              )}
+            />
+          </>
         )}
       </div>
 
