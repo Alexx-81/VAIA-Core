@@ -22,7 +22,7 @@ const defaultFilters: SalesFilters = {
 };
 
 export const useSales = () => {
-  const [sales, setSales] = useState<Sale[]>(mockSales);
+  const [sales, setSales] = useState<Sale[]>(() => [...mockSales]);
   const [filters, setFilters] = useState<SalesFilters>(defaultFilters);
   const [deliverySalesKg, setDeliverySalesKg] = useState<Record<string, { real: number; acc: number }>>(
     // Инициализираме от mockSalesData
@@ -282,6 +282,13 @@ export const useSales = () => {
     return sale ? computeSale(sale) : undefined;
   }, [sales]);
 
+  // Импортиране на продажби от Excel
+  const importSales = useCallback((newSales: Sale[]) => {
+    setSales(prev => [...prev, ...newSales]);
+    // Също мутираме mockSales за споделяне с други модули
+    mockSales.push(...newSales);
+  }, []);
+
   return {
     sales: filteredSales,
     allSales: computedSales,
@@ -289,6 +296,7 @@ export const useSales = () => {
     updateFilters,
     updateDateRange,
     createSale,
+    importSales,
     getSaleById,
     stats,
     articleOptions,

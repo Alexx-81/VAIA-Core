@@ -1,0 +1,267 @@
+.import-sales-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.import-sales-dialog {
+  background: var(--bg-primary, #fff);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 750px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.import-sales-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.import-sales-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary, #1f2937);
+}
+
+.import-sales-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary, #6b7280);
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.import-sales-close:hover {
+  color: var(--text-primary, #1f2937);
+  background: var(--bg-secondary, #f3f4f6);
+}
+
+.import-sales-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.import-sales-upload-zone {
+  border: 2px dashed var(--border-color, #d1d5db);
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.import-sales-upload-zone:hover {
+  border-color: #0B4F8A;
+  background: rgba(11, 79, 138, 0.05);
+}
+
+.import-sales-upload-label {
+  cursor: pointer;
+  display: block;
+}
+
+.import-sales-upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.import-sales-upload-label p {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary, #1f2937);
+  font-size: 1rem;
+}
+
+.import-sales-upload-hint {
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.875rem;
+}
+
+.import-sales-loading {
+  margin-top: 1rem;
+  color: #0B4F8A;
+  font-weight: 500;
+}
+
+.import-sales-summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.import-sales-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.import-sales-summary-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.import-sales-summary-info {
+  background: rgba(11, 79, 138, 0.1);
+  color: #0B4F8A;
+}
+
+.import-sales-summary-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.import-sales-summary-count {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.import-sales-summary-label {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.import-sales-errors {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.import-sales-errors h4 {
+  margin: 0 0 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.import-sales-errors-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  color: #b91c1c;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.import-sales-errors-list li {
+  margin-bottom: 0.25rem;
+}
+
+.import-sales-preview h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.import-sales-preview-table-wrapper {
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+}
+
+.import-sales-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.import-sales-preview-table th,
+.import-sales-preview-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  white-space: nowrap;
+}
+
+.import-sales-preview-table th {
+  background: var(--bg-secondary, #f9fafb);
+  font-weight: 600;
+  color: var(--text-secondary, #6b7280);
+  position: sticky;
+  top: 0;
+}
+
+.import-sales-preview-table td {
+  color: var(--text-primary, #1f2937);
+}
+
+.import-sales-preview-table tbody tr:hover {
+  background: var(--bg-secondary, #f9fafb);
+}
+
+.import-sales-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.import-sales-btn-primary {
+  background: #0B4F8A;
+  color: white;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.import-sales-btn-primary:hover {
+  background: #083d6b;
+}
+
+.import-sales-btn-secondary {
+  background: var(--bg-secondary, #f3f4f6);
+  color: var(--text-primary, #374151);
+  border: 1px solid var(--border-color, #d1d5db);
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.import-sales-btn-secondary:hover {
+  background: var(--bg-tertiary, #e5e7eb);
+}
+
+/* Dark theme support */
+.dark .import-sales-dialog {
+  background: var(--bg-primary);
+}
+
+.dark .import-sales-header h2 {
+  color: var(--text-primary);
+}
+
+.dark .import-sales-preview-table th {
+  background: var(--bg-secondary);
+}
+
+.dark .import-sales-preview-table tbody tr:hover {
+  background: var(--bg-tertiary);
+}

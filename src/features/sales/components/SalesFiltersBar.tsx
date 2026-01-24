@@ -6,6 +6,7 @@ interface SalesFiltersBarProps {
   onFilterChange: (updates: Partial<SalesFilters>) => void;
   onDateRangeChange: (dateRange: SalesDateRange) => void;
   onNewSale: () => void;
+  onImport: () => void;
   totalCount: number;
   filteredCount: number;
 }
@@ -15,6 +16,7 @@ export const SalesFiltersBar = ({
   onFilterChange,
   onDateRangeChange,
   onNewSale,
+  onImport,
   totalCount,
   filteredCount,
 }: SalesFiltersBarProps) => {
@@ -99,6 +101,10 @@ export const SalesFiltersBar = ({
       <span className="sales-filters__count">
         Показани: <strong>{filteredCount}</strong> от {totalCount}
       </span>
+
+      <button className="sales-filters__btn-secondary" onClick={onImport}>
+        📥 Импорт
+      </button>
 
       <button className="sales-filters__btn-primary" onClick={onNewSale}>
         <span>+</span>

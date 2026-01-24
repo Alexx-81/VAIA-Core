@@ -45,45 +45,25 @@ interface LowStockDelivery {
 }
 
 // Mock data for qualities
-const mockQualities = [
-  { id: 1, name: 'Robusta Uganda' },
-  { id: 2, name: 'Arabica Ethiopia' },
-  { id: 3, name: 'Robusta Vietnam' },
-  { id: 4, name: 'Arabica Colombia' },
-  { id: 5, name: 'Blend Premium' },
-];
+const mockQualities: { id: number; name: string }[] = [];
 
 // Mock KPI data
 const mockKPIData = {
-  revenue: 45320.50,
-  cogs: 32150.25,
-  profit: 13170.25,
-  profitMargin: 29.06,
-  soldKg: 1245.5,
-  totalItems: 3420,
-  salesCount: 156,
-  avgSaleValue: 290.52,
+  revenue: 0,
+  cogs: 0,
+  profit: 0,
+  profitMargin: 0,
+  soldKg: 0,
+  totalItems: 0,
+  salesCount: 0,
+  avgSaleValue: 0,
 };
 
 // Mock sales data
-const mockSales: Sale[] = [
-  { id: 1, saleNumber: 'S-2026-0156', datetime: new Date('2026-01-11T14:32:00'), paymentMethod: 'card', linesCount: 4, pieces: 12, kg: 3.6, revenue: 86.40, cogs: 54.00, profit: 32.40, margin: 37.5 },
-  { id: 2, saleNumber: 'S-2026-0155', datetime: new Date('2026-01-11T13:15:00'), paymentMethod: 'cash', linesCount: 2, pieces: 5, kg: 1.5, revenue: 37.50, cogs: 22.50, profit: 15.00, margin: 40.0 },
-  { id: 3, saleNumber: 'S-2026-0154', datetime: new Date('2026-01-11T11:45:00'), paymentMethod: 'cash', linesCount: 6, pieces: 24, kg: 7.2, revenue: 172.80, cogs: 108.00, profit: 64.80, margin: 37.5 },
-  { id: 4, saleNumber: 'S-2026-0153', datetime: new Date('2026-01-11T10:20:00'), paymentMethod: 'card', linesCount: 3, pieces: 8, kg: 2.4, revenue: 60.00, cogs: 36.00, profit: 24.00, margin: 40.0 },
-  { id: 5, saleNumber: 'S-2026-0152', datetime: new Date('2026-01-10T17:50:00'), paymentMethod: 'other', linesCount: 1, pieces: 50, kg: 15.0, revenue: 337.50, cogs: 225.00, profit: 112.50, margin: 33.3 },
-  { id: 6, saleNumber: 'S-2026-0151', datetime: new Date('2026-01-10T16:30:00'), paymentMethod: 'cash', linesCount: 5, pieces: 18, kg: 5.4, revenue: 135.00, cogs: 81.00, profit: 54.00, margin: 40.0 },
-  { id: 7, saleNumber: 'S-2026-0150', datetime: new Date('2026-01-10T14:10:00'), paymentMethod: 'card', linesCount: 2, pieces: 6, kg: 1.8, revenue: 45.00, cogs: 27.00, profit: 18.00, margin: 40.0 },
-  { id: 8, saleNumber: 'S-2026-0149', datetime: new Date('2026-01-10T12:05:00'), paymentMethod: 'cash', linesCount: 4, pieces: 15, kg: 4.5, revenue: 112.50, cogs: 67.50, profit: 45.00, margin: 40.0 },
-];
+const mockSales: Sale[] = [];
 
 // Mock low stock deliveries data
-const mockLowStockDeliveries: LowStockDelivery[] = [
-  { id: 1, deliveryId: 'D-2025-0089', date: new Date('2025-12-15'), quality: 'Robusta Uganda', isInvoiced: true, kgIn: 50.0, kgOut: 47.5, kgRemaining: 2.5, percentRemaining: 5.0, costPerKg: 12.50 },
-  { id: 2, deliveryId: 'D-2025-0092', date: new Date('2025-12-22'), quality: 'Arabica Ethiopia', isInvoiced: false, kgIn: 30.0, kgOut: 26.8, kgRemaining: 3.2, percentRemaining: 10.7, costPerKg: 18.00 },
-  { id: 3, deliveryId: 'D-2026-0003', date: new Date('2026-01-05'), quality: 'Blend Premium', isInvoiced: true, kgIn: 25.0, kgOut: 21.2, kgRemaining: 3.8, percentRemaining: 15.2, costPerKg: 14.00 },
-  { id: 4, deliveryId: 'D-2025-0085', date: new Date('2025-12-10'), quality: 'Robusta Vietnam', isInvoiced: true, kgIn: 40.0, kgOut: 35.5, kgRemaining: 4.5, percentRemaining: 11.25, costPerKg: 11.00 },
-];
+const mockLowStockDeliveries: LowStockDelivery[] = [];
 
 // Settings mock
 const LOW_STOCK_THRESHOLD_KG = 5.0;

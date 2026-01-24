@@ -113,6 +113,28 @@
   transform: translateY(0);
 }
 
+.sales-filters__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sales-filters__btn-secondary:hover {
+  background: var(--surface-color);
+  border-color: var(--vaia-color);
+  color: var(--vaia-color);
+}
+
 /* Date inputs */
 .sales-filters__date-group {
   display: flex;

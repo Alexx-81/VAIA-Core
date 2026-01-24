@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { DataCards } from '../../../shared/components/DataCards';
+import { ImportQualitiesDialog } from './ImportQualitiesDialog';
 import './Qualities.css';
 
 // Types
@@ -25,29 +26,10 @@ interface QualityFormData {
 }
 
 // Mock data for deliveries (to calculate stats)
-const mockDeliveries = [
-  { id: 1, qualityId: 1, date: new Date('2026-01-10') },
-  { id: 2, qualityId: 1, date: new Date('2026-01-08') },
-  { id: 3, qualityId: 1, date: new Date('2026-01-05') },
-  { id: 4, qualityId: 2, date: new Date('2026-01-09') },
-  { id: 5, qualityId: 2, date: new Date('2026-01-07') },
-  { id: 6, qualityId: 3, date: new Date('2026-01-11') },
-  { id: 7, qualityId: 4, date: new Date('2026-01-06') },
-  { id: 8, qualityId: 4, date: new Date('2026-01-04') },
-  { id: 9, qualityId: 4, date: new Date('2026-01-02') },
-  { id: 10, qualityId: 4, date: new Date('2025-12-28') },
-  { id: 11, qualityId: 5, date: new Date('2025-12-20') },
-];
+const mockDeliveries: { id: number; qualityId: number; date: Date }[] = [];
 
-// Initial mock qualities
-const initialQualities: Quality[] = [
-  { id: 1, name: 'АУТЛЕТ JACK & JONES', note: 'Премиум качество от Jack & Jones', isActive: true, createdAt: new Date('2025-06-15') },
-  { id: 2, name: 'ДАМСКИ ТЕНИСКИ – B', note: 'Втора категория дамски тениски', isActive: true, createdAt: new Date('2025-07-20') },
-  { id: 3, name: 'МЪЖКИ ПАНТАЛОНИ – A', note: 'Първокласни мъжки панталони', isActive: true, createdAt: new Date('2025-08-10') },
-  { id: 4, name: 'ДЕТСКИ ДРЕХИ MIX', note: 'Смесени детски артикули', isActive: true, createdAt: new Date('2025-09-05') },
-  { id: 5, name: 'ЗИМНИ ЯКЕТА OUTLET', note: 'Изходящи зимни якета', isActive: false, createdAt: new Date('2025-10-12') },
-  { id: 6, name: 'СПОРТНИ ОБЛЕКЛА', note: 'Спортни артикули всички размери', isActive: true, createdAt: new Date('2025-11-01') },
-];
+// Initial mock qualities - mutable array for persistence
+let initialQualities: Quality[] = [];
 
 // Helper functions
 const formatDate = (date: Date | null): string => {
@@ -74,8 +56,8 @@ const calculateQualityStats = (quality: Quality, deliveries: typeof mockDeliveri
 };
 
 export const Qualities = () => {
-  // State
-  const [qualities, setQualities] = useState<Quality[]>(initialQualities);
+  // State - инициализираме от текущото състояние на initialQualities
+  const [qualities, setQualities] = useState<Quality[]>(() => [...initialQualities]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -87,6 +69,7 @@ export const Qualities = () => {
     qualityId: null,
     action: 'deactivate',
   });
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   // Computed values
   const qualitiesWithStats = useMemo(() => {
@@ -171,6 +154,11 @@ export const Qualities = () => {
           ? { ...q, name: trimmedName, note: trimmedNote, isActive: formData.isActive }
           : q
       ));
+      // Мутираме initialQualities за persistence
+      const idx = initialQualities.findIndex(q => q.id === editingQuality.id);
+      if (idx !== -1) {
+        initialQualities[idx] = { ...initialQualities[idx], name: trimmedName, note: trimmedNote, isActive: formData.isActive };
+      }
     } else {
       // Create new quality
       const newId = Math.max(...qualities.map(q => q.id), 0) + 1;
@@ -182,6 +170,8 @@ export const Qualities = () => {
         createdAt: new Date(),
       };
       setQualities(prev => [...prev, newQuality]);
+      // Мутираме initialQualities за persistence
+      initialQualities.push(newQuality);
     }
     
     handleCloseDialog();
@@ -204,12 +194,45 @@ export const Qualities = () => {
         : q
     ));
     
+    // Мутираме initialQualities за persistence
+    const idx = initialQualities.findIndex(q => q.id === confirmDialog.qualityId);
+    if (idx !== -1) {
+      initialQualities[idx] = { ...initialQualities[idx], isActive: !initialQualities[idx].isActive };
+    }
+    
     setConfirmDialog({ isOpen: false, qualityId: null, action: 'deactivate' });
   }, [confirmDialog.qualityId]);
 
   const handleCancelConfirm = useCallback(() => {
     setConfirmDialog({ isOpen: false, qualityId: null, action: 'deactivate' });
   }, []);
+
+  // Import handlers
+  const handleOpenImportDialog = useCallback(() => {
+    setIsImportDialogOpen(true);
+  }, []);
+
+  const handleCloseImportDialog = useCallback(() => {
+    setIsImportDialogOpen(false);
+  }, []);
+
+  const handleImportQualities = useCallback((names: string[]) => {
+    const startId = Math.max(...qualities.map(q => q.id), 0) + 1;
+    const newQualities: Quality[] = names.map((name, index) => ({
+      id: startId + index,
+      name,
+      note: '',
+      isActive: true,
+      createdAt: new Date(),
+    }));
+    setQualities(prev => [...prev, ...newQualities]);
+    // Мутираме initialQualities за persistence при навигация
+    initialQualities.push(...newQualities);
+  }, [qualities]);
+
+  const existingQualityNames = useMemo(() => {
+    return qualities.map(q => q.name);
+  }, [qualities]);
 
   const getStatusFilterLabel = (status: StatusFilter): string => {
     const labels: Record<StatusFilter, string> = {
@@ -265,6 +288,10 @@ export const Qualities = () => {
         </div>
 
         <div className="qualities-actions">
+          <button className="action-btn secondary" onClick={handleOpenImportDialog}>
+            <span className="btn-icon">📥</span>
+            Импорт
+          </button>
           <button className="action-btn primary" onClick={handleOpenNewDialog}>
             <span className="btn-icon">+</span>
             Ново качество
@@ -540,6 +567,14 @@ export const Qualities = () => {
           </div>
         </div>
       )}
+
+      {/* Import Dialog */}
+      <ImportQualitiesDialog
+        isOpen={isImportDialogOpen}
+        onClose={handleCloseImportDialog}
+        onImport={handleImportQualities}
+        existingNames={existingQualityNames}
+      />
     </div>
   );
 };

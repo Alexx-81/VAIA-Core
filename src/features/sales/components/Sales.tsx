@@ -4,7 +4,12 @@ import { SalesFiltersBar } from './SalesFiltersBar';
 import { SalesTable } from './SalesTable';
 import { SaleEditor } from './SaleEditor';
 import { SaleDetail } from './SaleDetail';
-import type { SalesView, SaleWithComputed } from '../types';
+import { ImportSalesDialog } from './ImportSalesDialog';
+import type { SalesView, SaleWithComputed, Sale, SaleLine } from '../types';
+import type { SaleImportRow } from '../utils/importSales';
+import { groupRowsByDate } from '../utils/importSales';
+import { generateId } from '../utils/salesUtils';
+import { mockDeliveries, mockSalesData } from '../../deliveries/data/mockDeliveries';
 import './Sales.css';
 
 export const Sales = () => {
@@ -15,6 +20,7 @@ export const Sales = () => {
     updateFilters,
     updateDateRange,
     createSale,
+    importSales,
     getSaleById,
     stats,
     articleOptions,
@@ -25,6 +31,7 @@ export const Sales = () => {
   // View state
   const [currentView, setCurrentView] = useState<SalesView>('list');
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   // Handlers
   const handleNewSale = useCallback(() => {
@@ -47,6 +54,86 @@ export const Sales = () => {
     setSelectedSaleId(sale.id);
     setCurrentView('list');
   }, []);
+
+  // Import handlers
+  const handleOpenImport = useCallback(() => {
+    setIsImportDialogOpen(true);
+  }, []);
+
+  const handleCloseImport = useCallback(() => {
+    setIsImportDialogOpen(false);
+  }, []);
+
+  const handleImportSales = useCallback((rows: SaleImportRow[]) => {
+    // Групираме редовете по дата за създаване на отделни продажби
+    const groupedByDate = groupRowsByDate(rows);
+    const newSales: Sale[] = [];
+    let saleCounter = allSales.length + 1;
+
+    // Track kg sold per delivery for updating mockSalesData
+    const kgSoldByDelivery: Record<string, number> = {};
+
+    groupedByDate.forEach((dateRows, dateStr) => {
+      const saleLines: SaleLine[] = dateRows.map((row, idx) => {
+        const article = articleOptions.find(
+          (a) => a.name.toLowerCase() === row.articleName.toLowerCase()
+        );
+        
+        // Намираме доставката за да вземем unitCostPerKg
+        const delivery = mockDeliveries.find(d => d.displayId === row.deliveryId.toString() || d.id === row.deliveryId.toString());
+        const unitCostPerKg = delivery?.unitCostPerKg || 0;
+        const kgPerPiece = article?.kgPerPiece || 0.3; // Default 300g if not found
+        const kgLine = row.quantity * kgPerPiece;
+        
+        // Track kg sold for this delivery
+        const deliveryId = delivery?.id || row.deliveryId.toString();
+        kgSoldByDelivery[deliveryId] = (kgSoldByDelivery[deliveryId] || 0) + kgLine;
+
+        return {
+          id: generateId(),
+          articleId: article?.id || `imported-article-${idx}`,
+          articleName: row.articleName,
+          quantity: row.quantity,
+          unitPriceEur: row.unitPrice,
+          realDeliveryId: deliveryId,
+          kgPerPieceSnapshot: kgPerPiece,
+          unitCostPerKgRealSnapshot: unitCostPerKg,
+        };
+      });
+
+      const saleDate = new Date(dateStr);
+      const year = saleDate.getFullYear();
+      const saleNumber = `S-${year}-${String(saleCounter).padStart(3, '0')}`;
+
+      const newSale: Sale = {
+        id: generateId(),
+        saleNumber,
+        dateTime: saleDate,
+        paymentMethod: 'cash',
+        status: 'finalized',
+        lines: saleLines,
+        createdAt: new Date(),
+        finalizedAt: new Date(),
+      };
+
+      newSales.push(newSale);
+      saleCounter++;
+    });
+
+    // Update mockSalesData with kg sold per delivery
+    Object.entries(kgSoldByDelivery).forEach(([deliveryId, kgSold]) => {
+      if (!mockSalesData[deliveryId]) {
+        mockSalesData[deliveryId] = { realKgSold: 0, accKgSold: 0 };
+      }
+      mockSalesData[deliveryId].realKgSold += kgSold;
+      mockSalesData[deliveryId].accKgSold += kgSold;
+    });
+
+    importSales(newSales);
+  }, [allSales.length, articleOptions, importSales]);
+
+  // Get existing article names for validation
+  const existingArticleNames = articleOptions.map((a) => a.name);
 
   // Get selected sale for detail view
   const selectedSale = selectedSaleId ? getSaleById(selectedSaleId) : undefined;
@@ -103,6 +190,7 @@ export const Sales = () => {
         onFilterChange={updateFilters}
         onDateRangeChange={updateDateRange}
         onNewSale={handleNewSale}
+        onImport={handleOpenImport}
         totalCount={allSales.length}
         filteredCount={sales.length}
       />
@@ -112,6 +200,13 @@ export const Sales = () => {
         onViewDetail={handleViewDetail}
         onNewSale={handleNewSale}
         stats={stats}
+      />
+
+      <ImportSalesDialog
+        isOpen={isImportDialogOpen}
+        onClose={handleCloseImport}
+        onImport={handleImportSales}
+        existingArticles={existingArticleNames}
       />
     </div>
   );

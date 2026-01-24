@@ -34,8 +34,8 @@ const initialFilters: DeliveryFilters = {
 const MIN_KG_THRESHOLD = 10;
 
 export const useDeliveries = () => {
-  // Основни данни
-  const [deliveries, setDeliveries] = useState<Delivery[]>(mockDeliveries);
+  // Основни данни - инициализираме от текущото състояние на mockDeliveries
+  const [deliveries, setDeliveries] = useState<Delivery[]>(() => [...mockDeliveries]);
   const [qualities] = useState<Quality[]>(mockQualities);
   const [filters, setFilters] = useState<DeliveryFilters>(initialFilters);
 
@@ -241,7 +241,10 @@ export const useDeliveries = () => {
 
   // Импортиране на доставки от Excel
   const importDeliveries = useCallback((newDeliveries: Delivery[]) => {
+    // Добавяме към state
     setDeliveries((prev) => [...prev, ...newDeliveries]);
+    // Също мутираме mockDeliveries за споделяне с други модули (useSales)
+    mockDeliveries.push(...newDeliveries);
   }, []);
 
   return {
