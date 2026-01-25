@@ -147,4 +147,5 @@ export type SettingsSection =
   | 'inventory' 
   | 'export' 
   | 'reportHeader' 
-  | 'backup';
+  | 'backup'
+  | 'data';

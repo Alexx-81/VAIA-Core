@@ -1,7 +1,8 @@
 import type { Delivery, Quality, SaleFromDelivery } from '../types';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../../../shared/utils/storage';
 
-// Качества от системата
-export const mockQualities: Quality[] = [
+// Качества от системата (статични, не се записват в localStorage)
+const defaultQualities: Quality[] = [
   { id: 2, name: 'ЛЕТНИ РОКЛИ - В', isActive: true },
   { id: 3, name: 'ДАМСКИ ТЕНИСКИ - В', isActive: true },
   { id: 4, name: 'АУТЛЕТ JACK & JONES', isActive: true },
@@ -34,11 +35,25 @@ export const mockQualities: Quality[] = [
   { id: 31, name: 'СУИТЧЕРИ - ДУЛОВО', isActive: true },
 ];
 
-// Празен масив за доставки - ще се попълни чрез импорт
-export const mockDeliveries: Delivery[] = [];
+export const mockQualities: Quality[] = defaultQualities;
 
-// Mock данни за продажби (симулация)
-export const mockSalesData: Record<string, { realKgSold: number; accKgSold: number }> = {};
+// Зареждаме доставки от localStorage или празен масив
+const loadedDeliveries = loadFromStorage<Delivery[]>(STORAGE_KEYS.DELIVERIES);
+export const mockDeliveries: Delivery[] = loadedDeliveries || [];
+
+// Зареждаме данни за продажби от localStorage или празен обект
+const loadedSalesData = loadFromStorage<Record<string, { realKgSold: number; accKgSold: number }>>(STORAGE_KEYS.SALES_DATA);
+export const mockSalesData: Record<string, { realKgSold: number; accKgSold: number }> = loadedSalesData || {};
+
+// Функция за запазване на доставки в localStorage
+export const saveDeliveries = (): void => {
+  saveToStorage(STORAGE_KEYS.DELIVERIES, mockDeliveries);
+};
+
+// Функция за запазване на данни за продажби в localStorage
+export const saveSalesData = (): void => {
+  saveToStorage(STORAGE_KEYS.SALES_DATA, mockSalesData);
+};
 
 // Mock продажби от конкретна доставка (за детайлен изглед)
 export const getMockSalesForDelivery = (_deliveryId: string): SaleFromDelivery[] => {

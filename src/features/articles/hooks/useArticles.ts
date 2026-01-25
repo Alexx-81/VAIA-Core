@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Article, ArticleFormData, ArticleFilters } from '../types';
-import { mockArticles } from '../data/mockArticles';
+import { mockArticles, saveArticles } from '../data/mockArticles';
 import {
   filterAndSortArticles,
   piecesPerKgToGrams,
@@ -61,6 +61,9 @@ export const useArticles = () => {
       };
 
       setArticles((prev) => [...prev, newArticle]);
+      // Синхронизираме с mockArticles и записваме в localStorage
+      mockArticles.push(newArticle);
+      saveArticles();
       return { success: true };
     },
     [articles]
@@ -104,6 +107,18 @@ export const useArticles = () => {
         )
       );
 
+      // Синхронизираме с mockArticles и записваме в localStorage
+      const mockIndex = mockArticles.findIndex((a) => a.id === id);
+      if (mockIndex !== -1) {
+        mockArticles[mockIndex] = {
+          ...mockArticles[mockIndex],
+          name: formData.name.trim(),
+          gramsPerPiece,
+          isActive: formData.isActive,
+        };
+      }
+      saveArticles();
+
       return { success: true };
     },
     [articles]
@@ -118,6 +133,16 @@ export const useArticles = () => {
           : article
       )
     );
+    
+    // Синхронизираме с mockArticles и записваме в localStorage
+    const mockIndex = mockArticles.findIndex((a) => a.id === id);
+    if (mockIndex !== -1) {
+      mockArticles[mockIndex] = {
+        ...mockArticles[mockIndex],
+        isActive: !mockArticles[mockIndex].isActive,
+      };
+    }
+    saveArticles();
   }, []);
 
   // Взима артикул по ID

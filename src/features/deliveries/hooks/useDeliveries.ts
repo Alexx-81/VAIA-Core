@@ -8,7 +8,7 @@ import type {
   SaleFromDelivery,
   DateRange,
 } from '../types';
-import { mockDeliveries, mockQualities, getMockSalesForDelivery } from '../data/mockDeliveries';
+import { mockDeliveries, mockQualities, getMockSalesForDelivery, saveDeliveries } from '../data/mockDeliveries';
 import {
   computeDeliveryValues,
   filterDeliveries,
@@ -126,7 +126,12 @@ export const useDeliveries = () => {
         createdAt: new Date(),
       };
 
+      // Добавяме към state
       setDeliveries((prev) => [...prev, newDelivery]);
+      // Също мутираме mockDeliveries за споделяне с други модули и персистентност при смяна на таб
+      mockDeliveries.push(newDelivery);
+      // Записваме в localStorage
+      saveDeliveries();
       return { success: true };
     },
     [existingDisplayIds, qualities]
@@ -149,6 +154,13 @@ export const useDeliveries = () => {
               : d
           )
         );
+        // Синхронизираме с mockDeliveries
+        const mockIndex = mockDeliveries.findIndex((d) => d.id === id);
+        if (mockIndex !== -1) {
+          mockDeliveries[mockIndex] = { ...mockDeliveries[mockIndex], note: formData.note.trim() || undefined };
+        }
+        // Записваме в localStorage
+        saveDeliveries();
         return { success: true };
       }
 
@@ -202,6 +214,23 @@ export const useDeliveries = () => {
             : d
         )
       );
+      // Синхронизираме с mockDeliveries
+      const mockIndex = mockDeliveries.findIndex((d) => d.id === id);
+      if (mockIndex !== -1) {
+        mockDeliveries[mockIndex] = {
+          ...mockDeliveries[mockIndex],
+          displayId: formData.displayId.trim(),
+          date: new Date(formData.date),
+          qualityId: quality.id,
+          qualityName: quality.name,
+          kgIn: parseFloat(formData.kgIn),
+          unitCostPerKg: parseFloat(formData.unitCostPerKg),
+          invoiceNumber: formData.invoiceNumber.trim() || undefined,
+          note: formData.note.trim() || undefined,
+        };
+      }
+      // Записваме в localStorage
+      saveDeliveries();
       return { success: true };
     },
     [deliveriesWithComputed, existingDisplayIds, qualities]
@@ -245,6 +274,8 @@ export const useDeliveries = () => {
     setDeliveries((prev) => [...prev, ...newDeliveries]);
     // Също мутираме mockDeliveries за споделяне с други модули (useSales)
     mockDeliveries.push(...newDeliveries);
+    // Записваме в localStorage
+    saveDeliveries();
   }, []);
 
   return {

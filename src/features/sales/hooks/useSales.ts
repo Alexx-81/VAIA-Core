@@ -10,9 +10,9 @@ import type {
   ArticleOption,
   SaleLine,
 } from '../types';
-import { mockSales, getNextSaleNumber } from '../data/mockSales';
+import { mockSales, getNextSaleNumber, saveSales } from '../data/mockSales';
 import { computeSale, getDateRangeFromPreset, generateId } from '../utils/salesUtils';
-import { mockDeliveries, mockSalesData } from '../../deliveries/data/mockDeliveries';
+import { mockDeliveries, mockSalesData, saveSalesData } from '../../deliveries/data/mockDeliveries';
 import { mockArticles } from '../../articles/data/mockArticles';
 
 const defaultFilters: SalesFilters = {
@@ -257,8 +257,23 @@ export const useSales = () => {
 
     // Update state
     setSales(prev => [...prev, newSale]);
+    // Синхронизираме с mockSales за персистентност при смяна на таб
+    mockSales.push(newSale);
+    // Записваме продажби в localStorage
+    saveSales();
     
-    // Update delivery kg
+    // Синхронизираме с mockSalesData ПРЕДИ setDeliverySalesKg (за да избегнем двойно добавяне при StrictMode)
+    for (const change of kgChanges) {
+      if (!mockSalesData[change.deliveryId]) {
+        mockSalesData[change.deliveryId] = { realKgSold: 0, accKgSold: 0 };
+      }
+      mockSalesData[change.deliveryId].realKgSold += change.realKg;
+      mockSalesData[change.deliveryId].accKgSold += change.accKg;
+    }
+    // Записваме salesData в localStorage
+    saveSalesData();
+    
+    // Update delivery kg state
     setDeliverySalesKg(prev => {
       const newState = { ...prev };
       for (const change of kgChanges) {
@@ -287,6 +302,8 @@ export const useSales = () => {
     setSales(prev => [...prev, ...newSales]);
     // Също мутираме mockSales за споделяне с други модули
     mockSales.push(...newSales);
+    // Записваме в localStorage
+    saveSales();
   }, []);
 
   return {

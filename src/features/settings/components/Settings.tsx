@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useSettings } from '../hooks/useSettings';
 import { 
   SettingsSectionCard, 
@@ -8,6 +8,7 @@ import {
   Input, 
   Textarea 
 } from './SettingsSection';
+import { clearAllStorage } from '../../../shared/utils/storage';
 import type { 
   SaleNumberFormat,
   DecimalsEur,
@@ -43,6 +44,7 @@ export const Settings: React.FC = () => {
   } = useSettings();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [clearDataMessage, setClearDataMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -53,6 +55,19 @@ export const Settings: React.FC = () => {
     if (file) {
       importSettings(file);
       e.target.value = '';
+    }
+  };
+
+  const handleClearAllData = () => {
+    if (window.confirm('⚠️ ВНИМАНИЕ!\n\nТова ще изтрие ВСИЧКИ данни:\n- Доставки\n- Продажби\n- Наличности\n- Артикули\n\nТова действие е необратимо!\n\nСигурни ли сте?')) {
+      if (window.confirm('Последно потвърждение: Наистина ли искате да изтриете всички данни?')) {
+        clearAllStorage();
+        setClearDataMessage({ type: 'success', text: 'Всички данни бяха изтрити. Презаредете страницата, за да видите промените.' });
+        // Презареждане на страницата след 2 секунди
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     }
   };
 
@@ -565,6 +580,41 @@ export const Settings: React.FC = () => {
           <div className="settings__backup-warning">
             ⚠️ Внимание: Импортирането на файл ще замени текущите настройки. 
             Натиснете "Запази" след импорт, за да приложите промените.
+          </div>
+        </SettingsSectionCard>
+
+        {/* 7) Управление на данни */}
+        <SettingsSectionCard
+          id="data"
+          title="Управление на данни"
+          icon="🗄️"
+          description="Изчистване на кеширани данни"
+          isExpanded={expandedSection === 'data'}
+          onToggle={toggleSection}
+        >
+          <div className="settings__backup-info">
+            <p>Данните се съхраняват в кеша на браузъра (localStorage). Тук можете да ги изчистите при нужда.</p>
+            <p><strong>Съхранявани данни:</strong> Доставки, Продажби, Артикули, Наличности по доставки</p>
+          </div>
+
+          {clearDataMessage && (
+            <div className={`settings__message settings__message--${clearDataMessage.type}`}>
+              {clearDataMessage.type === 'success' ? '✅' : '❌'} {clearDataMessage.text}
+            </div>
+          )}
+
+          <div className="settings__backup-actions">
+            <button 
+              className="settings__btn settings__btn--danger" 
+              onClick={handleClearAllData}
+            >
+              🗑️ Изчисти всички данни
+            </button>
+          </div>
+
+          <div className="settings__backup-warning">
+            ⚠️ <strong>ВНИМАНИЕ:</strong> Изчистването на данни е необратимо! 
+            Всички доставки, продажби и артикули ще бъдат изтрити безвъзвратно.
           </div>
         </SettingsSectionCard>
       </div>

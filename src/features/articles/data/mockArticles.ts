@@ -1,7 +1,8 @@
 import type { Article } from '../types';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../../../shared/utils/storage';
 
-// Артикули от системата
-export const mockArticles: Article[] = [
+// Артикули по подразбиране
+const defaultArticles: Article[] = [
   { id: '1', name: 'Дънки мъжки дълги', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
   { id: '2', name: 'Тениски', gramsPerPiece: 200, isActive: true, createdAt: new Date('2025-01-01') },
   { id: '3', name: 'Блузи', gramsPerPiece: 400, isActive: true, createdAt: new Date('2025-01-01') },
@@ -38,3 +39,12 @@ export const mockArticles: Article[] = [
   { id: '34', name: 'Дамски пуловери', gramsPerPiece: 350, isActive: true, createdAt: new Date('2025-01-01') },
   { id: '35', name: 'Суитчер ватиран', gramsPerPiece: 500, isActive: true, createdAt: new Date('2025-01-01') },
 ];
+
+// Зареждаме артикули от localStorage или използваме default
+const loadedArticles = loadFromStorage<Article[]>(STORAGE_KEYS.ARTICLES);
+export const mockArticles: Article[] = loadedArticles || [...defaultArticles];
+
+// Функция за запазване на артикули в localStorage
+export const saveArticles = (): void => {
+  saveToStorage(STORAGE_KEYS.ARTICLES, mockArticles);
+};

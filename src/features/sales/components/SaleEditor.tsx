@@ -210,12 +210,6 @@ export const SaleEditor = ({
     }
   }, [dateTime, paymentMethod, note, lines, onSave, onSaleCreated]);
 
-  // Check if any line needs accounting delivery
-  const hasADeliveryLines = lines.some(line => {
-    const realDelivery = deliveryOptionsReal.find(d => d.id === line.realDeliveryId);
-    return realDelivery && !realDelivery.isInvoiced;
-  });
-
   return (
     <div className="sale-editor">
       {/* Header */}
@@ -306,78 +300,50 @@ export const SaleEditor = ({
         </div>
       ) : (
         <>
-          <div className="sale-editor__lines-wrapper">
-            <table className="sale-editor__lines-table">
-              <thead>
-                <tr>
-                  <th>Артикул</th>
-                  <th className="text-right">Бройки</th>
-                  <th className="text-right">Цена/бр (EUR)</th>
-                  <th className="text-right">Оборот (EUR)</th>
-                  <th>Real доставка</th>
-                  <th className="text-right">kg/бр</th>
-                  <th className="text-right">kg (ред)</th>
-                  <th className="text-right">EUR/kg</th>
-                  <th className="text-right">Себест. (EUR)</th>
-                  <th className="text-right">Печалба (EUR)</th>
-                  <th className="text-center">Марж %</th>
-                  {hasADeliveryLines && <th>Acc. доставка</th>}
-                  <th className="text-center"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lines.map((line) => {
-                  const values = calculateLineValues(line);
-                  const realDelivery = deliveryOptionsReal.find(d => d.id === line.realDeliveryId);
-                  const needsAccounting = realDelivery && !realDelivery.isInvoiced;
+          <div className="sale-editor__lines-cards">
+            {lines.map((line, index) => {
+              const values = calculateLineValues(line);
+              const realDelivery = deliveryOptionsReal.find(d => d.id === line.realDeliveryId);
+              const needsAccounting = realDelivery && !realDelivery.isInvoiced;
+              
+              return (
+                <div key={line.id} className="sale-line-card">
+                  <div className="sale-line-card__header">
+                    <span className="sale-line-card__number">Ред #{index + 1}</span>
+                    <button
+                      className="sale-line-card__delete-btn"
+                      onClick={() => deleteLine(line.id)}
+                      title="Изтрий ред"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                   
-                  return (
-                    <tr key={line.id}>
-                      <td>
+                  <div className="sale-line-card__content">
+                    {/* Основни полета за въвеждане */}
+                    <div className="sale-line-card__inputs">
+                      <div className="sale-line-card__field sale-line-card__field--article">
+                        <label className="sale-line-card__label">Артикул</label>
                         <select
-                          className="sale-editor__line-input sale-editor__line-input--select"
+                          className="sale-line-card__input"
                           value={line.articleId}
                           onChange={(e) => updateLine(line.id, { articleId: e.target.value })}
                         >
-                          <option value="">-- Избери --</option>
+                          <option value="">-- Избери артикул --</option>
                           {articleOptions.map(a => (
                             <option key={a.id} value={a.id}>{a.name}</option>
                           ))}
                         </select>
-                      </td>
-                      <td className="text-right">
-                        <input
-                          type="number"
-                          className="sale-editor__line-input sale-editor__line-input--number"
-                          placeholder="0"
-                          min="1"
-                          value={line.quantity}
-                          onChange={(e) => updateLine(line.id, { quantity: e.target.value })}
-                        />
-                      </td>
-                      <td className="text-right">
-                        <input
-                          type="number"
-                          step="0.01"
-                          className="sale-editor__line-input sale-editor__line-input--number"
-                          placeholder="0.00"
-                          min="0"
-                          value={line.unitPriceEur}
-                          onChange={(e) => updateLine(line.id, { unitPriceEur: e.target.value })}
-                        />
-                      </td>
-                      <td className="text-right">
-                        <span className="sale-editor__computed revenue">
-                          {formatEur(values.revenueEur)}
-                        </span>
-                      </td>
-                      <td>
+                      </div>
+                      
+                      <div className="sale-line-card__field sale-line-card__field--delivery">
+                        <label className="sale-line-card__label">Real доставка</label>
                         <select
-                          className="sale-editor__line-input sale-editor__line-input--delivery"
+                          className="sale-line-card__input"
                           value={line.realDeliveryId}
                           onChange={(e) => updateLine(line.id, { realDeliveryId: e.target.value })}
                         >
-                          <option value="">-- Избери --</option>
+                          <option value="">-- Избери доставка --</option>
                           {deliveryOptionsReal.map(d => (
                             <option key={d.id} value={d.id}>
                               {d.displayId} - {d.qualityName} ({formatKg(d.kgRemaining)} kg)
@@ -386,75 +352,116 @@ export const SaleEditor = ({
                           ))}
                         </select>
                         {needsAccounting && (
-                          <div className="sale-editor__acc-required">⚠️ Нужна Acc. доставка</div>
+                          <div className="sale-line-card__warning">⚠️ Нужна Acc. доставка</div>
                         )}
-                      </td>
-                      <td className="text-right">
-                        <span className="sale-editor__computed">
-                          {values.kgPerPiece > 0 ? formatKg(values.kgPerPiece) : '—'}
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        <span className="sale-editor__computed">
-                          {values.kgLine > 0 ? formatKg(values.kgLine) : '—'}
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        <span className="sale-editor__computed">
-                          {values.unitCostReal > 0 ? formatEur(values.unitCostReal) : '—'}
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        <span className="sale-editor__computed">
-                          {values.cogsReal > 0 ? formatEur(values.cogsReal) : '—'}
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        <span className={`sale-editor__computed profit ${getProfitClass(values.profitReal)}`}>
-                          {values.revenueEur > 0 ? formatEur(values.profitReal) : '—'}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        {values.revenueEur > 0 ? (
-                          <span className={`sale-editor__margin-badge ${getMarginClass(values.marginReal)}`}>
-                            {formatPercent(values.marginReal)}
-                          </span>
-                        ) : '—'}
-                      </td>
-                      {hasADeliveryLines && (
-                        <td>
-                          {needsAccounting ? (
-                            <select
-                              className="sale-editor__line-input sale-editor__line-input--delivery"
-                              value={line.accountingDeliveryId}
-                              onChange={(e) => updateLine(line.id, { accountingDeliveryId: e.target.value })}
-                            >
-                              <option value="">-- Избери --</option>
-                              {deliveryOptionsAccounting.map(d => (
-                                <option key={d.id} value={d.id}>
-                                  {d.displayId} - {d.qualityName} ({formatKg(d.kgRemaining)} kg)
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <span className="text-muted">—</span>
-                          )}
-                        </td>
+                      </div>
+                      
+                      {needsAccounting && (
+                        <div className="sale-line-card__field sale-line-card__field--delivery">
+                          <label className="sale-line-card__label">Acc. доставка</label>
+                          <select
+                            className="sale-line-card__input"
+                            value={line.accountingDeliveryId}
+                            onChange={(e) => updateLine(line.id, { accountingDeliveryId: e.target.value })}
+                          >
+                            <option value="">-- Избери --</option>
+                            {deliveryOptionsAccounting.map(d => (
+                              <option key={d.id} value={d.id}>
+                                {d.displayId} - {d.qualityName} ({formatKg(d.kgRemaining)} kg)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       )}
-                      <td className="text-center">
-                        <button
-                          className="sale-editor__delete-btn"
-                          onClick={() => deleteLine(line.id)}
-                          title="Изтрий ред"
-                        >
-                          🗑️
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      
+                      <div className="sale-line-card__row">
+                        <div className="sale-line-card__field">
+                          <label className="sale-line-card__label">Бройки</label>
+                          <input
+                            type="number"
+                            className="sale-line-card__input sale-line-card__input--number"
+                            placeholder="0"
+                            min="1"
+                            value={line.quantity}
+                            onChange={(e) => updateLine(line.id, { quantity: e.target.value })}
+                          />
+                        </div>
+                        
+                        <div className="sale-line-card__field">
+                          <label className="sale-line-card__label">Цена/бр (EUR)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            className="sale-line-card__input sale-line-card__input--number"
+                            placeholder="0.00"
+                            min="0"
+                            value={line.unitPriceEur}
+                            onChange={(e) => updateLine(line.id, { unitPriceEur: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Изчислени стойности */}
+                    <div className="sale-line-card__computed">
+                      <div className="sale-line-card__computed-row">
+                        <div className="sale-line-card__stat">
+                          <span className="sale-line-card__stat-label">kg/бр</span>
+                          <span className="sale-line-card__stat-value">
+                            {values.kgPerPiece > 0 ? formatKg(values.kgPerPiece) : '—'}
+                          </span>
+                        </div>
+                        <div className="sale-line-card__stat">
+                          <span className="sale-line-card__stat-label">kg (ред)</span>
+                          <span className="sale-line-card__stat-value">
+                            {values.kgLine > 0 ? formatKg(values.kgLine) : '—'}
+                          </span>
+                        </div>
+                        <div className="sale-line-card__stat">
+                          <span className="sale-line-card__stat-label">EUR/kg</span>
+                          <span className="sale-line-card__stat-value">
+                            {values.unitCostReal > 0 ? formatEur(values.unitCostReal) : '—'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="sale-line-card__divider"></div>
+                      
+                      <div className="sale-line-card__computed-row sale-line-card__computed-row--totals">
+                        <div className="sale-line-card__stat sale-line-card__stat--highlight">
+                          <span className="sale-line-card__stat-label">Оборот</span>
+                          <span className="sale-line-card__stat-value sale-line-card__stat-value--revenue">
+                            {formatEur(values.revenueEur)} €
+                          </span>
+                        </div>
+                        <div className="sale-line-card__stat sale-line-card__stat--highlight">
+                          <span className="sale-line-card__stat-label">Себест.</span>
+                          <span className="sale-line-card__stat-value">
+                            {values.cogsReal > 0 ? `${formatEur(values.cogsReal)} €` : '—'}
+                          </span>
+                        </div>
+                        <div className="sale-line-card__stat sale-line-card__stat--highlight">
+                          <span className="sale-line-card__stat-label">Печалба</span>
+                          <span className={`sale-line-card__stat-value ${getProfitClass(values.profitReal)}`}>
+                            {values.revenueEur > 0 ? `${formatEur(values.profitReal)} €` : '—'}
+                          </span>
+                        </div>
+                        <div className="sale-line-card__stat">
+                          <span className="sale-line-card__stat-label">Марж</span>
+                          {values.revenueEur > 0 ? (
+                            <span className={`sale-line-card__margin-badge ${getMarginClass(values.marginReal)}`}>
+                              {formatPercent(values.marginReal)}
+                            </span>
+                          ) : (
+                            <span className="sale-line-card__stat-value">—</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="sale-editor__add-row">
