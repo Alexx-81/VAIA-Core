@@ -1,6 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { TabId } from '../../../shared/components/Tabs';
 import { DataCards } from '../../../shared/components/DataCards';
+import { loadFromStorage, STORAGE_KEYS } from '../../../shared/utils/storage';
+import type { Sale as SaleData } from '../../sales/types';
+import type { Delivery, Quality } from '../../deliveries/types';
+import { computeSale } from '../../sales/utils/salesUtils';
+import { computeDeliveryValues } from '../../deliveries/utils/deliveryUtils';
+import { mockQualities as defaultQualities } from '../../deliveries/data/mockDeliveries';
 import './Dashboard.css';
 
 // Types
@@ -17,8 +23,8 @@ interface DashboardProps {
   onTabChange?: (tabId: TabId) => void;
 }
 
-interface Sale {
-  id: number;
+interface DashboardSale {
+  id: string;
   saleNumber: string;
   datetime: Date;
   paymentMethod: PaymentMethod;
@@ -32,7 +38,7 @@ interface Sale {
 }
 
 interface LowStockDelivery {
-  id: number;
+  id: string;
   deliveryId: string;
   date: Date;
   quality: string;
@@ -44,28 +50,7 @@ interface LowStockDelivery {
   costPerKg: number;
 }
 
-// Mock data for qualities
-const mockQualities: { id: number; name: string }[] = [];
-
-// Mock KPI data
-const mockKPIData = {
-  revenue: 0,
-  cogs: 0,
-  profit: 0,
-  profitMargin: 0,
-  soldKg: 0,
-  totalItems: 0,
-  salesCount: 0,
-  avgSaleValue: 0,
-};
-
-// Mock sales data
-const mockSales: Sale[] = [];
-
-// Mock low stock deliveries data
-const mockLowStockDeliveries: LowStockDelivery[] = [];
-
-// Settings mock
+// Settings
 const LOW_STOCK_THRESHOLD_KG = 5.0;
 
 // Helper functions
@@ -162,6 +147,16 @@ const formatDateForInput = (date: Date): string => {
   return date.toISOString().split('T')[0];
 };
 
+// Helper за проверка дали дата е в период
+const isDateInRange = (date: Date, range: DateRange): boolean => {
+  const d = date instanceof Date ? date : new Date(date);
+  const from = new Date(range.from);
+  from.setHours(0, 0, 0, 0);
+  const to = new Date(range.to);
+  to.setHours(23, 59, 59, 999);
+  return d >= from && d <= to;
+};
+
 export const Dashboard = ({ onTabChange }: DashboardProps) => {
   // State
   const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>('this_month');
@@ -169,6 +164,24 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   const [ledgerView, setLedgerView] = useState<LedgerView>('real');
   const [selectedQualities, setSelectedQualities] = useState<number[]>([]);
   const [isQualityDropdownOpen, setIsQualityDropdownOpen] = useState(false);
+  
+  // Data state - зареждаме от localStorage
+  const [rawSales, setRawSales] = useState<SaleData[]>([]);
+  const [rawDeliveries, setRawDeliveries] = useState<Delivery[]>([]);
+  const [qualities, setQualities] = useState<Quality[]>(defaultQualities);
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const loadedSales = loadFromStorage<SaleData[]>(STORAGE_KEYS.SALES);
+    const loadedDeliveries = loadFromStorage<Delivery[]>(STORAGE_KEYS.DELIVERIES);
+    const loadedQualities = loadFromStorage<Quality[]>(STORAGE_KEYS.QUALITIES);
+    
+    if (loadedSales) setRawSales(loadedSales);
+    if (loadedDeliveries) setRawDeliveries(loadedDeliveries);
+    if (loadedQualities && loadedQualities.length > 0) {
+      setQualities(loadedQualities);
+    }
+  }, []);
 
   // Computed values
   const activeDateRange = useMemo(() => {
@@ -177,6 +190,103 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
     }
     return calculateDateRange(dateRangeOption);
   }, [dateRangeOption, customDateRange]);
+
+  // Compute sales with values
+  const computedSales = useMemo(() => {
+    return rawSales
+      .filter(s => s.status === 'finalized')
+      .map(computeSale);
+  }, [rawSales]);
+
+  // Filter sales by date range and qualities
+  const filteredSales = useMemo(() => {
+    return computedSales.filter(sale => {
+      const saleDate = sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime);
+      if (!isDateInRange(saleDate, activeDateRange)) {
+        return false;
+      }
+      // Quality filter - skip if no quality filter or all selected
+      if (selectedQualities.length > 0 && selectedQualities.length !== qualities.length) {
+        // Check if any line has a quality that matches selected qualities
+        // For now, we include all sales (quality filter would need sale->delivery->quality mapping)
+      }
+      return true;
+    });
+  }, [computedSales, activeDateRange, selectedQualities, qualities.length]);
+
+  // Compute deliveries with values
+  const computedDeliveries = useMemo(() => {
+    return rawDeliveries.map(computeDeliveryValues);
+  }, [rawDeliveries]);
+
+  // Low stock deliveries
+  const lowStockDeliveries = useMemo((): LowStockDelivery[] => {
+    return computedDeliveries
+      .filter(d => {
+        const remaining = ledgerView === 'real' ? d.kgRemainingReal : d.kgRemainingAccounting;
+        return remaining > 0 && remaining <= LOW_STOCK_THRESHOLD_KG;
+      })
+      .map(d => ({
+        id: d.id,
+        deliveryId: d.displayId,
+        date: d.date instanceof Date ? d.date : new Date(d.date),
+        quality: d.qualityName,
+        isInvoiced: d.isInvoiced,
+        kgIn: d.kgIn,
+        kgOut: ledgerView === 'real' ? d.kgSoldReal : d.kgSoldAccounting,
+        kgRemaining: ledgerView === 'real' ? d.kgRemainingReal : d.kgRemainingAccounting,
+        percentRemaining: d.kgIn > 0 
+          ? ((ledgerView === 'real' ? d.kgRemainingReal : d.kgRemainingAccounting) / d.kgIn) * 100 
+          : 0,
+        costPerKg: d.unitCostPerKg,
+      }))
+      .sort((a, b) => a.kgRemaining - b.kgRemaining);
+  }, [computedDeliveries, ledgerView]);
+
+  // Transform sales for display
+  const displaySales = useMemo((): DashboardSale[] => {
+    return filteredSales
+      .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime())
+      .slice(0, 10) // Last 10 sales
+      .map(sale => ({
+        id: sale.id,
+        saleNumber: sale.saleNumber,
+        datetime: sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime),
+        paymentMethod: sale.paymentMethod as PaymentMethod,
+        linesCount: sale.linesCount,
+        pieces: sale.totalPieces,
+        kg: sale.totalKg,
+        revenue: sale.totalRevenueEur,
+        cogs: ledgerView === 'real' ? sale.totalCogsRealEur : sale.totalCogsAccEur,
+        profit: ledgerView === 'real' ? sale.totalProfitRealEur : sale.totalProfitAccEur,
+        margin: ledgerView === 'real' ? sale.totalMarginRealPercent : sale.totalMarginAccPercent,
+      }));
+  }, [filteredSales, ledgerView]);
+
+  // KPI data calculated from filtered sales
+  const kpiData = useMemo(() => {
+    const revenue = filteredSales.reduce((sum, s) => sum + s.totalRevenueEur, 0);
+    const cogsReal = filteredSales.reduce((sum, s) => sum + s.totalCogsRealEur, 0);
+    const cogsAcc = filteredSales.reduce((sum, s) => sum + s.totalCogsAccEur, 0);
+    const cogs = ledgerView === 'real' ? cogsReal : cogsAcc;
+    const profit = revenue - cogs;
+    const profitMargin = revenue > 0 ? (profit / revenue) * 100 : 0;
+    const soldKg = filteredSales.reduce((sum, s) => sum + s.totalKg, 0);
+    const totalItems = filteredSales.reduce((sum, s) => sum + s.totalPieces, 0);
+    const salesCount = filteredSales.length;
+    const avgSaleValue = salesCount > 0 ? revenue / salesCount : 0;
+
+    return {
+      revenue,
+      cogs,
+      profit,
+      profitMargin,
+      soldKg,
+      totalItems,
+      salesCount,
+      avgSaleValue,
+    };
+  }, [filteredSales, ledgerView]);
 
   // Handlers
   const handleDateRangeChange = (option: DateRangeOption) => {
@@ -202,19 +312,19 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   };
 
   const handleSelectAllQualities = () => {
-    if (selectedQualities.length === mockQualities.length) {
+    if (selectedQualities.length === qualities.length) {
       setSelectedQualities([]);
     } else {
-      setSelectedQualities(mockQualities.map(q => q.id));
+      setSelectedQualities(qualities.map(q => q.id));
     }
   };
 
   const getSelectedQualitiesLabel = (): string => {
-    if (selectedQualities.length === 0 || selectedQualities.length === mockQualities.length) {
+    if (selectedQualities.length === 0 || selectedQualities.length === qualities.length) {
       return 'Всички качества';
     }
     if (selectedQualities.length === 1) {
-      const quality = mockQualities.find(q => q.id === selectedQualities[0]);
+      const quality = qualities.find(q => q.id === selectedQualities[0]);
       return quality?.name || 'Избрано: 1';
     }
     return `Избрани: ${selectedQualities.length}`;
@@ -240,17 +350,17 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
     onTabChange?.('sales');
   };
 
-  const handleOpenSale = (saleId: number) => {
+  const handleOpenSale = (saleId: string) => {
     console.log('Opening sale:', saleId);
     onTabChange?.('sales');
   };
 
-  const handleVoidSale = (saleId: number) => {
+  const handleVoidSale = (saleId: string) => {
     console.log('Voiding sale:', saleId);
     // TODO: Implement void/cancel functionality
   };
 
-  const handleOpenDelivery = (deliveryId: number) => {
+  const handleOpenDelivery = (deliveryId: string) => {
     console.log('Opening delivery:', deliveryId);
     onTabChange?.('deliveries');
   };
@@ -260,50 +370,50 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
     // Row 1: Revenue and margin
     {
       title: 'Оборот',
-      value: formatCurrency(mockKPIData.revenue),
+      value: formatCurrency(kpiData.revenue),
       icon: '💰',
       color: 'revenue',
     },
     {
       title: 'Себестойност',
-      value: formatCurrency(mockKPIData.cogs),
+      value: formatCurrency(kpiData.cogs),
       icon: '📦',
       color: 'cogs',
     },
     {
       title: 'Печалба',
-      value: formatCurrency(mockKPIData.profit),
+      value: formatCurrency(kpiData.profit),
       icon: '📈',
       color: 'profit',
     },
     {
       title: 'Марж',
-      value: formatPercent(mockKPIData.profitMargin),
+      value: formatPercent(kpiData.profitMargin),
       icon: '📊',
       color: 'margin',
     },
     // Row 2: Quantities and operations
     {
       title: 'Продадени',
-      value: `${formatNumber(mockKPIData.soldKg, 1)} kg`,
+      value: `${formatNumber(kpiData.soldKg, 1)} kg`,
       icon: '⚖️',
       color: 'quantity',
     },
     {
       title: 'Бройки',
-      value: formatNumber(mockKPIData.totalItems),
+      value: formatNumber(kpiData.totalItems),
       icon: '🔢',
       color: 'items',
     },
     {
       title: 'Брой продажби',
-      value: formatNumber(mockKPIData.salesCount),
+      value: formatNumber(kpiData.salesCount),
       icon: '🧾',
       color: 'sales',
     },
     {
       title: 'Средна продажба',
-      value: formatCurrency(mockKPIData.avgSaleValue),
+      value: formatCurrency(kpiData.avgSaleValue),
       icon: '💵',
       color: 'average',
     },
@@ -387,13 +497,13 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
                   <label className="option-item select-all">
                     <input
                       type="checkbox"
-                      checked={selectedQualities.length === 0 || selectedQualities.length === mockQualities.length}
+                      checked={selectedQualities.length === 0 || selectedQualities.length === qualities.length}
                       onChange={handleSelectAllQualities}
                     />
                     <span>Всички</span>
                   </label>
                   <div className="options-divider" />
-                  {mockQualities.map(quality => (
+                  {qualities.map(quality => (
                     <label key={quality.id} className="option-item">
                       <input
                         type="checkbox"
@@ -506,7 +616,7 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
                 </tr>
               </thead>
               <tbody>
-                {mockSales.map(sale => (
+                {displaySales.map(sale => (
                   <tr key={sale.id}>
                     <td className="datetime-cell">{formatDateTime(sale.datetime)}</td>
                     <td className="sale-number">{sale.saleNumber}</td>
@@ -546,7 +656,7 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
 
           {/* Mobile Card View */}
           <DataCards
-            data={mockSales}
+            data={displaySales}
             keyExtractor={(s) => s.id}
             onItemClick={(s) => handleOpenSale(s.id)}
             fields={[
@@ -590,6 +700,12 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
               </>
             )}
           />
+
+          {displaySales.length === 0 && (
+            <div className="empty-state">
+              📋 Няма продажби за избрания период
+            </div>
+          )}
         </div>
 
         {/* Low Stock Deliveries Table */}
@@ -621,7 +737,7 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
                 </tr>
               </thead>
               <tbody>
-                {mockLowStockDeliveries.map(delivery => (
+                {lowStockDeliveries.map(delivery => (
                   <tr key={delivery.id} className={delivery.kgRemaining <= 3 ? 'critical' : ''}>
                     <td className="delivery-id">{delivery.deliveryId}</td>
                     <td>{formatDate(delivery.date)}</td>
@@ -657,7 +773,7 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
 
           {/* Mobile Card View */}
           <DataCards
-            data={mockLowStockDeliveries}
+            data={lowStockDeliveries}
             keyExtractor={(d) => d.id}
             onItemClick={(d) => handleOpenDelivery(d.id)}
             cardClassName={(d) => (d.kgRemaining <= 3 ? 'critical' : '')}
@@ -702,7 +818,7 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
             )}
           />
 
-          {mockLowStockDeliveries.length === 0 && (
+          {lowStockDeliveries.length === 0 && (
             <div className="empty-state">
               ✅ Няма доставки с ниска наличност
             </div>
