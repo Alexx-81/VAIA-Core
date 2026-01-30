@@ -6,6 +6,7 @@ interface InventoryFiltersBarProps {
   onFilterChange: (updates: Partial<InventoryFilters>) => void;
   onExport: () => void;
   qualities: Quality[];
+  suppliers: string[];
   totalCount: number;
   filteredCount: number;
   activeTab: InventoryTab;
@@ -16,6 +17,7 @@ export const InventoryFiltersBar = ({
   onFilterChange,
   onExport,
   qualities,
+  suppliers,
   totalCount,
   filteredCount,
 }: InventoryFiltersBarProps) => {
@@ -24,7 +26,7 @@ export const InventoryFiltersBar = ({
       <input
         type="text"
         className="inventory-filters__input"
-        placeholder="Търси по ID, фактура, качество..."
+        placeholder="Търси по ID, фактура, качество, доставчик..."
         value={filters.search}
         onChange={(e) => onFilterChange({ search: e.target.value })}
       />
@@ -40,6 +42,22 @@ export const InventoryFiltersBar = ({
           {qualities.map(q => (
             <option key={q.id} value={q.id.toString()}>
               {q.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="inventory-filters__group">
+        <span className="inventory-filters__label">Доставчик:</span>
+        <select
+          className="inventory-filters__select"
+          value={filters.supplierName || 'all'}
+          onChange={(e) => onFilterChange({ supplierName: e.target.value })}
+        >
+          <option value="all">Всички</option>
+          {(suppliers || []).map(s => (
+            <option key={s} value={s}>
+              {s}
             </option>
           ))}
         </select>

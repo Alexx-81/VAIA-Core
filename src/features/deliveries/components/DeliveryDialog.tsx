@@ -30,6 +30,7 @@ const initialFormData: DeliveryFormData = {
   kgIn: '',
   unitCostPerKg: '',
   invoiceNumber: '',
+  supplierName: '',
   note: '',
 };
 
@@ -60,6 +61,7 @@ export const DeliveryDialog = ({
           kgIn: delivery.kgIn.toString(),
           unitCostPerKg: delivery.unitCostPerKg.toString(),
           invoiceNumber: delivery.invoiceNumber || '',
+          supplierName: delivery.supplierName || '',
           note: delivery.note || '',
         });
       } else {
@@ -299,6 +301,22 @@ export const DeliveryDialog = ({
             />
             <span className="delivery-dialog__hint">
               Оставете празно за доставки без фактура (тип "A").
+            </span>
+          </div>
+
+          {/* Доставчик */}
+          <div className="delivery-dialog__field">
+            <label className="delivery-dialog__label">Доставчик</label>
+            <input
+              type="text"
+              value={formData.supplierName}
+              onChange={(e) => handleChange('supplierName', e.target.value)}
+              placeholder="напр. ABC Trading Ltd."
+              className="delivery-dialog__input"
+              disabled={!allowFullEdit}
+            />
+            <span className="delivery-dialog__hint">
+              Име на доставчика (по избор).
             </span>
           </div>
 

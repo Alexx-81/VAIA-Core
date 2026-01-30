@@ -47,8 +47,12 @@ export const computeSale = (sale: Sale): SaleWithComputed => {
   const totalMarginRealPercent = totalRevenueEur > 0 ? (totalProfitRealEur / totalRevenueEur) * 100 : 0;
   const totalMarginAccPercent = totalRevenueEur > 0 ? (totalProfitAccEur / totalRevenueEur) * 100 : 0;
 
+  // Ensure dateTime is a Date object (might be string from localStorage)
+  const dateTime = sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime);
+
   return {
     ...sale,
+    dateTime,
     lines: computedLines,
     totalPieces,
     totalKg,

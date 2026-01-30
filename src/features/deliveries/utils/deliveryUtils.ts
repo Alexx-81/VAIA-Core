@@ -17,8 +17,14 @@ import { mockSalesData } from '../data/mockDeliveries';
 export const computeDeliveryValues = (delivery: Delivery): DeliveryWithComputed => {
   const salesData = mockSalesData[delivery.id] || { realKgSold: 0, accKgSold: 0 };
   
+  // Ensure date is a Date object (might be string from localStorage)
+  const date = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+  const createdAt = delivery.createdAt instanceof Date ? delivery.createdAt : new Date(delivery.createdAt);
+  
   return {
     ...delivery,
+    date,
+    createdAt,
     isInvoiced: !!delivery.invoiceNumber && delivery.invoiceNumber.trim() !== '',
     totalCostEur: roundToTwo(delivery.kgIn * delivery.unitCostPerKg),
     kgSoldReal: salesData.realKgSold,

@@ -18,6 +18,7 @@ export const Reports: React.FC = () => {
     transactionRows,
     qualityOptions,
     deliveryOptions,
+    supplierOptions,
     isGenerating,
     updateFilters,
     updatePeriod,
@@ -99,6 +100,7 @@ export const Reports: React.FC = () => {
         filters={filters}
         qualityOptions={qualityOptions}
         deliveryOptions={deliveryOptions}
+        supplierOptions={supplierOptions}
         onFilterChange={updateFilters}
         onPeriodChange={updatePeriod}
         onModeChange={updateMode}

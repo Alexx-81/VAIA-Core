@@ -9,6 +9,7 @@ export interface Delivery {
   kgIn: number; // Входни килограми
   unitCostPerKg: number; // EUR/kg доставна цена
   invoiceNumber?: string; // Номер на фактура (optional)
+  supplierName?: string; // Име на доставчик (optional)
   note?: string; // Бележка (optional)
   createdAt: Date;
 }
@@ -31,6 +32,7 @@ export interface DeliveryFormData {
   kgIn: string;
   unitCostPerKg: string;
   invoiceNumber: string;
+  supplierName: string;
   note: string;
 }
 

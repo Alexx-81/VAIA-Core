@@ -13,6 +13,7 @@ import { mockSales } from '../../sales/data/mockSales';
 const defaultFilters: InventoryFilters = {
   search: '',
   qualityId: 'all',
+  supplierName: 'all',
   deliveryType: 'all',
   stockStatus: 'all',
   minKgThreshold: 5,
@@ -57,13 +58,17 @@ export const useInventory = () => {
       const totalCostEur = delivery.kgIn * delivery.unitCostPerKg;
       const revenueRealEur = deliveryRevenues.realRevenue[delivery.id] || 0;
       
+      // Ensure date is a Date object (might be string from localStorage)
+      const date = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+      
       return {
         deliveryId: delivery.id,
         displayId: delivery.displayId,
-        date: delivery.date,
+        date,
         qualityId: delivery.qualityId,
         qualityName: delivery.qualityName,
         invoiceNumber: delivery.invoiceNumber,
+        supplierName: delivery.supplierName,
         isInvoiced: !!delivery.invoiceNumber,
         kgIn: delivery.kgIn,
         unitCostPerKg: delivery.unitCostPerKg,
@@ -87,13 +92,17 @@ export const useInventory = () => {
       const totalCostEur = delivery.kgIn * delivery.unitCostPerKg;
       const revenueAccEur = deliveryRevenues.accRevenue[delivery.id] || 0;
       
+      // Ensure date is a Date object (might be string from localStorage)
+      const date = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+      
       return {
         deliveryId: delivery.id,
         displayId: delivery.displayId,
-        date: delivery.date,
+        date,
         qualityId: delivery.qualityId,
         qualityName: delivery.qualityName,
         invoiceNumber: delivery.invoiceNumber,
+        supplierName: delivery.supplierName,
         isInvoiced: !!delivery.invoiceNumber,
         kgIn: delivery.kgIn,
         unitCostPerKg: delivery.unitCostPerKg,
@@ -147,6 +156,7 @@ export const useInventory = () => {
     qualityName: string; 
     qualityId?: number;
     invoiceNumber?: string; 
+    supplierName?: string;
     isInvoiced?: boolean;
   }>(
     data: T[], 
@@ -160,7 +170,8 @@ export const useInventory = () => {
       result = result.filter(row => 
         row.displayId.toLowerCase().includes(searchLower) ||
         row.qualityName.toLowerCase().includes(searchLower) ||
-        (row.invoiceNumber && row.invoiceNumber.toLowerCase().includes(searchLower))
+        (row.invoiceNumber && row.invoiceNumber.toLowerCase().includes(searchLower)) ||
+        (row.supplierName && row.supplierName.toLowerCase().includes(searchLower))
       );
     }
 
@@ -168,6 +179,11 @@ export const useInventory = () => {
     if (filters.qualityId !== 'all') {
       const qId = parseInt(filters.qualityId, 10);
       result = result.filter(row => row.qualityId === qId);
+    }
+
+    // Доставчик
+    if (filters.supplierName && filters.supplierName !== 'all') {
+      result = result.filter(row => row.supplierName === filters.supplierName);
     }
 
     // Тип доставка
@@ -262,6 +278,17 @@ export const useInventory = () => {
   // Качества за dropdown
   const qualities: Quality[] = useMemo(() => mockQualities, []);
 
+  // Уникални доставчици за dropdown
+  const suppliers: string[] = useMemo(() => {
+    const uniqueSuppliers = new Set<string>();
+    mockDeliveries.forEach(d => {
+      if (d.supplierName) {
+        uniqueSuppliers.add(d.supplierName);
+      }
+    });
+    return Array.from(uniqueSuppliers).sort();
+  }, []);
+
   // Update filters
   const updateFilters = useCallback((updates: Partial<InventoryFilters>) => {
     setFilters(prev => ({ ...prev, ...updates }));
@@ -278,5 +305,6 @@ export const useInventory = () => {
     realStats,
     accStats,
     qualities,
+    suppliers,
   };
 };

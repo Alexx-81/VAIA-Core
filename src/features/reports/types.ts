@@ -22,6 +22,7 @@ export interface ReportFilters {
   reportType: ReportType;
   qualityIds: string[]; // Празен = всички
   deliveryId: string; // Празен = всички
+  supplierName: string; // \"all\" или конкретен доставчик
   paymentMethod: 'all' | 'cash' | 'card' | 'other';
 }
 

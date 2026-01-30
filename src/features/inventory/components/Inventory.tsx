@@ -19,6 +19,7 @@ export const Inventory = () => {
     realStats,
     accStats,
     qualities,
+    suppliers,
   } = useInventory();
 
   const [activeTab, setActiveTab] = useState<InventoryTab>('real');
@@ -121,6 +122,7 @@ export const Inventory = () => {
         onFilterChange={updateFilters}
         onExport={handleExport}
         qualities={qualities}
+        suppliers={suppliers}
         totalCount={totalCount}
         filteredCount={filteredCount}
         activeTab={activeTab}

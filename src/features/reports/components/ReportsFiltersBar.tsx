@@ -14,6 +14,7 @@ interface ReportsFiltersBarProps {
   filters: ReportFilters;
   qualityOptions: QualityOption[];
   deliveryOptions: DeliveryOption[];
+  supplierOptions: string[];
   onFilterChange: (updates: Partial<ReportFilters>) => void;
   onPeriodChange: (period: ReportPeriod) => void;
   onModeChange: (mode: ReportMode) => void;
@@ -31,6 +32,7 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
   filters,
   qualityOptions,
   deliveryOptions,
+  supplierOptions,
   onFilterChange,
   onPeriodChange,
   onModeChange,
@@ -207,6 +209,21 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
                 </option>
               ))
             }
+          </select>
+        </div>
+
+        {/* Доставчик */}
+        <div className="reports-filters__group">
+          <label className="reports-filters__label">Доставчик</label>
+          <select
+            className="reports-filters__select"
+            value={filters.supplierName || 'all'}
+            onChange={(e) => onFilterChange({ supplierName: e.target.value })}
+          >
+            <option value="all">Всички доставчици</option>
+            {(supplierOptions || []).map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
         </div>
 

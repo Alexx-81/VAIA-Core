@@ -13,6 +13,7 @@ export type InventoryStockStatus = 'all' | 'in-stock' | 'below-minimum' | 'deple
 export interface InventoryFilters {
   search: string; // Търсене по Delivery ID, Фактура №, Качество
   qualityId: string; // "all" или конкретен ID
+  supplierName: string; // "all" или конкретен доставчик
   deliveryType: InventoryDeliveryType;
   stockStatus: InventoryStockStatus;
   minKgThreshold: number; // Минимум kg за "под минимум" статус
@@ -26,6 +27,7 @@ export interface InventoryRealRow {
   qualityId: number;
   qualityName: string;
   invoiceNumber?: string;
+  supplierName?: string;
   isInvoiced: boolean;
   kgIn: number;
   unitCostPerKg: number;
@@ -48,6 +50,7 @@ export interface InventoryAccRow {
   qualityId: number;
   qualityName: string;
   invoiceNumber?: string;
+  supplierName?: string;
   isInvoiced: boolean;
   kgIn: number;
   unitCostPerKg: number;

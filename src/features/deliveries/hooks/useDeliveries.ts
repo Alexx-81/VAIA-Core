@@ -122,6 +122,7 @@ export const useDeliveries = () => {
         kgIn: parseFloat(formData.kgIn),
         unitCostPerKg: parseFloat(formData.unitCostPerKg),
         invoiceNumber: formData.invoiceNumber.trim() || undefined,
+        supplierName: formData.supplierName.trim() || undefined,
         note: formData.note.trim() || undefined,
         createdAt: new Date(),
       };
@@ -209,6 +210,7 @@ export const useDeliveries = () => {
                 kgIn: parseFloat(formData.kgIn),
                 unitCostPerKg: parseFloat(formData.unitCostPerKg),
                 invoiceNumber: formData.invoiceNumber.trim() || undefined,
+                supplierName: formData.supplierName.trim() || undefined,
                 note: formData.note.trim() || undefined,
               }
             : d
@@ -226,6 +228,7 @@ export const useDeliveries = () => {
           kgIn: parseFloat(formData.kgIn),
           unitCostPerKg: parseFloat(formData.unitCostPerKg),
           invoiceNumber: formData.invoiceNumber.trim() || undefined,
+          supplierName: formData.supplierName.trim() || undefined,
           note: formData.note.trim() || undefined,
         };
       }

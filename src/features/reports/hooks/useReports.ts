@@ -22,6 +22,7 @@ const defaultFilters: ReportFilters = {
   reportType: 'by-deliveries',
   qualityIds: [],
   deliveryId: '',
+  supplierName: 'all',
   paymentMethod: 'all',
 };
 
@@ -91,7 +92,11 @@ export const useReports = () => {
     
     return mockSales
       .filter(s => s.status === 'finalized')
-      .filter(s => s.dateTime >= from && s.dateTime <= to)
+      .filter(s => {
+        // Ensure dateTime is a Date object
+        const saleDate = s.dateTime instanceof Date ? s.dateTime : new Date(s.dateTime);
+        return saleDate >= from && saleDate <= to;
+      })
       .filter(s => filters.paymentMethod === 'all' || s.paymentMethod === filters.paymentMethod);
   }, [filters.period, filters.paymentMethod]);
 
@@ -120,6 +125,14 @@ export const useReports = () => {
           if (filters.mode === 'real' && !matchesReal) continue;
           if (filters.mode === 'accounting' && !matchesAcc) continue;
         }
+
+        // Филтър по доставчик
+        if (filters.supplierName && filters.supplierName !== 'all') {
+          const deliveryForSupplier = filters.mode === 'real' ? realDelivery : accDelivery;
+          if (!deliveryForSupplier || deliveryForSupplier.supplierName !== filters.supplierName) {
+            continue;
+          }
+        }
         
         // В accounting режим показваме само фактурни
         if (filters.mode === 'accounting' && !accDelivery?.invoiceNumber) {
@@ -131,8 +144,11 @@ export const useReports = () => {
         const cogsReal = kg * line.unitCostPerKgRealSnapshot;
         const cogsAcc = kg * (line.unitCostPerKgAccSnapshot || line.unitCostPerKgRealSnapshot);
         
+        // Ensure dateTime is a Date object
+        const saleDateTime = sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime);
+        
         rows.push({
-          saleDateTime: sale.dateTime,
+          saleDateTime,
           saleNumber: sale.saleNumber,
           paymentMethod: sale.paymentMethod,
           articleName: line.articleName,
@@ -155,7 +171,7 @@ export const useReports = () => {
     }
     
     return rows.sort((a, b) => a.saleDateTime.getTime() - b.saleDateTime.getTime());
-  }, [filteredSales, filters.qualityIds, filters.deliveryId, filters.mode]);
+  }, [filteredSales, filters.qualityIds, filters.deliveryId, filters.supplierName, filters.mode]);
 
   // Summary статистики
   const summary = useMemo((): ReportSummary => {
@@ -209,10 +225,13 @@ export const useReports = () => {
       const profitEur = revenueEur - cogsEur;
       const totalDeliveryCostEur = delivery.kgIn * delivery.unitCostPerKg;
       
+      // Ensure date is a Date object
+      const deliveryDate = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+      
       result.push({
         deliveryId,
         deliveryDisplayId: rows[0][displayKey],
-        deliveryDate: delivery.date,
+        deliveryDate,
         qualityName: delivery.qualityName,
         invoiceNumber: delivery.invoiceNumber || '',
         isInvoiced: !!delivery.invoiceNumber,
@@ -353,6 +372,17 @@ export const useReports = () => {
     setFilters(defaultFilters);
   }, []);
 
+  // Уникални доставчици за dropdown
+  const supplierOptions: string[] = useMemo(() => {
+    const uniqueSuppliers = new Set<string>();
+    mockDeliveries.forEach(d => {
+      if (d.supplierName) {
+        uniqueSuppliers.add(d.supplierName);
+      }
+    });
+    return Array.from(uniqueSuppliers).sort();
+  }, []);
+
   // Генериране на отчет (симулация)
   const generateReport = useCallback(async () => {
     setIsGenerating(true);
@@ -381,6 +411,7 @@ export const useReports = () => {
     transactionRows: allTransactionRows,
     qualityOptions,
     deliveryOptions,
+    supplierOptions,
     isGenerating,
     updateFilters,
     updatePeriod,
