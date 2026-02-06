@@ -6,7 +6,7 @@ interface ArticleDialogProps {
   isOpen: boolean;
   article?: Article;
   existingNames: string[];
-  onSubmit: (data: ArticleFormData) => { success: boolean; error?: string };
+  onSubmit: (data: ArticleFormData) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
 }
 

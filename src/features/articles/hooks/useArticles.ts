@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Article, ArticleFormData, ArticleFilters } from '../types';
-import { mockArticles, saveArticles } from '../data/mockArticles';
+import { supabase } from '../../../lib/supabase';
 import {
   filterAndSortArticles,
   piecesPerKgToGrams,
   validateArticleName,
   validatePiecesPerKg,
-  generateId,
 } from '../utils/articleUtils';
 
 const initialFilters: ArticleFilters = {
@@ -15,15 +14,48 @@ const initialFilters: ArticleFilters = {
   sortBy: 'name-asc',
 };
 
-export const useArticles = () => {
-  const [articles, setArticles] = useState<Article[]>(mockArticles);
-  const [filters, setFilters] = useState<ArticleFilters>(initialFilters);
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+// Map DB format to local format
+const mapDbArticle = (a: { id: string; name: string; grams_per_piece: number; is_active: boolean; created_at: string; last_sold_at: string | null }): Article => ({
+  id: a.id,
+  name: a.name,
+  gramsPerPiece: a.grams_per_piece,
+  isActive: a.is_active,
+  createdAt: new Date(a.created_at),
+  lastSoldAt: a.last_sold_at ? new Date(a.last_sold_at) : undefined,
+});
 
-  // Прилага филтри при промяна
+export const useArticles = () => {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<ArticleFilters>(initialFilters);
+
+  // Fetch articles from Supabase
   useEffect(() => {
-    const result = filterAndSortArticles(articles, filters);
-    setFilteredArticles(result);
+    const fetchArticles = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .order('name');
+
+        if (error) throw error;
+
+        const mapped = (data || []).map(mapDbArticle);
+        setArticles(mapped);
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, []);
+
+  // Филтрирани артикули
+  const filteredArticles = useMemo(() => {
+    return filterAndSortArticles(articles, filters);
   }, [articles, filters]);
 
   // Обновява филтри
@@ -33,9 +65,8 @@ export const useArticles = () => {
 
   // Създава нов артикул
   const createArticle = useCallback(
-    (formData: ArticleFormData): { success: boolean; error?: string } => {
-      const existingNames = articles
-        .map((a) => a.name);
+    async (formData: ArticleFormData): Promise<{ success: boolean; error?: string }> => {
+      const existingNames = articles.map((a) => a.name);
 
       // Валидация на име
       const nameValidation = validateArticleName(formData.name, existingNames);
@@ -52,29 +83,36 @@ export const useArticles = () => {
       // Конвертираме от бр./kg към грамове на брой
       const gramsPerPiece = piecesPerKgToGrams(parseFloat(formData.piecesPerKg));
 
-      const newArticle: Article = {
-        id: generateId(),
-        name: formData.name.trim(),
-        gramsPerPiece,
-        isActive: formData.isActive,
-        createdAt: new Date(),
-      };
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .insert({
+            name: formData.name.trim(),
+            grams_per_piece: gramsPerPiece,
+            is_active: formData.isActive,
+          })
+          .select()
+          .single();
 
-      setArticles((prev) => [...prev, newArticle]);
-      // Синхронизираме с mockArticles и записваме в localStorage
-      mockArticles.push(newArticle);
-      saveArticles();
-      return { success: true };
+        if (error) throw error;
+
+        const newArticle = mapDbArticle(data);
+        setArticles((prev) => [...prev, newArticle].sort((a, b) => a.name.localeCompare(b.name)));
+        return { success: true };
+      } catch (err) {
+        console.error('Error creating article:', err);
+        return { success: false, error: 'Грешка при създаване на артикул.' };
+      }
     },
     [articles]
   );
 
   // Редактира артикул
   const updateArticle = useCallback(
-    (
+    async (
       id: string,
       formData: ArticleFormData
-    ): { success: boolean; error?: string } => {
+    ): Promise<{ success: boolean; error?: string }> => {
       const existingNames = articles
         .filter((a) => a.id !== id)
         .map((a) => a.name);
@@ -94,56 +132,56 @@ export const useArticles = () => {
       // Конвертираме от бр./kg към грамове на брой
       const gramsPerPiece = piecesPerKgToGrams(parseFloat(formData.piecesPerKg));
 
-      setArticles((prev) =>
-        prev.map((article) =>
-          article.id === id
-            ? {
-                ...article,
-                name: formData.name.trim(),
-                gramsPerPiece,
-                isActive: formData.isActive,
-              }
-            : article
-        )
-      );
+      try {
+        const { data, error } = await supabase
+          .from('articles')
+          .update({
+            name: formData.name.trim(),
+            grams_per_piece: gramsPerPiece,
+            is_active: formData.isActive,
+          })
+          .eq('id', id)
+          .select()
+          .single();
 
-      // Синхронизираме с mockArticles и записваме в localStorage
-      const mockIndex = mockArticles.findIndex((a) => a.id === id);
-      if (mockIndex !== -1) {
-        mockArticles[mockIndex] = {
-          ...mockArticles[mockIndex],
-          name: formData.name.trim(),
-          gramsPerPiece,
-          isActive: formData.isActive,
-        };
+        if (error) throw error;
+
+        const updatedArticle = mapDbArticle(data);
+        setArticles((prev) =>
+          prev.map((article) => (article.id === id ? updatedArticle : article))
+        );
+
+        return { success: true };
+      } catch (err) {
+        console.error('Error updating article:', err);
+        return { success: false, error: 'Грешка при обновяване на артикул.' };
       }
-      saveArticles();
-
-      return { success: true };
     },
     [articles]
   );
 
   // Активира/деактивира артикул
-  const toggleArticleStatus = useCallback((id: string) => {
-    setArticles((prev) =>
-      prev.map((article) =>
-        article.id === id
-          ? { ...article, isActive: !article.isActive }
-          : article
-      )
-    );
-    
-    // Синхронизираме с mockArticles и записваме в localStorage
-    const mockIndex = mockArticles.findIndex((a) => a.id === id);
-    if (mockIndex !== -1) {
-      mockArticles[mockIndex] = {
-        ...mockArticles[mockIndex],
-        isActive: !mockArticles[mockIndex].isActive,
-      };
+  const toggleArticleStatus = useCallback(async (id: string) => {
+    const article = articles.find((a) => a.id === id);
+    if (!article) return;
+
+    const newStatus = !article.isActive;
+
+    try {
+      const { error } = await supabase
+        .from('articles')
+        .update({ is_active: newStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setArticles((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, isActive: newStatus } : a))
+      );
+    } catch (err) {
+      console.error('Error toggling article status:', err);
     }
-    saveArticles();
-  }, []);
+  }, [articles]);
 
   // Взима артикул по ID
   const getArticleById = useCallback(
@@ -157,6 +195,7 @@ export const useArticles = () => {
     articles: filteredArticles,
     allArticles: articles,
     filters,
+    loading,
     updateFilters,
     createArticle,
     updateArticle,

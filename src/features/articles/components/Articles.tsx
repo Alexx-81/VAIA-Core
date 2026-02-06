@@ -11,6 +11,7 @@ export const Articles = () => {
     articles,
     allArticles,
     filters,
+    loading,
     updateFilters,
     createArticle,
     updateArticle,
@@ -42,7 +43,7 @@ export const Articles = () => {
 
   // Submit handler
   const handleSubmit = useCallback(
-    (formData: ArticleFormData) => {
+    async (formData: ArticleFormData) => {
       if (editingArticle) {
         return updateArticle(editingArticle.id, formData);
       }
@@ -53,6 +54,14 @@ export const Articles = () => {
 
   // Списък с имена за валидация на уникалност
   const existingNames = allArticles.map((a) => a.name);
+
+  if (loading) {
+    return (
+      <div className="articles">
+        <div className="articles__loading">Зареждане на артикули...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="articles">

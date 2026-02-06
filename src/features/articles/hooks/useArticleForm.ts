@@ -5,7 +5,7 @@ import { calculatePiecesPerKg, validateArticleName, validatePiecesPerKg } from '
 interface UseArticleFormProps {
   article?: Article;
   existingNames: string[];
-  onSubmit: (data: ArticleFormData) => { success: boolean; error?: string };
+  onSubmit: (data: ArticleFormData) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
 }
 
@@ -107,14 +107,14 @@ export const useArticleForm = ({
   }, [formData.piecesPerKg]);
 
   // Submit handler
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     setTouched({ name: true, piecesPerKg: true });
     
     if (!validate()) {
       return;
     }
 
-    const result = onSubmit(formData);
+    const result = await onSubmit(formData);
     if (result.success) {
       onClose();
     } else if (result.error) {

@@ -9,7 +9,6 @@ import type { SalesView, SaleWithComputed, Sale, SaleLine } from '../types';
 import type { SaleImportRow } from '../utils/importSales';
 import { groupRowsByDate } from '../utils/importSales';
 import { generateId } from '../utils/salesUtils';
-import { mockDeliveries, mockSalesData } from '../../deliveries/data/mockDeliveries';
 import './Sales.css';
 
 export const Sales = () => {
@@ -17,6 +16,7 @@ export const Sales = () => {
     sales,
     allSales,
     filters,
+    loading,
     updateFilters,
     updateDateRange,
     createSale,
@@ -64,14 +64,11 @@ export const Sales = () => {
     setIsImportDialogOpen(false);
   }, []);
 
-  const handleImportSales = useCallback((rows: SaleImportRow[]) => {
+  const handleImportSales = useCallback(async (rows: SaleImportRow[]) => {
     // Групираме редовете по дата за създаване на отделни продажби
     const groupedByDate = groupRowsByDate(rows);
     const newSales: Sale[] = [];
     let saleCounter = allSales.length + 1;
-
-    // Track kg sold per delivery for updating mockSalesData
-    const kgSoldByDelivery: Record<string, number> = {};
 
     groupedByDate.forEach((dateRows, dateStr) => {
       const saleLines: SaleLine[] = dateRows.map((row, idx) => {
@@ -79,15 +76,7 @@ export const Sales = () => {
           (a) => a.name.toLowerCase() === row.articleName.toLowerCase()
         );
         
-        // Намираме доставката за да вземем unitCostPerKg
-        const delivery = mockDeliveries.find(d => d.displayId === row.deliveryId.toString() || d.id === row.deliveryId.toString());
-        const unitCostPerKg = delivery?.unitCostPerKg || 0;
         const kgPerPiece = article?.kgPerPiece || 0.3; // Default 300g if not found
-        const kgLine = row.quantity * kgPerPiece;
-        
-        // Track kg sold for this delivery
-        const deliveryId = delivery?.id || row.deliveryId.toString();
-        kgSoldByDelivery[deliveryId] = (kgSoldByDelivery[deliveryId] || 0) + kgLine;
 
         return {
           id: generateId(),
@@ -95,9 +84,9 @@ export const Sales = () => {
           articleName: row.articleName,
           quantity: row.quantity,
           unitPriceEur: row.unitPrice,
-          realDeliveryId: deliveryId,
+          realDeliveryId: row.deliveryId.toString(),
           kgPerPieceSnapshot: kgPerPiece,
-          unitCostPerKgRealSnapshot: unitCostPerKg,
+          unitCostPerKgRealSnapshot: 0, // Will be set by actual delivery data
         };
       });
 
@@ -120,16 +109,7 @@ export const Sales = () => {
       saleCounter++;
     });
 
-    // Update mockSalesData with kg sold per delivery
-    Object.entries(kgSoldByDelivery).forEach(([deliveryId, kgSold]) => {
-      if (!mockSalesData[deliveryId]) {
-        mockSalesData[deliveryId] = { realKgSold: 0, accKgSold: 0 };
-      }
-      mockSalesData[deliveryId].realKgSold += kgSold;
-      mockSalesData[deliveryId].accKgSold += kgSold;
-    });
-
-    importSales(newSales);
+    await importSales(newSales);
   }, [allSales.length, articleOptions, importSales]);
 
   // Get existing article names for validation
@@ -137,6 +117,15 @@ export const Sales = () => {
 
   // Get selected sale for detail view
   const selectedSale = selectedSaleId ? getSaleById(selectedSaleId) : undefined;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="sales">
+        <div className="sales__loading">Зареждане на продажби...</div>
+      </div>
+    );
+  }
 
   // Render editor view
   if (currentView === 'editor') {

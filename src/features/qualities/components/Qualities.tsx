@@ -1,6 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DataCards } from '../../../shared/components/DataCards';
 import { ImportQualitiesDialog } from './ImportQualitiesDialog';
+import { supabase } from '../../../lib/supabase';
+import type { Quality as DbQuality } from '../../../lib/supabase/types';
 import './Qualities.css';
 
 // Types
@@ -25,12 +27,6 @@ interface QualityFormData {
   isActive: boolean;
 }
 
-// Mock data for deliveries (to calculate stats)
-const mockDeliveries: { id: number; qualityId: number; date: Date }[] = [];
-
-// Initial mock qualities - mutable array for persistence
-let initialQualities: Quality[] = [];
-
 // Helper functions
 const formatDate = (date: Date | null): string => {
   if (!date) return '—';
@@ -41,40 +37,87 @@ const formatDate = (date: Date | null): string => {
   });
 };
 
-const calculateQualityStats = (quality: Quality, deliveries: typeof mockDeliveries): QualityWithStats => {
-  const qualityDeliveries = deliveries.filter(d => d.qualityId === quality.id);
-  const deliveriesCount = qualityDeliveries.length;
-  const lastDeliveryDate = qualityDeliveries.length > 0
-    ? new Date(Math.max(...qualityDeliveries.map(d => d.date.getTime())))
-    : null;
-  
-  return {
-    ...quality,
-    deliveriesCount,
-    lastDeliveryDate,
-  };
-};
+// Convert DB quality to local format
+const mapDbQuality = (q: DbQuality): Quality => ({
+  id: q.id,
+  name: q.name,
+  note: q.note || '',
+  isActive: q.is_active,
+  createdAt: new Date(q.created_at),
+});
 
 export const Qualities = () => {
-  // State - инициализираме от текущото състояние на initialQualities
-  const [qualities, setQualities] = useState<Quality[]>(() => [...initialQualities]);
+  // State
+  const [qualities, setQualities] = useState<Quality[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [qualityStats, setQualityStats] = useState<Map<number, { count: number; lastDate: Date | null }>>(new Map());
+
+  // Fetch qualities from Supabase
+  useEffect(() => {
+    const fetchQualities = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('qualities')
+          .select('*')
+          .order('name');
+
+        if (error) throw error;
+
+        const mapped = (data || []).map(mapDbQuality);
+        setQualities(mapped);
+
+        // Fetch delivery stats for each quality
+        const { data: deliveries } = await supabase
+          .from('deliveries')
+          .select('quality_id, date');
+
+        const statsMap = new Map<number, { count: number; lastDate: Date | null }>();
+        (deliveries || []).forEach(d => {
+          const existing = statsMap.get(d.quality_id) || { count: 0, lastDate: null };
+          existing.count++;
+          const deliveryDate = new Date(d.date);
+          if (!existing.lastDate || deliveryDate > existing.lastDate) {
+            existing.lastDate = deliveryDate;
+          }
+          statsMap.set(d.quality_id, existing);
+        });
+        setQualityStats(statsMap);
+      } catch (err) {
+        console.error('Error fetching qualities:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQualities();
+  }, []);
+
+  // Calculate stats for each quality
+  const qualitiesWithStats = useMemo(() => {
+    return qualities.map(q => {
+      const stats = qualityStats.get(q.id) || { count: 0, lastDate: null };
+      return {
+        ...q,
+        deliveriesCount: stats.count,
+        lastDeliveryDate: stats.lastDate,
+      };
+    });
+  }, [qualities, qualityStats]);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingQuality, setEditingQuality] = useState<Quality | null>(null);
   const [formData, setFormData] = useState<QualityFormData>({ name: '', note: '', isActive: true });
   const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; qualityId: number | null; action: 'deactivate' | 'activate' }>({
     isOpen: false,
     qualityId: null,
     action: 'deactivate',
   });
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-
-  // Computed values
-  const qualitiesWithStats = useMemo(() => {
-    return qualities.map(q => calculateQualityStats(q, mockDeliveries));
-  }, [qualities]);
 
   const filteredQualities = useMemo(() => {
     return qualitiesWithStats.filter(quality => {
@@ -141,41 +184,59 @@ export const Qualities = () => {
     return true;
   }, [formData.name, qualities, editingQuality]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!validateForm()) return;
     
     const trimmedName = formData.name.trim();
     const trimmedNote = formData.note.trim();
-    
-    if (editingQuality) {
-      // Update existing quality
-      setQualities(prev => prev.map(q => 
-        q.id === editingQuality.id 
-          ? { ...q, name: trimmedName, note: trimmedNote, isActive: formData.isActive }
-          : q
-      ));
-      // Мутираме initialQualities за persistence
-      const idx = initialQualities.findIndex(q => q.id === editingQuality.id);
-      if (idx !== -1) {
-        initialQualities[idx] = { ...initialQualities[idx], name: trimmedName, note: trimmedNote, isActive: formData.isActive };
+
+    setSaving(true);
+    try {
+      if (editingQuality) {
+        // Update existing quality in Supabase
+        const { data, error } = await supabase
+          .from('qualities')
+          .update({ 
+            name: trimmedName, 
+            note: trimmedNote, 
+            is_active: formData.isActive 
+          })
+          .eq('id', editingQuality.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setQualities(prev => prev.map(q => 
+          q.id === editingQuality.id 
+            ? mapDbQuality(data)
+            : q
+        ));
+      } else {
+        // Create new quality in Supabase
+        const { data, error } = await supabase
+          .from('qualities')
+          .insert({ 
+            name: trimmedName, 
+            note: trimmedNote, 
+            is_active: formData.isActive 
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setQualities(prev => [...prev, mapDbQuality(data)].sort((a, b) => a.name.localeCompare(b.name)));
       }
-    } else {
-      // Create new quality
-      const newId = Math.max(...qualities.map(q => q.id), 0) + 1;
-      const newQuality: Quality = {
-        id: newId,
-        name: trimmedName,
-        note: trimmedNote,
-        isActive: formData.isActive,
-        createdAt: new Date(),
-      };
-      setQualities(prev => [...prev, newQuality]);
-      // Мутираме initialQualities за persistence
-      initialQualities.push(newQuality);
+      
+      handleCloseDialog();
+    } catch (err) {
+      console.error('Error saving quality:', err);
+      setFormError('Грешка при запазване. Моля опитай отново.');
+    } finally {
+      setSaving(false);
     }
-    
-    handleCloseDialog();
-  }, [formData, editingQuality, qualities, validateForm, handleCloseDialog]);
+  }, [formData, editingQuality, validateForm, handleCloseDialog]);
 
   const handleToggleStatus = useCallback((qualityId: number, currentStatus: boolean) => {
     setConfirmDialog({
@@ -185,23 +246,30 @@ export const Qualities = () => {
     });
   }, []);
 
-  const handleConfirmToggle = useCallback(() => {
+  const handleConfirmToggle = useCallback(async () => {
     if (confirmDialog.qualityId === null) return;
     
-    setQualities(prev => prev.map(q => 
-      q.id === confirmDialog.qualityId 
-        ? { ...q, isActive: !q.isActive }
-        : q
-    ));
-    
-    // Мутираме initialQualities за persistence
-    const idx = initialQualities.findIndex(q => q.id === confirmDialog.qualityId);
-    if (idx !== -1) {
-      initialQualities[idx] = { ...initialQualities[idx], isActive: !initialQualities[idx].isActive };
+    const newStatus = confirmDialog.action === 'activate';
+
+    try {
+      const { error } = await supabase
+        .from('qualities')
+        .update({ is_active: newStatus })
+        .eq('id', confirmDialog.qualityId);
+
+      if (error) throw error;
+
+      setQualities(prev => prev.map(q => 
+        q.id === confirmDialog.qualityId 
+          ? { ...q, isActive: newStatus }
+          : q
+      ));
+    } catch (err) {
+      console.error('Error toggling quality status:', err);
     }
     
     setConfirmDialog({ isOpen: false, qualityId: null, action: 'deactivate' });
-  }, [confirmDialog.qualityId]);
+  }, [confirmDialog.qualityId, confirmDialog.action]);
 
   const handleCancelConfirm = useCallback(() => {
     setConfirmDialog({ isOpen: false, qualityId: null, action: 'deactivate' });
@@ -216,19 +284,27 @@ export const Qualities = () => {
     setIsImportDialogOpen(false);
   }, []);
 
-  const handleImportQualities = useCallback((names: string[]) => {
-    const startId = Math.max(...qualities.map(q => q.id), 0) + 1;
-    const newQualities: Quality[] = names.map((name, index) => ({
-      id: startId + index,
-      name,
-      note: '',
-      isActive: true,
-      createdAt: new Date(),
-    }));
-    setQualities(prev => [...prev, ...newQualities]);
-    // Мутираме initialQualities за persistence при навигация
-    initialQualities.push(...newQualities);
-  }, [qualities]);
+  const handleImportQualities = useCallback(async (names: string[]) => {
+    try {
+      const qualityInserts = names.map(name => ({
+        name,
+        note: '',
+        is_active: true,
+      }));
+
+      const { data, error } = await supabase
+        .from('qualities')
+        .insert(qualityInserts)
+        .select();
+
+      if (error) throw error;
+
+      const newQualities = (data || []).map(mapDbQuality);
+      setQualities(prev => [...prev, ...newQualities].sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (err) {
+      console.error('Error importing qualities:', err);
+    }
+  }, []);
 
   const existingQualityNames = useMemo(() => {
     return qualities.map(q => q.name);
@@ -242,6 +318,17 @@ export const Qualities = () => {
     };
     return labels[status];
   };
+
+  if (loading) {
+    return (
+      <div className="qualities">
+        <div className="loading-state">
+          <div className="loading-spinner">⏳</div>
+          <p>Зареждане на качества...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="qualities">
@@ -513,11 +600,11 @@ export const Qualities = () => {
             </div>
 
             <div className="dialog-footer">
-              <button className="dialog-btn secondary" onClick={handleCloseDialog}>
+              <button className="dialog-btn secondary" onClick={handleCloseDialog} disabled={saving}>
                 Откажи
               </button>
-              <button className="dialog-btn primary" onClick={handleSave}>
-                Запази
+              <button className="dialog-btn primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Запазване...' : 'Запази'}
               </button>
             </div>
           </div>

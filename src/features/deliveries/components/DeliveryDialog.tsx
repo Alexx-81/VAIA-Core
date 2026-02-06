@@ -19,7 +19,7 @@ interface DeliveryDialogProps {
   delivery?: DeliveryWithComputed;
   qualities: Quality[];
   existingDisplayIds: string[];
-  onSubmit: (data: DeliveryFormData, allowFullEdit: boolean) => { success: boolean; error?: string };
+  onSubmit: (data: DeliveryFormData, allowFullEdit: boolean) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
 }
 
@@ -97,7 +97,7 @@ export const DeliveryDialog = ({
     []
   );
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     // Валидация (само ако allowFullEdit)
     if (allowFullEdit) {
       const idValidation = validateDisplayId(
@@ -135,7 +135,7 @@ export const DeliveryDialog = ({
       }
     }
 
-    const result = onSubmit(formData, allowFullEdit);
+    const result = await onSubmit(formData, allowFullEdit);
     if (!result.success) {
       setFormError(result.error || 'Възникна грешка при запазването.');
     } else {

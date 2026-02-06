@@ -16,7 +16,7 @@ interface SaleEditorProps {
   onSave: (
     formData: { dateTime: Date; paymentMethod: PaymentMethod; note?: string },
     lines: SaleLineFormData[]
-  ) => { success: boolean; error?: string; sale?: SaleWithComputed };
+  ) => Promise<{ success: boolean; error?: string; sale?: SaleWithComputed }>;
   onCancel: () => void;
   onSaleCreated: (sale: SaleWithComputed) => void;
 }
@@ -188,11 +188,11 @@ export const SaleEditor = ({
   }, []);
 
   // Submit
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
     setError(null);
 
-    const result = onSave(
+    const result = await onSave(
       {
         dateTime: new Date(dateTime),
         paymentMethod,

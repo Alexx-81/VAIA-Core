@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDeliveries } from '../hooks/useDeliveries';
 import { DeliveryFiltersBar } from './DeliveryFiltersBar';
 import { DeliveryTable } from './DeliveryTable';
 import { DeliveryDialog } from './DeliveryDialog';
 import { DeliveryDetail } from './DeliveryDetail';
 import { ImportDeliveriesDialog } from './ImportDeliveriesDialog';
-import type { DeliveryWithComputed, DeliveryView, DeliveryFormData, Delivery } from '../types';
+import type { DeliveryWithComputed, DeliveryView, DeliveryFormData, Delivery, SaleFromDelivery } from '../types';
 import './Deliveries.css';
 
 export const Deliveries = () => {
@@ -15,6 +15,7 @@ export const Deliveries = () => {
     availableQualities,
     hasInactiveQualities,
     filters,
+    loading,
     updateFilters,
     updateDateRange,
     createDelivery,
@@ -30,6 +31,7 @@ export const Deliveries = () => {
   // View state
   const [currentView, setCurrentView] = useState<DeliveryView>('list');
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(null);
+  const [salesForDelivery, setSalesForDelivery] = useState<SaleFromDelivery[]>([]);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -38,6 +40,15 @@ export const Deliveries = () => {
 
   // Import dialog state
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // Load sales for selected delivery
+  useEffect(() => {
+    if (selectedDeliveryId) {
+      getSalesForDelivery(selectedDeliveryId).then(setSalesForDelivery);
+    } else {
+      setSalesForDelivery([]);
+    }
+  }, [selectedDeliveryId, getSalesForDelivery]);
 
   // Handlers for list view
   const handleNewDelivery = useCallback(() => {
@@ -63,7 +74,7 @@ export const Deliveries = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    (formData: DeliveryFormData, allowFullEdit: boolean) => {
+    async (formData: DeliveryFormData, allowFullEdit: boolean) => {
       if (editingDelivery) {
         return updateDelivery(editingDelivery.id, formData, allowFullEdit);
       }
@@ -81,8 +92,8 @@ export const Deliveries = () => {
     setImportDialogOpen(false);
   }, []);
 
-  const handleImportDeliveries = useCallback((importedDeliveries: Delivery[]) => {
-    importDeliveries(importedDeliveries);
+  const handleImportDeliveries = useCallback(async (importedDeliveries: Delivery[]) => {
+    await importDeliveries(importedDeliveries);
   }, [importDeliveries]);
 
   // Handlers for detail view
@@ -102,7 +113,15 @@ export const Deliveries = () => {
 
   // Get selected delivery for detail view
   const selectedDelivery = selectedDeliveryId ? getDeliveryById(selectedDeliveryId) : undefined;
-  const salesForDelivery = selectedDeliveryId ? getSalesForDelivery(selectedDeliveryId) : [];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="deliveries">
+        <div className="deliveries__loading">Зареждане на доставки...</div>
+      </div>
+    );
+  }
 
   // Render detail view
   if (currentView === 'detail' && selectedDelivery) {
