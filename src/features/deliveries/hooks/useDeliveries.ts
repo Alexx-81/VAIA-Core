@@ -31,74 +31,45 @@ const initialFilters: DeliveryFilters = {
 // Минимален праг за наличност (от Settings)
 const MIN_KG_THRESHOLD = 10;
 
-// Map от DB към локален тип Delivery
-interface DbDelivery {
-  id: string;
-  display_id: string;
-  date: string;
-  quality_id: number;
-  kg_in: number;
-  unit_cost_per_kg: number;
-  invoice_number: string | null;
-  supplier_name: string | null;
-  note: string | null;
-  created_at: string;
-  qualities?: { name: string } | null;
-}
-
-const mapDbDelivery = (d: DbDelivery): Delivery => ({
-  id: d.id,
-  displayId: d.display_id,
-  date: new Date(d.date),
-  qualityId: d.quality_id,
-  qualityName: d.qualities?.name || '',
-  kgIn: d.kg_in,
-  unitCostPerKg: d.unit_cost_per_kg,
-  invoiceNumber: d.invoice_number || undefined,
-  supplierName: d.supplier_name || undefined,
-  note: d.note || undefined,
-  createdAt: new Date(d.created_at),
-});
-
 // Map от DB view към DeliveryWithComputed
 interface DbDeliveryView {
-  id: string;
-  display_id: string;
-  date: string;
-  quality_id: number;
-  quality_name: string;
-  kg_in: number;
-  unit_cost_per_kg: number;
+  id: string | null;
+  display_id: string | null;
+  date: string | null;
+  quality_id: number | null;
+  quality_name: string | null;
+  kg_in: number | null;
+  unit_cost_per_kg: number | null;
   invoice_number: string | null;
   supplier_name: string | null;
   note: string | null;
-  created_at: string;
-  is_invoiced: boolean;
-  total_cost_eur: number;
-  kg_sold_real: number;
-  kg_remaining_real: number;
-  kg_sold_acc: number;
-  kg_remaining_acc: number;
+  created_at: string | null;
+  is_invoiced: boolean | null;
+  total_cost_eur: number | null;
+  kg_sold_real: number | null;
+  kg_remaining_real: number | null;
+  kg_sold_acc: number | null;
+  kg_remaining_acc: number | null;
 }
 
 const mapDbDeliveryView = (d: DbDeliveryView): DeliveryWithComputed => ({
-  id: d.id,
-  displayId: d.display_id,
-  date: new Date(d.date),
-  qualityId: d.quality_id,
-  qualityName: d.quality_name,
-  kgIn: d.kg_in,
-  unitCostPerKg: d.unit_cost_per_kg,
+  id: d.id || '',
+  displayId: d.display_id || '',
+  date: new Date(d.date || ''),
+  qualityId: d.quality_id || 0,
+  qualityName: d.quality_name || '',
+  kgIn: d.kg_in || 0,
+  unitCostPerKg: d.unit_cost_per_kg || 0,
   invoiceNumber: d.invoice_number || undefined,
   supplierName: d.supplier_name || undefined,
   note: d.note || undefined,
-  createdAt: new Date(d.created_at),
-  isInvoiced: d.is_invoiced,
-  totalCostEur: d.total_cost_eur,
-  kgSoldReal: d.kg_sold_real,
-  kgRemainingReal: d.kg_remaining_real,
-  kgSoldAccounting: d.kg_sold_acc,
-  kgRemainingAccounting: d.kg_remaining_acc,
+  createdAt: new Date(d.created_at || ''),
+  isInvoiced: d.is_invoiced || false,
+  totalCostEur: d.total_cost_eur || 0,
+  kgSoldReal: d.kg_sold_real || 0,
+  kgRemainingReal: d.kg_remaining_real || 0,
+  kgSoldAccounting: d.kg_sold_acc || 0,
+  kgRemainingAccounting: d.kg_remaining_acc || 0,
 });
 
 export const useDeliveries = () => {
@@ -368,35 +339,45 @@ export const useDeliveries = () => {
   // Вземане на продажби за доставка
   const getSalesForDelivery = useCallback(async (deliveryId: string): Promise<SaleFromDelivery[]> => {
     try {
-      const { data, error } = await supabase
+      // First get sale lines
+      const { data: linesData, error: linesError } = await supabase
         .from('sale_lines_computed')
-        .select(`
-          id,
-          article_name,
-          quantity,
-          kg_sold,
-          revenue_eur,
-          cogs_eur,
-          profit_eur,
-          delivery_id_accounting,
-          sales!inner(id, sale_number, date_time)
-        `)
-        .eq('delivery_id_real', deliveryId);
+        .select('*')
+        .eq('real_delivery_id', deliveryId);
 
-      if (error) throw error;
+      if (linesError) throw linesError;
+      if (!linesData || linesData.length === 0) return [];
 
-      return (data || []).map((line: { id: string; article_name: string; quantity: number; kg_sold: number; revenue_eur: number; cogs_eur: number; profit_eur: number; delivery_id_accounting: string | null; sales: { id: string; sale_number: string; date_time: string } }) => ({
-        id: line.id,
-        dateTime: new Date(line.sales.date_time),
-        saleNumber: line.sales.sale_number,
-        articleName: line.article_name,
-        quantity: line.quantity,
-        kgSold: line.kg_sold,
-        revenueEur: line.revenue_eur,
-        costEur: line.cogs_eur,
-        profitEur: line.profit_eur,
-        accountingDeliveryId: line.delivery_id_accounting || undefined,
-      }));
+      // Get unique sale IDs (filter out nulls)
+      const saleIds = [...new Set(linesData.map(l => l.sale_id).filter((id): id is string => id !== null))];
+      if (saleIds.length === 0) return [];
+
+      // Get sales data
+      const { data: salesData, error: salesError } = await supabase
+        .from('sales')
+        .select('id, sale_number, date_time')
+        .in('id', saleIds);
+
+      if (salesError) throw salesError;
+
+      // Create a map of sales
+      const salesMap = new Map(salesData?.map(s => [s.id, s]) || []);
+
+      return linesData.map(line => {
+        const sale = salesMap.get(line.sale_id || '');
+        return {
+          id: line.id || '',
+          dateTime: new Date(sale?.date_time || ''),
+          saleNumber: sale?.sale_number || '',
+          articleName: line.article_name || '',
+          quantity: line.quantity || 0,
+          kgSold: line.kg_line || 0,
+          revenueEur: line.revenue_eur || 0,
+          costEur: line.cogs_real_eur || 0,
+          profitEur: line.profit_real_eur || 0,
+          accountingDeliveryId: line.accounting_delivery_id || undefined,
+        };
+      });
     } catch (err) {
       console.error('Error fetching sales for delivery:', err);
       return [];
@@ -437,7 +418,7 @@ export const useDeliveries = () => {
         note: d.note || null,
       }));
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('deliveries')
         .insert(dbDeliveries)
         .select();

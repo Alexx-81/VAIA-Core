@@ -11,7 +11,7 @@ import type {
   SaleLine,
 } from '../types';
 import { supabase } from '../../../lib/supabase';
-import { computeSale, getDateRangeFromPreset, generateId } from '../utils/salesUtils';
+import { computeSale, getDateRangeFromPreset } from '../utils/salesUtils';
 
 const defaultFilters: SalesFilters = {
   dateRange: { preset: 'this-month' },
@@ -53,14 +53,14 @@ interface DbArticle {
 }
 
 interface DbDeliveryView {
-  id: string;
-  display_id: string;
-  quality_name: string;
-  kg_in: number;
-  unit_cost_per_kg: number;
-  is_invoiced: boolean;
-  kg_remaining_real: number;
-  kg_remaining_acc: number;
+  id: string | null;
+  display_id: string | null;
+  quality_name: string | null;
+  kg_in: number | null;
+  unit_cost_per_kg: number | null;
+  is_invoiced: boolean | null;
+  kg_remaining_real: number | null;
+  kg_remaining_acc: number | null;
 }
 
 const mapDbSale = (s: DbSale): Sale => ({
@@ -212,20 +212,21 @@ export const useSales = () => {
         const excludeKg = excludeKgForLines
           ?.filter(l => l.deliveryId === d.id)
           .reduce((sum, l) => sum + l.kg, 0) || 0;
-        const kgRemaining = d.kg_remaining_real + excludeKg;
+        const kgRemaining = (d.kg_remaining_real || 0) + excludeKg;
         return kgRemaining > 0;
       })
+      .filter(d => d.id !== null)
       .map(d => {
         const excludeKg = excludeKgForLines
           ?.filter(l => l.deliveryId === d.id)
           .reduce((sum, l) => sum + l.kg, 0) || 0;
         return {
-          id: d.id,
-          displayId: d.display_id,
-          qualityName: d.quality_name,
-          kgRemaining: d.kg_remaining_real + excludeKg,
-          unitCostPerKg: d.unit_cost_per_kg,
-          isInvoiced: d.is_invoiced,
+          id: d.id!,
+          displayId: d.display_id || '',
+          qualityName: d.quality_name || '',
+          kgRemaining: (d.kg_remaining_real || 0) + excludeKg,
+          unitCostPerKg: d.unit_cost_per_kg || 0,
+          isInvoiced: d.is_invoiced || false,
         };
       });
   }, [deliveries]);
@@ -238,19 +239,20 @@ export const useSales = () => {
         const excludeKg = excludeKgForLines
           ?.filter(l => l.deliveryId === d.id)
           .reduce((sum, l) => sum + l.kg, 0) || 0;
-        const kgRemaining = d.kg_remaining_acc + excludeKg;
+        const kgRemaining = (d.kg_remaining_acc || 0) + excludeKg;
         return kgRemaining > 0;
       })
+      .filter(d => d.id !== null)
       .map(d => {
         const excludeKg = excludeKgForLines
           ?.filter(l => l.deliveryId === d.id)
           .reduce((sum, l) => sum + l.kg, 0) || 0;
         return {
-          id: d.id,
-          displayId: d.display_id,
-          qualityName: d.quality_name,
-          kgRemaining: d.kg_remaining_acc + excludeKg,
-          unitCostPerKg: d.unit_cost_per_kg,
+          id: d.id!,
+          displayId: d.display_id || '',
+          qualityName: d.quality_name || '',
+          kgRemaining: (d.kg_remaining_acc || 0) + excludeKg,
+          unitCostPerKg: d.unit_cost_per_kg || 0,
           isInvoiced: true,
         };
       });
@@ -327,10 +329,10 @@ export const useSales = () => {
         const kgLine = quantity * article.kgPerPiece;
 
         // Проверка за Real наличност
-        if (kgLine > realDelivery.kg_remaining_real) {
+        if (kgLine > (realDelivery.kg_remaining_real || 0)) {
           return {
             success: false,
-            error: `Ред ${i + 1}: Недостатъчна Real наличност в доставка ${realDelivery.display_id}. Налични: ${realDelivery.kg_remaining_real.toFixed(2)} kg, нужни: ${kgLine.toFixed(2)} kg.`,
+            error: `Ред ${i + 1}: Недостатъчна Real наличност в доставка ${realDelivery.display_id || ''}. Налични: ${(realDelivery.kg_remaining_real || 0).toFixed(2)} kg, нужни: ${kgLine.toFixed(2)} kg.`,
           };
         }
 
@@ -350,10 +352,10 @@ export const useSales = () => {
           }
 
           // Проверка за Accounting наличност
-          if (kgLine > accDelivery.kg_remaining_acc) {
+          if (kgLine > (accDelivery.kg_remaining_acc || 0)) {
             return {
               success: false,
-              error: `Ред ${i + 1}: Недостатъчна Accounting наличност в доставка ${accDelivery.display_id}. Налични: ${accDelivery.kg_remaining_acc.toFixed(2)} kg, нужни: ${kgLine.toFixed(2)} kg.`,
+              error: `Ред ${i + 1}: Недостатъчна Accounting наличност в доставка ${accDelivery.display_id || ''}. Налични: ${(accDelivery.kg_remaining_acc || 0).toFixed(2)} kg, нужни: ${kgLine.toFixed(2)} kg.`,
             };
           }
 
@@ -365,11 +367,11 @@ export const useSales = () => {
           article_id: article.id,
           quantity,
           unit_price_eur: unitPriceEur,
-          real_delivery_id: realDelivery.id,
-          accounting_delivery_id: accountingDeliveryId,
+          real_delivery_id: realDelivery.id!,
+          accounting_delivery_id: accountingDeliveryId!,
           kg_per_piece_snapshot: article.kgPerPiece,
-          unit_cost_per_kg_real_snapshot: realDelivery.unit_cost_per_kg,
-          unit_cost_per_kg_acc_snapshot: unitCostPerKgAccSnapshot,
+          unit_cost_per_kg_real_snapshot: realDelivery.unit_cost_per_kg || 0,
+          unit_cost_per_kg_acc_snapshot: unitCostPerKgAccSnapshot || 0,
         });
       }
 
