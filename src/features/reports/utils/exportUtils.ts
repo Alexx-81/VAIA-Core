@@ -406,12 +406,26 @@ export const exportToPDF = async (data: ReportData) => {
           ['Брой продажби', String(data.summary.salesCount)],
         ]
       },
-      layout: 'lightHorizontalLines'
+      layout: {
+        hLineWidth: () => 0.5,
+        vLineWidth: () => 0.5,
+        hLineColor: () => '#CCCCCC',
+        vLineColor: () => '#CCCCCC'
+      }
     };
     
     // Подготвяме таблица с доставки
     let deliveriesTable;
     if (mode === 'real') {
+      // Изчисляваме сумите за реален режим
+      const totalKg = data.deliveryRows.reduce((sum, r) => sum + (r.kgSold || 0), 0);
+      const totalPieces = data.deliveryRows.reduce((sum, r) => sum + (r.piecesSold || 0), 0);
+      const totalRevenue = data.deliveryRows.reduce((sum, r) => sum + (r.revenueEur || 0), 0);
+      const totalCogs = data.deliveryRows.reduce((sum, r) => sum + (r.cogsEur || 0), 0);
+      const totalProfit = data.deliveryRows.reduce((sum, r) => sum + (r.profitEur || 0), 0);
+      const totalEarned = data.deliveryRows.reduce((sum, r) => sum + (r.earnedFromDeliveryEur || 0), 0);
+      const avgMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0;
+      
       deliveriesTable = {
         table: {
           headerRows: 1,
@@ -425,7 +439,7 @@ export const exportToPDF = async (data: ReportData) => {
               { text: 'kg прод.', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Бройки', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Оборот', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
-              { text: 'COGS', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Себестойност', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 8 },
               { text: 'Печалба', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Марж%', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Изкарани', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 }
@@ -442,13 +456,39 @@ export const exportToPDF = async (data: ReportData) => {
               { text: (r.profitEur || 0).toFixed(2), fontSize: 8 },
               { text: (r.marginPercent || 0).toFixed(1), fontSize: 8 },
               { text: (r.earnedFromDeliveryEur || 0).toFixed(2), fontSize: 8 }
-            ])
+            ]),
+            [
+              { text: 'ОБЩО:', bold: true, fontSize: 9, colSpan: 4, alignment: 'right' },
+              {},
+              {},
+              {},
+              { text: totalKg.toFixed(1), bold: true, fontSize: 9 },
+              { text: String(totalPieces), bold: true, fontSize: 9 },
+              { text: totalRevenue.toFixed(2), bold: true, fontSize: 9 },
+              { text: totalCogs.toFixed(2), bold: true, fontSize: 9 },
+              { text: totalProfit.toFixed(2), bold: true, fontSize: 9 },
+              { text: avgMargin.toFixed(1), bold: true, fontSize: 9 },
+              { text: totalEarned.toFixed(2), bold: true, fontSize: 9 }
+            ]
           ]
         },
-        layout: 'lightHorizontalLines',
+        layout: {
+          hLineWidth: (i: any, node: any) => (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#CCCCCC',
+          vLineColor: () => '#CCCCCC'
+        },
         fontSize: 8
       };
     } else {
+      // Изчисляваме сумите за счетоводен режим
+      const totalKg = data.deliveryRows.reduce((sum, r) => sum + (r.kgSold || 0), 0);
+      const totalPieces = data.deliveryRows.reduce((sum, r) => sum + (r.piecesSold || 0), 0);
+      const totalRevenue = data.deliveryRows.reduce((sum, r) => sum + (r.revenueEur || 0), 0);
+      const totalCogs = data.deliveryRows.reduce((sum, r) => sum + (r.cogsEur || 0), 0);
+      const totalProfit = data.deliveryRows.reduce((sum, r) => sum + (r.profitEur || 0), 0);
+      const avgMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0;
+      
       deliveriesTable = {
         table: {
           headerRows: 1,
@@ -462,7 +502,7 @@ export const exportToPDF = async (data: ReportData) => {
               { text: 'kg прод.', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Бройки', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Оборот', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
-              { text: 'COGS', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Себестойност', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 8 },
               { text: 'Печалба', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
               { text: 'Марж%', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 }
             ],
@@ -477,10 +517,27 @@ export const exportToPDF = async (data: ReportData) => {
               { text: (r.cogsEur || 0).toFixed(2), fontSize: 8 },
               { text: (r.profitEur || 0).toFixed(2), fontSize: 8 },
               { text: (r.marginPercent || 0).toFixed(1), fontSize: 8 }
-            ])
+            ]),
+            [
+              { text: 'ОБЩО:', bold: true, fontSize: 9, colSpan: 4, alignment: 'right' },
+              {},
+              {},
+              {},
+              { text: totalKg.toFixed(1), bold: true, fontSize: 9 },
+              { text: String(totalPieces), bold: true, fontSize: 9 },
+              { text: totalRevenue.toFixed(2), bold: true, fontSize: 9 },
+              { text: totalCogs.toFixed(2), bold: true, fontSize: 9 },
+              { text: totalProfit.toFixed(2), bold: true, fontSize: 9 },
+              { text: avgMargin.toFixed(1), bold: true, fontSize: 9 }
+            ]
           ]
         },
-        layout: 'lightHorizontalLines',
+        layout: {
+          hLineWidth: (i: any, node: any) => (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#CCCCCC',
+          vLineColor: () => '#CCCCCC'
+        },
         fontSize: 8
       };
     }
@@ -496,7 +553,7 @@ export const exportToPDF = async (data: ReportData) => {
             { text: 'Бройки', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
             { text: 'kg', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
             { text: 'Оборот', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
-            { text: 'COGS', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'Себестойност', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 8 },
             { text: 'Печалба', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
             { text: 'Марж%', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 }
           ],
@@ -511,7 +568,12 @@ export const exportToPDF = async (data: ReportData) => {
           ])
         ]
       },
-      layout: 'lightHorizontalLines',
+      layout: {
+        hLineWidth: (i: any) => (i === 0 || i === 1) ? 1 : 0.5,
+        vLineWidth: () => 0.5,
+        hLineColor: () => '#CCCCCC',
+        vLineColor: () => '#CCCCCC'
+      },
       fontSize: 8
     } : null;
     
