@@ -76,8 +76,9 @@ export const exportToCSV = (data: ReportData) => {
   // 2. Deliveries CSV
   if (mode === 'real') {
     const deliveriesCSV = arrayToCSV(
-      ['Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'Изкарани (EUR)'],
+      ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
       data.deliveryRows.map(r => [
+        r.deliveryId,
         r.deliveryDisplayId,
         formatDate(r.deliveryDate),
         r.qualityName,
@@ -92,18 +93,44 @@ export const exportToCSV = (data: ReportData) => {
         r.cogsEur.toFixed(2),
         r.profitEur.toFixed(2),
         r.marginPercent.toFixed(1),
+        r.avgPricePerKgEur.toFixed(2),
         r.earnedFromDeliveryEur.toFixed(2),
       ])
     );
     downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
   } else {
     const deliveriesCSV = arrayToCSV(
-      ['Доставка', 'Дата', 'Качество', 'Фактура №', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'],
+      ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg дост.', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
       data.deliveryRows.map(r => [
+        r.deliveryId,
         r.deliveryDisplayId,
         formatDate(r.deliveryDate),
         r.qualityName,
+        r.isInvoiced ? 'Да' : 'Не',
         r.invoiceNumber,
+        r.kgIn.toFixed(2),
+        r.eurPerKgDelivery.toFixed(2),
+        r.totalDeliveryCostEur.toFixed(2),
+        r.kgSold.toFixed(2),
+        String(r.piecesSold),
+        r.revenueEur.toFixed(2),
+        r.cogsEur.toFixed(2),
+        r.profitEur.toFixed(2),
+        r.marginPercent.toFixed(1),
+        r.avgPricePerKgEur.toFixed(2),
+        r.earnedFromDeliveryEur.toFixed(2),
+      ])
+    );
+    downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
+  }
+
+  // 3. Qualities CSV (само за Real)
+  if (mode === 'real') {
+    const qualitiesCSV = arrayToCSV(
+      ['Quality ID', 'Качество', 'kg', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'],
+      data.qualityRows.map(r => [
+        String(r.qualityId),
+        r.qualityName,
         r.kgSold.toFixed(2),
         String(r.piecesSold),
         r.revenueEur.toFixed(2),
@@ -113,14 +140,31 @@ export const exportToCSV = (data: ReportData) => {
         r.avgPricePerKgEur.toFixed(2),
       ])
     );
-    downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
+    downloadFile(qualitiesCSV, getFileName(mode, 'ByQualities', 'csv'), 'text/csv;charset=utf-8');
   }
 
-  // 3. Transactions CSV
+  // 4. Articles CSV
+  const articlesCSV = arrayToCSV(
+    ['Article ID', 'Артикул', 'Бройки', 'kg', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/бр'],
+    data.articleRows.map(r => [
+      r.articleId,
+      r.articleName,
+      String(r.piecesSold),
+      r.kgSold.toFixed(2),
+      r.revenueEur.toFixed(2),
+      r.cogsEur.toFixed(2),
+      r.profitEur.toFixed(2),
+      r.marginPercent.toFixed(1),
+      r.avgPricePerPieceEur.toFixed(2),
+    ])
+  );
+  downloadFile(articlesCSV, getFileName(mode, 'ByArticles', 'csv'), 'text/csv;charset=utf-8');
+
+  // 5. Transactions CSV
   const transactionsCSV = arrayToCSV(
     mode === 'real' 
-      ? ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real доставка', 'Accounting доставка', 'EUR/kg (R)', 'Себестойност (EUR)', 'Печалба (EUR)']
-      : ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Accounting доставка', 'EUR/kg (A)', 'Себестойност (EUR)', 'Печалба (EUR)'],
+      ? ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real Delivery ID', 'Real доставка', 'Acc Delivery ID', 'Accounting доставка', 'EUR/kg (R)', 'Себестойност (EUR)', 'Печалба (EUR)']
+      : ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real Delivery ID', 'Real доставка', 'Acc Delivery ID', 'Accounting доставка', 'EUR/kg (A)', 'Себестойност (EUR)', 'Печалба (EUR)'],
     data.transactionRows.map(r => mode === 'real' 
       ? [
           formatDateTime(r.saleDateTime),
@@ -131,7 +175,9 @@ export const exportToCSV = (data: ReportData) => {
           r.kg.toFixed(3),
           r.pricePerPieceEur.toFixed(2),
           r.revenueEur.toFixed(2),
+          r.realDeliveryId,
           r.realDeliveryDisplayId,
+          r.accountingDeliveryId,
           r.accountingDeliveryDisplayId,
           r.eurPerKgRealSnapshot.toFixed(2),
           r.cogsRealEur.toFixed(2),
@@ -146,6 +192,9 @@ export const exportToCSV = (data: ReportData) => {
           r.kg.toFixed(3),
           r.pricePerPieceEur.toFixed(2),
           r.revenueEur.toFixed(2),
+          r.realDeliveryId,
+          r.realDeliveryDisplayId,
+          r.accountingDeliveryId,
           r.accountingDeliveryDisplayId,
           r.eurPerKgAccSnapshot.toFixed(2),
           r.cogsAccEur.toFixed(2),
@@ -189,8 +238,9 @@ export const exportToExcel = async (data: ReportData) => {
   let deliveriesData: (string | number)[][];
   
   if (mode === 'real') {
-    deliveriesHeaders = ['Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'Изкарани (EUR)'];
+    deliveriesHeaders = ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'];
     deliveriesData = data.deliveryRows.map(r => [
+      r.deliveryId,
       r.deliveryDisplayId,
       formatDate(r.deliveryDate),
       r.qualityName,
@@ -205,15 +255,21 @@ export const exportToExcel = async (data: ReportData) => {
       r.cogsEur,
       r.profitEur,
       r.marginPercent,
+      r.avgPricePerKgEur,
       r.earnedFromDeliveryEur,
     ]);
   } else {
-    deliveriesHeaders = ['Доставка', 'Дата', 'Качество', 'Фактура №', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'];
+    deliveriesHeaders = ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg дост.', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'];
     deliveriesData = data.deliveryRows.map(r => [
+      r.deliveryId,
       r.deliveryDisplayId,
       formatDate(r.deliveryDate),
       r.qualityName,
+      r.isInvoiced ? 'Да' : 'Не',
       r.invoiceNumber,
+      r.kgIn,
+      r.eurPerKgDelivery,
+      r.totalDeliveryCostEur,
       r.kgSold,
       r.piecesSold,
       r.revenueEur,
@@ -221,6 +277,7 @@ export const exportToExcel = async (data: ReportData) => {
       r.profitEur,
       r.marginPercent,
       r.avgPricePerKgEur,
+      r.earnedFromDeliveryEur,
     ]);
   }
   
@@ -229,8 +286,9 @@ export const exportToExcel = async (data: ReportData) => {
 
   // Sheet 3: By Qualities (само за Real)
   if (mode === 'real') {
-    const qualitiesHeaders = ['Качество', 'kg', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'];
+    const qualitiesHeaders = ['Quality ID', 'Качество', 'kg', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'];
     const qualitiesData = data.qualityRows.map(r => [
+      r.qualityId,
       r.qualityName,
       r.kgSold,
       r.piecesSold,
@@ -244,12 +302,28 @@ export const exportToExcel = async (data: ReportData) => {
     XLSX.utils.book_append_sheet(wb, wsQualities, 'By Qualities');
   }
 
-  // Sheet 4 (or 3 for Accounting): Transactions
+  // Sheet 4: By Articles
+  const articlesHeaders = ['Article ID', 'Артикул', 'Бройки', 'kg', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/бр'];
+  const articlesData = data.articleRows.map(r => [
+    r.articleId,
+    r.articleName,
+    r.piecesSold,
+    r.kgSold,
+    r.revenueEur,
+    r.cogsEur,
+    r.profitEur,
+    r.marginPercent,
+    r.avgPricePerPieceEur,
+  ]);
+  const wsArticles = XLSX.utils.aoa_to_sheet([articlesHeaders, ...articlesData]);
+  XLSX.utils.book_append_sheet(wb, wsArticles, 'By Articles');
+
+  // Sheet 5 (or 4 for Accounting): Transactions
   let transHeaders: string[];
   let transData: (string | number)[][];
   
   if (mode === 'real') {
-    transHeaders = ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real доставка', 'Accounting доставка', 'EUR/kg (R)', 'Себестойност (EUR)', 'Печалба (EUR)'];
+    transHeaders = ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real Delivery ID', 'Real доставка', 'Acc Delivery ID', 'Accounting доставка', 'EUR/kg (R)', 'Себестойност (EUR)', 'Печалба (EUR)'];
     transData = data.transactionRows.map(r => [
       formatDateTime(r.saleDateTime),
       r.saleNumber,
@@ -259,14 +333,16 @@ export const exportToExcel = async (data: ReportData) => {
       r.kg,
       r.pricePerPieceEur,
       r.revenueEur,
+      r.realDeliveryId,
       r.realDeliveryDisplayId,
+      r.accountingDeliveryId,
       r.accountingDeliveryDisplayId,
       r.eurPerKgRealSnapshot,
       r.cogsRealEur,
       r.profitRealEur,
     ]);
   } else {
-    transHeaders = ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Accounting доставка', 'EUR/kg (A)', 'Себестойност (EUR)', 'Печалба (EUR)'];
+    transHeaders = ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real Delivery ID', 'Real доставка', 'Acc Delivery ID', 'Accounting доставка', 'EUR/kg (A)', 'Себестойност (EUR)', 'Печалба (EUR)'];
     transData = data.transactionRows.map(r => [
       formatDateTime(r.saleDateTime),
       r.saleNumber,
@@ -276,6 +352,9 @@ export const exportToExcel = async (data: ReportData) => {
       r.kg,
       r.pricePerPieceEur,
       r.revenueEur,
+      r.realDeliveryId,
+      r.realDeliveryDisplayId,
+      r.accountingDeliveryId,
       r.accountingDeliveryDisplayId,
       r.eurPerKgAccSnapshot,
       r.cogsAccEur,
@@ -376,6 +455,33 @@ export const exportToPDF = async (data: ReportData) => {
     startY: finalY + 20,
     head: [deliveriesHead],
     body: deliveriesBody,
+    theme: 'grid',
+    headStyles: { fillColor: [255, 122, 0], fontSize: 8 },
+    bodyStyles: { fontSize: 7 },
+    margin: { left: 14 },
+  });
+
+  // Articles table
+  const finalY2 = (doc as any).lastAutoTable?.finalY || 200;
+  
+  doc.setFontSize(12);
+  doc.text('Отчет по артикули', 14, finalY2 + 15);
+  
+  const articlesHead = ['Артикул', 'Бройки', 'kg', 'Оборот', 'COGS', 'Печалба', 'Марж%'];
+  const articlesBody = data.articleRows.map(r => [
+    r.articleName.substring(0, 30),
+    r.piecesSold,
+    r.kgSold.toFixed(1),
+    r.revenueEur.toFixed(2),
+    r.cogsEur.toFixed(2),
+    r.profitEur.toFixed(2),
+    r.marginPercent.toFixed(1),
+  ]);
+  
+  (doc as any).autoTable({
+    startY: finalY2 + 20,
+    head: [articlesHead],
+    body: articlesBody,
     theme: 'grid',
     headStyles: { fillColor: [255, 122, 0], fontSize: 8 },
     bodyStyles: { fontSize: 7 },
