@@ -1,4 +1,17 @@
 import type { ReportData, ReportMode } from '../types';
+import * as pdfMakeLib from 'pdfmake/build/pdfmake';
+import * as pdfFontsLib from 'pdfmake/build/vfs_fonts';
+
+// Вземаме правилните референции
+const pdfMake: any = (pdfMakeLib as any).default || pdfMakeLib;
+const pdfFonts: any = (pdfFontsLib as any).default || pdfFontsLib;
+
+// Настройваме vfs шрифтовете веднъж при зареждане на модула
+if (pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+} else if (pdfFonts.vfs) {
+  pdfMake.vfs = pdfFonts.vfs;
+}
 
 const formatDateTime = (date: Date): string => {
   return date.toLocaleString('bg-BG', {
@@ -78,23 +91,23 @@ export const exportToCSV = (data: ReportData) => {
     const deliveriesCSV = arrayToCSV(
       ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
       data.deliveryRows.map(r => [
-        r.deliveryId,
-        r.deliveryDisplayId,
+        r.deliveryId || '',
+        r.deliveryDisplayId || '',
         formatDate(r.deliveryDate),
-        r.qualityName,
+        r.qualityName || '',
         r.isInvoiced ? 'Да' : 'Не',
-        r.invoiceNumber,
-        r.kgIn.toFixed(2),
-        r.eurPerKgDelivery.toFixed(2),
-        r.totalDeliveryCostEur.toFixed(2),
-        r.kgSold.toFixed(2),
-        String(r.piecesSold),
-        r.revenueEur.toFixed(2),
-        r.cogsEur.toFixed(2),
-        r.profitEur.toFixed(2),
-        r.marginPercent.toFixed(1),
-        r.avgPricePerKgEur.toFixed(2),
-        r.earnedFromDeliveryEur.toFixed(2),
+        r.invoiceNumber || '',
+        (r.kgIn || 0).toFixed(2),
+        (r.eurPerKgDelivery || 0).toFixed(2),
+        (r.totalDeliveryCostEur || 0).toFixed(2),
+        (r.kgSold || 0).toFixed(2),
+        String(r.piecesSold || 0),
+        (r.revenueEur || 0).toFixed(2),
+        (r.cogsEur || 0).toFixed(2),
+        (r.profitEur || 0).toFixed(2),
+        (r.marginPercent || 0).toFixed(1),
+        (r.avgPricePerKgEur || 0).toFixed(2),
+        (r.earnedFromDeliveryEur || 0).toFixed(2),
       ])
     );
     downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
@@ -102,23 +115,23 @@ export const exportToCSV = (data: ReportData) => {
     const deliveriesCSV = arrayToCSV(
       ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg дост.', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
       data.deliveryRows.map(r => [
-        r.deliveryId,
-        r.deliveryDisplayId,
+        r.deliveryId || '',
+        r.deliveryDisplayId || '',
         formatDate(r.deliveryDate),
-        r.qualityName,
+        r.qualityName || '',
         r.isInvoiced ? 'Да' : 'Не',
-        r.invoiceNumber,
-        r.kgIn.toFixed(2),
-        r.eurPerKgDelivery.toFixed(2),
-        r.totalDeliveryCostEur.toFixed(2),
-        r.kgSold.toFixed(2),
-        String(r.piecesSold),
-        r.revenueEur.toFixed(2),
-        r.cogsEur.toFixed(2),
-        r.profitEur.toFixed(2),
-        r.marginPercent.toFixed(1),
-        r.avgPricePerKgEur.toFixed(2),
-        r.earnedFromDeliveryEur.toFixed(2),
+        r.invoiceNumber || '',
+        (r.kgIn || 0).toFixed(2),
+        (r.eurPerKgDelivery || 0).toFixed(2),
+        (r.totalDeliveryCostEur || 0).toFixed(2),
+        (r.kgSold || 0).toFixed(2),
+        String(r.piecesSold || 0),
+        (r.revenueEur || 0).toFixed(2),
+        (r.cogsEur || 0).toFixed(2),
+        (r.profitEur || 0).toFixed(2),
+        (r.marginPercent || 0).toFixed(1),
+        (r.avgPricePerKgEur || 0).toFixed(2),
+        (r.earnedFromDeliveryEur || 0).toFixed(2),
       ])
     );
     downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
@@ -129,15 +142,15 @@ export const exportToCSV = (data: ReportData) => {
     const qualitiesCSV = arrayToCSV(
       ['Quality ID', 'Качество', 'kg', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'],
       data.qualityRows.map(r => [
-        String(r.qualityId),
-        r.qualityName,
-        r.kgSold.toFixed(2),
-        String(r.piecesSold),
-        r.revenueEur.toFixed(2),
-        r.cogsEur.toFixed(2),
-        r.profitEur.toFixed(2),
-        r.marginPercent.toFixed(1),
-        r.avgPricePerKgEur.toFixed(2),
+        String(r.qualityId || ''),
+        r.qualityName || '',
+        (r.kgSold || 0).toFixed(2),
+        String(r.piecesSold || 0),
+        (r.revenueEur || 0).toFixed(2),
+        (r.cogsEur || 0).toFixed(2),
+        (r.profitEur || 0).toFixed(2),
+        (r.marginPercent || 0).toFixed(1),
+        (r.avgPricePerKgEur || 0).toFixed(2),
       ])
     );
     downloadFile(qualitiesCSV, getFileName(mode, 'ByQualities', 'csv'), 'text/csv;charset=utf-8');
@@ -147,15 +160,15 @@ export const exportToCSV = (data: ReportData) => {
   const articlesCSV = arrayToCSV(
     ['Article ID', 'Артикул', 'Бройки', 'kg', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/бр'],
     data.articleRows.map(r => [
-      r.articleId,
-      r.articleName,
-      String(r.piecesSold),
-      r.kgSold.toFixed(2),
-      r.revenueEur.toFixed(2),
-      r.cogsEur.toFixed(2),
-      r.profitEur.toFixed(2),
-      r.marginPercent.toFixed(1),
-      r.avgPricePerPieceEur.toFixed(2),
+      r.articleId || '',
+      r.articleName || '',
+      String(r.piecesSold || 0),
+      (r.kgSold || 0).toFixed(2),
+      (r.revenueEur || 0).toFixed(2),
+      (r.cogsEur || 0).toFixed(2),
+      (r.profitEur || 0).toFixed(2),
+      (r.marginPercent || 0).toFixed(1),
+      (r.avgPricePerPieceEur || 0).toFixed(2),
     ])
   );
   downloadFile(articlesCSV, getFileName(mode, 'ByArticles', 'csv'), 'text/csv;charset=utf-8');
@@ -240,44 +253,44 @@ export const exportToExcel = async (data: ReportData) => {
   if (mode === 'real') {
     deliveriesHeaders = ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'];
     deliveriesData = data.deliveryRows.map(r => [
-      r.deliveryId,
-      r.deliveryDisplayId,
+      r.deliveryId || '',
+      r.deliveryDisplayId || '',
       formatDate(r.deliveryDate),
-      r.qualityName,
+      r.qualityName || '',
       r.isInvoiced ? 'Да' : 'Не',
-      r.invoiceNumber,
-      r.kgIn,
-      r.eurPerKgDelivery,
-      r.totalDeliveryCostEur,
-      r.kgSold,
-      r.piecesSold,
-      r.revenueEur,
-      r.cogsEur,
-      r.profitEur,
-      r.marginPercent,
-      r.avgPricePerKgEur,
-      r.earnedFromDeliveryEur,
+      r.invoiceNumber || '',
+      r.kgIn || 0,
+      r.eurPerKgDelivery || 0,
+      r.totalDeliveryCostEur || 0,
+      r.kgSold || 0,
+      r.piecesSold || 0,
+      r.revenueEur || 0,
+      r.cogsEur || 0,
+      r.profitEur || 0,
+      r.marginPercent || 0,
+      r.avgPricePerKgEur || 0,
+      r.earnedFromDeliveryEur || 0,
     ]);
   } else {
     deliveriesHeaders = ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg дост.', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'];
     deliveriesData = data.deliveryRows.map(r => [
-      r.deliveryId,
-      r.deliveryDisplayId,
+      r.deliveryId || '',
+      r.deliveryDisplayId || '',
       formatDate(r.deliveryDate),
-      r.qualityName,
+      r.qualityName || '',
       r.isInvoiced ? 'Да' : 'Не',
-      r.invoiceNumber,
-      r.kgIn,
-      r.eurPerKgDelivery,
-      r.totalDeliveryCostEur,
-      r.kgSold,
-      r.piecesSold,
-      r.revenueEur,
-      r.cogsEur,
-      r.profitEur,
-      r.marginPercent,
-      r.avgPricePerKgEur,
-      r.earnedFromDeliveryEur,
+      r.invoiceNumber || '',
+      r.kgIn || 0,
+      r.eurPerKgDelivery || 0,
+      r.totalDeliveryCostEur || 0,
+      r.kgSold || 0,
+      r.piecesSold || 0,
+      r.revenueEur || 0,
+      r.cogsEur || 0,
+      r.profitEur || 0,
+      r.marginPercent || 0,
+      r.avgPricePerKgEur || 0,
+      r.earnedFromDeliveryEur || 0,
     ]);
   }
   
@@ -288,15 +301,15 @@ export const exportToExcel = async (data: ReportData) => {
   if (mode === 'real') {
     const qualitiesHeaders = ['Quality ID', 'Качество', 'kg', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'];
     const qualitiesData = data.qualityRows.map(r => [
-      r.qualityId,
-      r.qualityName,
-      r.kgSold,
-      r.piecesSold,
-      r.revenueEur,
-      r.cogsEur,
-      r.profitEur,
-      r.marginPercent,
-      r.avgPricePerKgEur,
+      r.qualityId || '',
+      r.qualityName || '',
+      r.kgSold || 0,
+      r.piecesSold || 0,
+      r.revenueEur || 0,
+      r.cogsEur || 0,
+      r.profitEur || 0,
+      r.marginPercent || 0,
+      r.avgPricePerKgEur || 0,
     ]);
     const wsQualities = XLSX.utils.aoa_to_sheet([qualitiesHeaders, ...qualitiesData]);
     XLSX.utils.book_append_sheet(wb, wsQualities, 'By Qualities');
@@ -305,15 +318,15 @@ export const exportToExcel = async (data: ReportData) => {
   // Sheet 4: By Articles
   const articlesHeaders = ['Article ID', 'Артикул', 'Бройки', 'kg', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/бр'];
   const articlesData = data.articleRows.map(r => [
-    r.articleId,
-    r.articleName,
-    r.piecesSold,
-    r.kgSold,
-    r.revenueEur,
-    r.cogsEur,
-    r.profitEur,
-    r.marginPercent,
-    r.avgPricePerPieceEur,
+    r.articleId || '',
+    r.articleName || '',
+    r.piecesSold || 0,
+    r.kgSold || 0,
+    r.revenueEur || 0,
+    r.cogsEur || 0,
+    r.profitEur || 0,
+    r.marginPercent || 0,
+    r.avgPricePerPieceEur || 0,
   ]);
   const wsArticles = XLSX.utils.aoa_to_sheet([articlesHeaders, ...articlesData]);
   XLSX.utils.book_append_sheet(wb, wsArticles, 'By Articles');
@@ -372,122 +385,165 @@ export const exportToExcel = async (data: ReportData) => {
 // ============ PDF EXPORT ============
 
 export const exportToPDF = async (data: ReportData) => {
-  // Динамично зареждаме jspdf
-  const { jsPDF } = await import('jspdf');
-  await import('jspdf-autotable');
-  
-  const mode = data.filters.mode;
-  const doc = new jsPDF({ orientation: 'landscape' });
-  
-  // Заглавие
-  doc.setFontSize(18);
-  doc.text(mode === 'real' ? 'Реален месечен отчет' : 'Счетоводен месечен отчет', 14, 22);
-  
-  doc.setFontSize(11);
-  doc.text(`Период: ${data.periodLabel}`, 14, 32);
-  doc.text(`Генерирано: ${formatDateTime(data.generatedAt)}`, 14, 38);
-  
-  // Summary
-  doc.setFontSize(12);
-  doc.text('Обобщение', 14, 50);
-  
-  const summaryBody = [
-    ['Оборот (EUR)', data.summary.revenueEur.toFixed(2)],
-    ['Себестойност (EUR)', data.summary.cogsEur.toFixed(2)],
-    ['Печалба (EUR)', data.summary.profitEur.toFixed(2)],
-    ['Марж %', data.summary.marginPercent.toFixed(1) + '%'],
-    ['Продадени kg', data.summary.totalKg.toFixed(2)],
-    ['Бройки', String(data.summary.totalPieces)],
-    ['Брой продажби', String(data.summary.salesCount)],
-  ];
-  
-  (doc as any).autoTable({
-    startY: 55,
-    head: [['Показател', 'Стойност']],
-    body: summaryBody,
-    theme: 'grid',
-    headStyles: { fillColor: [255, 122, 0] },
-    margin: { left: 14 },
-    tableWidth: 80,
-  });
-  
-  // Deliveries table
-  let deliveriesHead: string[];
-  let deliveriesBody: (string | number)[][];
-  
-  if (mode === 'real') {
-    deliveriesHead = ['Доставка', 'Дата', 'Качество', 'Фактура', 'kg прод.', 'Бройки', 'Оборот', 'COGS', 'Печалба', 'Марж%', 'Изкарани'];
-    deliveriesBody = data.deliveryRows.map(r => [
-      r.deliveryDisplayId,
-      formatDate(r.deliveryDate),
-      r.qualityName.substring(0, 20),
-      r.invoiceNumber || '-',
-      r.kgSold.toFixed(1),
-      r.piecesSold,
-      r.revenueEur.toFixed(2),
-      r.cogsEur.toFixed(2),
-      r.profitEur.toFixed(2),
-      r.marginPercent.toFixed(1),
-      r.earnedFromDeliveryEur.toFixed(2),
-    ]);
-  } else {
-    deliveriesHead = ['Доставка', 'Дата', 'Качество', 'Фактура', 'kg прод.', 'Бройки', 'Оборот', 'COGS', 'Печалба', 'Марж%'];
-    deliveriesBody = data.deliveryRows.map(r => [
-      r.deliveryDisplayId,
-      formatDate(r.deliveryDate),
-      r.qualityName.substring(0, 20),
-      r.invoiceNumber,
-      r.kgSold.toFixed(1),
-      r.piecesSold,
-      r.revenueEur.toFixed(2),
-      r.cogsEur.toFixed(2),
-      r.profitEur.toFixed(2),
-      r.marginPercent.toFixed(1),
-    ]);
+  try {
+    const mode = data.filters.mode;
+    
+    // Подготвяме таблица със summary данни
+    const summaryTable = {
+      table: {
+        widths: [150, 100],
+        body: [
+          [
+            { text: 'Показател', fillColor: '#FF7A00', color: '#FFFFFF', bold: true },
+            { text: 'Стойност', fillColor: '#FF7A00', color: '#FFFFFF', bold: true }
+          ],
+          ['Оборот (EUR)', data.summary.revenueEur.toFixed(2)],
+          ['Себестойност (EUR)', data.summary.cogsEur.toFixed(2)],
+          ['Печалба (EUR)', data.summary.profitEur.toFixed(2)],
+          ['Марж %', data.summary.marginPercent.toFixed(1) + '%'],
+          ['Продадени kg', data.summary.totalKg.toFixed(2)],
+          ['Бройки', String(data.summary.totalPieces)],
+          ['Брой продажби', String(data.summary.salesCount)],
+        ]
+      },
+      layout: 'lightHorizontalLines'
+    };
+    
+    // Подготвяме таблица с доставки
+    let deliveriesTable;
+    if (mode === 'real') {
+      deliveriesTable = {
+        table: {
+          headerRows: 1,
+          widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Доставка', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Дата', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Качество', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Фактура', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'kg прод.', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Бройки', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Оборот', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'COGS', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Печалба', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Марж%', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Изкарани', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 }
+            ],
+            ...data.deliveryRows.map(r => [
+              { text: r.deliveryDisplayId || '', fontSize: 8 },
+              { text: formatDate(r.deliveryDate), fontSize: 8 },
+              { text: (r.qualityName || '').substring(0, 20), fontSize: 8 },
+              { text: r.invoiceNumber || '-', fontSize: 8 },
+              { text: (r.kgSold || 0).toFixed(1), fontSize: 8 },
+              { text: String(r.piecesSold || 0), fontSize: 8 },
+              { text: (r.revenueEur || 0).toFixed(2), fontSize: 8 },
+              { text: (r.cogsEur || 0).toFixed(2), fontSize: 8 },
+              { text: (r.profitEur || 0).toFixed(2), fontSize: 8 },
+              { text: (r.marginPercent || 0).toFixed(1), fontSize: 8 },
+              { text: (r.earnedFromDeliveryEur || 0).toFixed(2), fontSize: 8 }
+            ])
+          ]
+        },
+        layout: 'lightHorizontalLines',
+        fontSize: 8
+      };
+    } else {
+      deliveriesTable = {
+        table: {
+          headerRows: 1,
+          widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Доставка', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Дата', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Качество', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Фактура', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'kg прод.', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Бройки', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Оборот', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'COGS', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Печалба', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+              { text: 'Марж%', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 }
+            ],
+            ...data.deliveryRows.map(r => [
+              { text: r.deliveryDisplayId || '', fontSize: 8 },
+              { text: formatDate(r.deliveryDate), fontSize: 8 },
+              { text: (r.qualityName || '').substring(0, 20), fontSize: 8 },
+              { text: r.invoiceNumber || '-', fontSize: 8 },
+              { text: (r.kgSold || 0).toFixed(1), fontSize: 8 },
+              { text: String(r.piecesSold || 0), fontSize: 8 },
+              { text: (r.revenueEur || 0).toFixed(2), fontSize: 8 },
+              { text: (r.cogsEur || 0).toFixed(2), fontSize: 8 },
+              { text: (r.profitEur || 0).toFixed(2), fontSize: 8 },
+              { text: (r.marginPercent || 0).toFixed(1), fontSize: 8 }
+            ])
+          ]
+        },
+        layout: 'lightHorizontalLines',
+        fontSize: 8
+      };
+    }
+    
+    // Подготвяме таблица с артикули (ако има данни)
+    const articlesTable = data.articleRows && data.articleRows.length > 0 ? {
+      table: {
+        headerRows: 1,
+        widths: ['*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+        body: [
+          [
+            { text: 'Артикул', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'Бройки', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'kg', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'Оборот', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'COGS', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'Печалба', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 },
+            { text: 'Марж%', fillColor: '#FF7A00', color: '#FFFFFF', bold: true, fontSize: 9 }
+          ],
+          ...data.articleRows.map(r => [
+            { text: (r.articleName || '').substring(0, 30), fontSize: 8 },
+            { text: String(r.piecesSold || 0), fontSize: 8 },
+            { text: (r.kgSold || 0).toFixed(1), fontSize: 8 },
+            { text: (r.revenueEur || 0).toFixed(2), fontSize: 8 },
+            { text: (r.cogsEur || 0).toFixed(2), fontSize: 8 },
+            { text: (r.profitEur || 0).toFixed(2), fontSize: 8 },
+            { text: (r.marginPercent || 0).toFixed(1), fontSize: 8 }
+          ])
+        ]
+      },
+      layout: 'lightHorizontalLines',
+      fontSize: 8
+    } : null;
+    
+    // Създаваме document definition
+    const content: any[] = [
+      { text: mode === 'real' ? 'Реален месечен отчет' : 'Счетоводен месечен отчет', fontSize: 20, bold: true, margin: [0, 0, 0, 10] },
+      { text: `Период: ${data.periodLabel}`, fontSize: 11, margin: [0, 0, 0, 5] },
+      { text: `Генерирано: ${formatDateTime(data.generatedAt)}`, fontSize: 11, margin: [0, 0, 0, 20] },
+      { text: 'Обобщение', fontSize: 14, bold: true, margin: [0, 0, 0, 10] },
+      summaryTable,
+      { text: 'Отчет по доставки', fontSize: 14, bold: true, margin: [0, 20, 0, 10] },
+      deliveriesTable
+    ];
+    
+    if (articlesTable) {
+      content.push({ text: 'Отчет по артикули', fontSize: 14, bold: true, margin: [0, 20, 0, 10], pageBreak: 'before' });
+      content.push(articlesTable);
+    }
+    
+    const docDefinition: any = {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      content,
+      defaultStyle: {
+        font: 'Roboto'
+      }
+    };
+    
+    // Генерираме и изтегляме PDF
+    pdfMake.createPdf(docDefinition).download(getFileName(mode, 'Report', 'pdf'));
+  } catch (error) {
+    console.error('PDF export error:', error);
+    throw new Error('Грешка при генериране на PDF файл');
   }
-  
-  const finalY = (doc as any).lastAutoTable?.finalY || 100;
-  
-  doc.setFontSize(12);
-  doc.text('Отчет по доставки', 14, finalY + 15);
-  
-  (doc as any).autoTable({
-    startY: finalY + 20,
-    head: [deliveriesHead],
-    body: deliveriesBody,
-    theme: 'grid',
-    headStyles: { fillColor: [255, 122, 0], fontSize: 8 },
-    bodyStyles: { fontSize: 7 },
-    margin: { left: 14 },
-  });
-
-  // Articles table
-  const finalY2 = (doc as any).lastAutoTable?.finalY || 200;
-  
-  doc.setFontSize(12);
-  doc.text('Отчет по артикули', 14, finalY2 + 15);
-  
-  const articlesHead = ['Артикул', 'Бройки', 'kg', 'Оборот', 'COGS', 'Печалба', 'Марж%'];
-  const articlesBody = data.articleRows.map(r => [
-    r.articleName.substring(0, 30),
-    r.piecesSold,
-    r.kgSold.toFixed(1),
-    r.revenueEur.toFixed(2),
-    r.cogsEur.toFixed(2),
-    r.profitEur.toFixed(2),
-    r.marginPercent.toFixed(1),
-  ]);
-  
-  (doc as any).autoTable({
-    startY: finalY2 + 20,
-    head: [articlesHead],
-    body: articlesBody,
-    theme: 'grid',
-    headStyles: { fillColor: [255, 122, 0], fontSize: 8 },
-    bodyStyles: { fontSize: 7 },
-    margin: { left: 14 },
-  });
-  
-  // Записваме файла
-  doc.save(getFileName(mode, 'Report', 'pdf'));
 };
