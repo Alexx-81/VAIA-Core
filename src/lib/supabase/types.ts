@@ -1,7 +1,4 @@
-// Auto-generated TypeScript types from Supabase schema
-// Last updated: 2026-02-06
-
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -224,7 +221,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "qualities"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       employee_permissions: {
@@ -253,7 +250,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       employees: {
@@ -359,36 +356,7 @@ export type Database = {
           unit_price_eur?: number
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "sale_lines_accounting_delivery_id_fkey"
-            columns: ["accounting_delivery_id"]
-            isOneToOne: false
-            referencedRelation: "deliveries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sale_lines_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sale_lines_real_delivery_id_fkey"
-            columns: ["real_delivery_id"]
-            isOneToOne: false
-            referencedRelation: "deliveries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sale_lines_sale_id_fkey"
-            columns: ["sale_id"]
-            isOneToOne: false
-            referencedRelation: "sales"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       sales: {
         Row: {
@@ -409,7 +377,7 @@ export type Database = {
           id?: string
           note?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
-          sale_number?: string
+          sale_number: string
           status?: Database["public"]["Enums"]["sale_status"]
           updated_at?: string
         }
@@ -433,6 +401,8 @@ export type Database = {
           created_at: string | null
           date: string | null
           display_id: string | null
+          earned_acc_eur: number | null
+          earned_real_eur: number | null
           id: string | null
           invoice_number: string | null
           is_invoiced: boolean | null
@@ -444,54 +414,34 @@ export type Database = {
           note: string | null
           quality_id: number | null
           quality_name: string | null
+          revenue_acc_eur: number | null
+          revenue_real_eur: number | null
           supplier_name: string | null
           total_cost_eur: number | null
           unit_cost_per_kg: number | null
           updated_at: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "deliveries_quality_id_fkey"
-            columns: ["quality_id"]
-            isOneToOne: false
-            referencedRelation: "qualities"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      delivery_sales_accounting: {
-        Row: {
-          delivery_id: string | null
-          kg_sold_acc: number | null
-        }
-        Relationships: []
-      }
-      delivery_sales_real: {
-        Row: {
-          delivery_id: string | null
-          kg_sold_real: number | null
-        }
         Relationships: []
       }
       sale_lines_computed: {
         Row: {
-          accounting_delivery_id: string | null
+          id: string | null
+          sale_id: string | null
           article_id: string | null
           article_name: string | null
-          cogs_acc_eur: number | null
-          cogs_real_eur: number | null
-          id: string | null
-          kg_line: number | null
-          kg_per_piece_snapshot: number | null
-          profit_acc_eur: number | null
-          profit_real_eur: number | null
           quantity: number | null
-          real_delivery_id: string | null
-          revenue_eur: number | null
-          sale_id: string | null
-          unit_cost_per_kg_acc_snapshot: number | null
-          unit_cost_per_kg_real_snapshot: number | null
           unit_price_eur: number | null
+          real_delivery_id: string | null
+          accounting_delivery_id: string | null
+          kg_per_piece_snapshot: number | null
+          unit_cost_per_kg_real_snapshot: number | null
+          unit_cost_per_kg_acc_snapshot: number | null
+          revenue_eur: number | null
+          kg_line: number | null
+          cogs_real_eur: number | null
+          cogs_acc_eur: number | null
+          profit_real_eur: number | null
+          profit_acc_eur: number | null
         }
         Relationships: []
       }
@@ -525,9 +475,10 @@ export type Database = {
       generate_sale_number: { Args: Record<string, never>; Returns: string }
       get_my_role: { Args: Record<string, never>; Returns: string }
       is_admin: { Args: Record<string, never>; Returns: boolean }
+      is_demo: { Args: Record<string, never>; Returns: boolean }
     }
     Enums: {
-      payment_method: "cash" | "card" | "other"
+      payment_method: "cash" | "card" | "other" | "no-cash"
       sale_status: "draft" | "finalized"
     }
     CompositeTypes: {
@@ -536,49 +487,43 @@ export type Database = {
   }
 }
 
-// Helper types for easier usage
-export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"]
-export type TablesInsert<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"]
-export type TablesUpdate<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Update"]
-export type Views<T extends keyof Database["public"]["Views"]> = Database["public"]["Views"][T]["Row"]
-export type Enums<T extends keyof Database["public"]["Enums"]> = Database["public"]["Enums"][T]
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
+export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
 
-// Convenience type aliases
-export type Quality = Tables<"qualities">
-export type QualityInsert = TablesInsert<"qualities">
-export type QualityUpdate = TablesUpdate<"qualities">
+// Generated helper types
+export type Article = Tables<'articles'>
+export type ArticleInsert = TablesInsert<'articles'>
+export type ArticleUpdate = TablesUpdate<'articles'>
 
-export type Article = Tables<"articles">
-export type ArticleInsert = TablesInsert<"articles">
-export type ArticleUpdate = TablesUpdate<"articles">
+export type Delivery = Tables<'deliveries'>
+export type DeliveryInsert = TablesInsert<'deliveries'>
+export type DeliveryUpdate = TablesUpdate<'deliveries'>
 
-export type Delivery = Tables<"deliveries">
-export type DeliveryInsert = TablesInsert<"deliveries">
-export type DeliveryUpdate = TablesUpdate<"deliveries">
+export type Quality = Tables<'qualities'>
+export type QualityInsert = TablesInsert<'qualities'>
+export type QualityUpdate = TablesUpdate<'qualities'>
 
-export type Sale = Tables<"sales">
-export type SaleInsert = TablesInsert<"sales">
-export type SaleUpdate = TablesUpdate<"sales">
+export type Sale = Tables<'sales'>
+export type SaleInsert = TablesInsert<'sales'>
+export type SaleUpdate = TablesUpdate<'sales'>
 
-export type SaleLine = Tables<"sale_lines">
-export type SaleLineInsert = TablesInsert<"sale_lines">
-export type SaleLineUpdate = TablesUpdate<"sale_lines">
+export type SaleLine = Tables<'sale_lines'>
+export type SaleLineInsert = TablesInsert<'sale_lines'>
+export type SaleLineUpdate = TablesUpdate<'sale_lines'>
 
-export type AppSettings = Tables<"app_settings">
-export type AppSettingsUpdate = TablesUpdate<"app_settings">
+export type AppSettings = Tables<'app_settings'>
+export type AppSettingsUpdate = TablesUpdate<'app_settings'>
 
-// View types
-export type DeliveryInventory = Views<"delivery_inventory">
-export type SalesSummary = Views<"sales_summary">
-export type SaleLineComputed = Views<"sale_lines_computed">
+export type Employee = Tables<'employees'>
+export type EmployeePermission = Tables<'employee_permissions'>
 
-export type PaymentMethod = Enums<"payment_method">
-export type SaleStatus = Enums<"sale_status">
+export type DeliveryInventory = Database['public']['Views']['delivery_inventory']['Row']
+export type SaleSummary = Database['public']['Views']['sales_summary']['Row']
+export type SalesSummary = SaleSummary  // Alias for compatibility
+export type SaleLineComputed = Database['public']['Views']['sale_lines_computed']['Row']
 
-export type Employee = Tables<"employees">
-export type EmployeeInsert = TablesInsert<"employees">
-export type EmployeeUpdate = TablesUpdate<"employees">
+export type PaymentMethod = Database['public']['Enums']['payment_method']
+export type SaleStatus = Database['public']['Enums']['sale_status']
 
-export type EmployeePermission = Tables<"employee_permissions">
-export type EmployeePermissionInsert = TablesInsert<"employee_permissions">
-export type EmployeePermissionUpdate = TablesUpdate<"employee_permissions">

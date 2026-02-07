@@ -1,4 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '../../../lib/supabase';
+import type { DeliveryInventory } from '../../../lib/supabase/types';
 import type { 
   InventoryFilters, 
   InventoryRealRow, 
@@ -7,8 +9,6 @@ import type {
   InventoryStats,
   Quality 
 } from '../types';
-import { mockDeliveries, mockQualities, mockSalesData } from '../../deliveries/data/mockDeliveries';
-import { mockSales } from '../../sales/data/mockSales';
 
 const defaultFilters: InventoryFilters = {
   search: '',
@@ -21,112 +21,114 @@ const defaultFilters: InventoryFilters = {
 
 export const useInventory = () => {
   const [filters, setFilters] = useState<InventoryFilters>(defaultFilters);
+  const [deliveries, setDeliveries] = useState<DeliveryInventory[]>([]);
+  const [qualities, setQualities] = useState<Quality[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Изчисляване на revenue от продажби за всяка доставка
-  const deliveryRevenues = useMemo(() => {
-    const realRevenue: Record<string, number> = {};
-    const accRevenue: Record<string, number> = {};
+  // Load deliveries from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { data: deliveriesData, error: deliveriesError } = await supabase
+          .from('delivery_inventory')
+          .select('*')
+          .order('date', { ascending: false });
 
-    for (const sale of mockSales) {
-      if (sale.status !== 'finalized') continue;
-      
-      for (const line of sale.lines) {
-        const lineRevenue = line.quantity * line.unitPriceEur;
-        
-        // Real revenue
-        if (line.realDeliveryId) {
-          realRevenue[line.realDeliveryId] = (realRevenue[line.realDeliveryId] || 0) + lineRevenue;
-        }
-        
-        // Accounting revenue
-        const accDeliveryId = line.accountingDeliveryId || line.realDeliveryId;
-        if (accDeliveryId) {
-          accRevenue[accDeliveryId] = (accRevenue[accDeliveryId] || 0) + lineRevenue;
-        }
+        if (deliveriesError) throw deliveriesError;
+        setDeliveries(deliveriesData || []);
+
+        const { data: qualitiesData, error: qualitiesError } = await supabase
+          .from('qualities')
+          .select('*')
+          .order('name');
+
+        if (qualitiesError) throw qualitiesError;
+        setQualities((qualitiesData || []).map(q => ({
+          id: q.id,
+          name: q.name,
+          isActive: q.is_active,
+        })));
+      } catch (error) {
+        console.error('Error loading inventory data:', error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    return { realRevenue, accRevenue };
+    fetchData();
   }, []);
 
   // Real наличности
   const realInventory: InventoryRealRow[] = useMemo(() => {
-    return mockDeliveries.map(delivery => {
-      const salesData = mockSalesData[delivery.id] || { realKgSold: 0, accKgSold: 0 };
-      const kgSoldReal = salesData.realKgSold;
-      const kgRemainingReal = delivery.kgIn - kgSoldReal;
-      const totalCostEur = delivery.kgIn * delivery.unitCostPerKg;
-      const revenueRealEur = deliveryRevenues.realRevenue[delivery.id] || 0;
-      
-      // Ensure date is a Date object (might be string from localStorage)
-      const date = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+    return deliveries.map(d => {
+      const kgRemainingReal = d.kg_remaining_real || 0;
+      const totalCostEur = d.total_cost_eur || 0;
+      const revenueRealEur = d.revenue_real_eur || 0;
+      const earnedRealEur = d.earned_real_eur || 0;
       
       return {
-        deliveryId: delivery.id,
-        displayId: delivery.displayId,
-        date,
-        qualityId: delivery.qualityId,
-        qualityName: delivery.qualityName,
-        invoiceNumber: delivery.invoiceNumber,
-        supplierName: delivery.supplierName,
-        isInvoiced: !!delivery.invoiceNumber,
-        kgIn: delivery.kgIn,
-        unitCostPerKg: delivery.unitCostPerKg,
-        kgSoldReal,
+        deliveryId: d.id || '',
+        displayId: d.display_id || '',
+        date: d.date ? new Date(d.date) : new Date(),
+        qualityId: d.quality_id || 0,
+        qualityName: d.quality_name || '',
+        invoiceNumber: d.invoice_number || undefined,
+        supplierName: d.supplier_name || undefined,
+        isInvoiced: d.is_invoiced || false,
+        kgIn: d.kg_in || 0,
+        unitCostPerKg: d.unit_cost_per_kg || 0,
+        kgSoldReal: d.kg_sold_real || 0,
         kgRemainingReal,
-        percentRemaining: delivery.kgIn > 0 ? (kgRemainingReal / delivery.kgIn) * 100 : 0,
+        percentRemaining: (d.kg_in || 0) > 0 ? (kgRemainingReal / (d.kg_in || 0)) * 100 : 0,
         totalCostEur,
-        valueRemainingRealEur: kgRemainingReal * delivery.unitCostPerKg,
+        valueRemainingRealEur: kgRemainingReal * (d.unit_cost_per_kg || 0),
         revenueRealEur,
-        earnedRealEur: revenueRealEur - totalCostEur,
+        earnedRealEur,
       };
     });
-  }, [deliveryRevenues]);
+  }, [deliveries]);
 
   // Accounting наличности
   const accInventory: InventoryAccRow[] = useMemo(() => {
-    return mockDeliveries.map(delivery => {
-      const salesData = mockSalesData[delivery.id] || { realKgSold: 0, accKgSold: 0 };
-      const kgSoldAcc = salesData.accKgSold;
-      const kgRemainingAcc = delivery.kgIn - kgSoldAcc;
-      const totalCostEur = delivery.kgIn * delivery.unitCostPerKg;
-      const revenueAccEur = deliveryRevenues.accRevenue[delivery.id] || 0;
-      
-      // Ensure date is a Date object (might be string from localStorage)
-      const date = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+    return deliveries.map(d => {
+      const kgRemainingAcc = d.kg_remaining_acc || 0;
+      const totalCostEur = d.total_cost_eur || 0;
+      const revenueAccEur = d.revenue_acc_eur || 0;
+      const earnedAccEur = d.earned_acc_eur || 0;
       
       return {
-        deliveryId: delivery.id,
-        displayId: delivery.displayId,
-        date,
-        qualityId: delivery.qualityId,
-        qualityName: delivery.qualityName,
-        invoiceNumber: delivery.invoiceNumber,
-        supplierName: delivery.supplierName,
-        isInvoiced: !!delivery.invoiceNumber,
-        kgIn: delivery.kgIn,
-        unitCostPerKg: delivery.unitCostPerKg,
-        kgSoldAcc,
+        deliveryId: d.id || '',
+        displayId: d.display_id || '',
+        date: d.date ? new Date(d.date) : new Date(),
+        qualityId: d.quality_id || 0,
+        qualityName: d.quality_name || '',
+        invoiceNumber: d.invoice_number || undefined,
+        supplierName: d.supplier_name || undefined,
+        isInvoiced: d.is_invoiced || false,
+        kgIn: d.kg_in || 0,
+        unitCostPerKg: d.unit_cost_per_kg || 0,
+        kgSoldAcc: d.kg_sold_acc || 0,
         kgRemainingAcc,
-        percentRemaining: delivery.kgIn > 0 ? (kgRemainingAcc / delivery.kgIn) * 100 : 0,
+        percentRemaining: (d.kg_in || 0) > 0 ? (kgRemainingAcc / (d.kg_in || 0)) * 100 : 0,
         totalCostEur,
-        valueRemainingAccEur: kgRemainingAcc * delivery.unitCostPerKg,
+        valueRemainingAccEur: kgRemainingAcc * (d.unit_cost_per_kg || 0),
         revenueAccEur,
-        earnedAccEur: revenueAccEur - totalCostEur,
+        earnedAccEur,
       };
     });
-  }, [deliveryRevenues]);
+  }, [deliveries]);
 
   // Сравнение Real vs Accounting
   const comparisonInventory: InventoryComparisonRow[] = useMemo(() => {
-    return mockDeliveries.map(delivery => {
-      const salesData = mockSalesData[delivery.id] || { realKgSold: 0, accKgSold: 0 };
-      const kgRemainingReal = delivery.kgIn - salesData.realKgSold;
-      const kgRemainingAcc = delivery.kgIn - salesData.accKgSold;
+    return deliveries.map(d => {
+      const kgRemainingReal = d.kg_remaining_real || 0;
+      const kgRemainingAcc = d.kg_remaining_acc || 0;
       const kgDifference = kgRemainingReal - kgRemainingAcc;
-      const totalCostEur = delivery.kgIn * delivery.unitCostPerKg;
-      const revenueRealEur = deliveryRevenues.realRevenue[delivery.id] || 0;
-      const revenueAccEur = deliveryRevenues.accRevenue[delivery.id] || 0;
+      const revenueRealEur = d.revenue_real_eur || 0;
+      const revenueAccEur = d.revenue_acc_eur || 0;
+      const earnedRealEur = d.earned_real_eur || 0;
+      const earnedAccEur = d.earned_acc_eur || 0;
       
       // Определяне на статус
       let status: 'ok' | 'warning' | 'critical' = 'ok';
@@ -135,20 +137,20 @@ export const useInventory = () => {
       }
       
       return {
-        deliveryId: delivery.id,
-        displayId: delivery.displayId,
-        qualityName: delivery.qualityName,
+        deliveryId: d.id || '',
+        displayId: d.display_id || '',
+        qualityName: d.quality_name || '',
         kgRemainingReal,
         kgRemainingAcc,
         kgDifference,
         revenueRealEur,
         revenueAccEur,
-        earnedRealEur: revenueRealEur - totalCostEur,
-        earnedAccEur: revenueAccEur - totalCostEur,
+        earnedRealEur,
+        earnedAccEur,
         status,
       };
     });
-  }, [deliveryRevenues]);
+  }, [deliveries]);
 
   // Филтриране
   const applyFilters = useCallback(<T extends { 
@@ -275,19 +277,16 @@ export const useInventory = () => {
     };
   }, [filteredAccInventory, filters.minKgThreshold]);
 
-  // Качества за dropdown
-  const qualities: Quality[] = useMemo(() => mockQualities, []);
-
   // Уникални доставчици за dropdown
   const suppliers: string[] = useMemo(() => {
     const uniqueSuppliers = new Set<string>();
-    mockDeliveries.forEach(d => {
-      if (d.supplierName) {
-        uniqueSuppliers.add(d.supplierName);
+    deliveries.forEach(d => {
+      if (d.supplier_name) {
+        uniqueSuppliers.add(d.supplier_name);
       }
     });
     return Array.from(uniqueSuppliers).sort();
-  }, []);
+  }, [deliveries]);
 
   // Update filters
   const updateFilters = useCallback((updates: Partial<InventoryFilters>) => {
@@ -306,5 +305,6 @@ export const useInventory = () => {
     accStats,
     qualities,
     suppliers,
+    loading,
   };
 };

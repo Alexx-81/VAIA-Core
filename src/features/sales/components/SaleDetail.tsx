@@ -12,6 +12,7 @@ export const SaleDetail = ({ sale, onBack }: SaleDetailProps) => {
     switch (method) {
       case 'cash': return '💵';
       case 'card': return '💳';
+      case 'no-cash': return '🔓';
       default: return '📄';
     }
   };

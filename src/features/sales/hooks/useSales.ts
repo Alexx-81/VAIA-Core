@@ -37,12 +37,12 @@ interface DbSale {
   id: string;
   sale_number: string;
   date_time: string;
-  payment_method: 'cash' | 'card' | 'other';
+  payment_method: 'cash' | 'card' | 'other' | 'no-cash';
   note: string | null;
   status: 'draft' | 'finalized';
   finalized_at: string | null;
   created_at: string;
-  sale_lines?: DbSaleLine[];
+  sale_lines?: DbSaleLine[] | any;
 }
 
 interface DbArticle {

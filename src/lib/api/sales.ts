@@ -91,7 +91,7 @@ export async function getSaleLinesComputed(saleId: string): Promise<SaleLineComp
 export async function createSale(sale: Omit<SaleInsert, 'sale_number'>): Promise<Sale> {
   const { data, error } = await supabase
     .from('sales')
-    .insert(sale)
+    .insert(sale as SaleInsert)
     .select()
     .single();
 

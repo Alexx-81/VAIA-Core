@@ -22,7 +22,8 @@ export const getNextSaleNumber = (existingSales: Sale[]): string => {
 
 // Helper за payment method label
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
-  cash: 'Кеш',
+  cash: 'По каса',
   card: 'Карта',
+  'no-cash': 'Без каса',
   other: 'Друго',
 };

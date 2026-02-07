@@ -238,8 +238,9 @@ export const SaleEditor = ({
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
               >
-                <option value="cash">💵 Кеш</option>
+                <option value="cash">💵 По каса</option>
                 <option value="card">💳 Карта</option>
+                <option value="no-cash">🔓 Без каса</option>
                 <option value="other">📄 Друго</option>
               </select>
             </div>

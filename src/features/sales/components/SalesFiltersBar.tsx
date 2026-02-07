@@ -85,8 +85,9 @@ export const SalesFiltersBar = ({
           onChange={(e) => handlePaymentMethodChange(e.target.value as PaymentMethod | 'all')}
         >
           <option value="all">Всички</option>
-          <option value="cash">Кеш</option>
+          <option value="cash">По каса</option>
           <option value="card">Карта</option>
+          <option value="no-cash">Без каса</option>
           <option value="other">Друго</option>
         </select>
       </div>

@@ -111,6 +111,11 @@
   color: #3b82f6;
 }
 
+.sale-detail__payment-badge.no-cash {
+  background-color: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
 .sale-detail__payment-badge.other {
   background-color: rgba(168, 85, 247, 0.15);
   color: #a855f7;

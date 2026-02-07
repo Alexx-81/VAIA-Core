@@ -122,6 +122,11 @@
   color: #3b82f6;
 }
 
+.sales-table__payment-badge.no-cash {
+  background-color: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
 .sales-table__payment-badge.other {
   background-color: rgba(168, 85, 247, 0.15);
   color: #a855f7;

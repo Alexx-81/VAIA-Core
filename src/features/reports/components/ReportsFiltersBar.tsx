@@ -236,8 +236,9 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
             onChange={(e) => onFilterChange({ paymentMethod: e.target.value as ReportFilters['paymentMethod'] })}
           >
             <option value="all">Всички</option>
-            <option value="cash">В брой</option>
+            <option value="cash">По каса</option>
             <option value="card">Карта</option>
+            <option value="no-cash">Без каса</option>
             <option value="other">Друго</option>
           </select>
         </div>

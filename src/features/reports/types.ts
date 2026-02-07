@@ -23,7 +23,7 @@ export interface ReportFilters {
   qualityIds: string[]; // Празен = всички
   deliveryId: string; // Празен = всички
   supplierName: string; // \"all\" или конкретен доставчик
-  paymentMethod: 'all' | 'cash' | 'card' | 'other';
+  paymentMethod: 'all' | 'cash' | 'card' | 'other' | 'no-cash';
 }
 
 // Summary статистики
@@ -88,7 +88,7 @@ export interface ArticleReportRow {
 export interface TransactionReportRow {
   saleDateTime: Date;
   saleNumber: string;
-  paymentMethod: 'cash' | 'card' | 'other';
+  paymentMethod: 'cash' | 'card' | 'other' | 'no-cash';
   articleName: string;
   pieces: number;
   kg: number;

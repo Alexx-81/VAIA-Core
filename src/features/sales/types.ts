@@ -1,7 +1,7 @@
 // Типове за продажби (POS / Каса)
 
 // Метод на плащане
-export type PaymentMethod = 'cash' | 'card' | 'other';
+export type PaymentMethod = 'cash' | 'card' | 'other' | 'no-cash';
 
 // Статус на продажба
 export type SaleStatus = 'draft' | 'finalized';

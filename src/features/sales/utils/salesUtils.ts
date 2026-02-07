@@ -145,8 +145,9 @@ export const getDateRangeFromPreset = (preset: SalesDateRange['preset']): { from
 // Label за метод на плащане
 export const getPaymentMethodLabel = (method: PaymentMethod): string => {
   const labels: Record<PaymentMethod, string> = {
-    cash: 'Кеш',
+    cash: 'По каса',
     card: 'Карта',
+    'no-cash': 'Без каса',
     other: 'Друго',
   };
   return labels[method];
