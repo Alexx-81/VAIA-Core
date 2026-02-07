@@ -1,4 +1,5 @@
 import type { ArticleFilters, ArticleStatus, ArticleSortBy } from '../types';
+import { useAuth } from '../../../shared/context/AuthContext';
 import './ArticleFiltersBar.css';
 
 interface ArticleFiltersBarProps {
@@ -29,6 +30,8 @@ export const ArticleFiltersBar = ({
   totalCount,
   filteredCount,
 }: ArticleFiltersBarProps) => {
+  const { isReadOnly } = useAuth();
+
   return (
     <div className="article-filters">
       <div className="article-filters__left">
@@ -97,12 +100,14 @@ export const ArticleFiltersBar = ({
       </div>
 
       <div className="article-filters__right">
-        <button className="article-filters__btn-new" onClick={onNewArticle}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Нов артикул
-        </button>
+        {!isReadOnly && (
+          <button className="article-filters__btn-new" onClick={onNewArticle}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Нов артикул
+          </button>
+        )}
       </div>
     </div>
   );

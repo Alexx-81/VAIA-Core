@@ -11,6 +11,7 @@ interface AuthContextType {
   employee: Employee | null;
   permissions: TabId[];
   isAdmin: boolean;
+  isReadOnly: boolean;
   loading: boolean;
   authError: string | null;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
@@ -69,10 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setEmployee(emp);
       setAuthError(null);
       const admin = emp.role === 'admin';
+      const demo = emp.role === 'demo';
       setIsAdmin(admin);
 
-      if (admin) {
-        // Admins have access to all tabs + admin
+      if (admin || demo) {
+        // Admins and demo users have access to all tabs + admin
         setPermissions([...ALL_TABS, 'admin'] as TabId[]);
       } else {
         // Load permissions for non-admins
@@ -214,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       employee,
       permissions,
       isAdmin,
+      isReadOnly: employee?.role === 'demo',
       loading,
       authError,
       signIn,

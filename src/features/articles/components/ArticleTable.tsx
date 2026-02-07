@@ -1,5 +1,6 @@
 import type { Article } from '../types';
 import { formatKgPerPiece, formatPiecesPerKg, formatDate } from '../utils/articleUtils';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { DataCards } from '../../../shared/components/DataCards';
 import './ArticleTable.css';
 
@@ -14,6 +15,8 @@ export const ArticleTable = ({
   onEdit,
   onToggleStatus,
 }: ArticleTableProps) => {
+  const { isReadOnly } = useAuth();
+
   if (articles.length === 0) {
     return (
       <div className="article-table__empty">
@@ -76,45 +79,49 @@ export const ArticleTable = ({
                 </td>
                 <td className="article-table__td-actions">
                   <div className="article-table__actions">
-                    <button
-                      className="article-table__action-btn article-table__action-btn--edit"
-                      onClick={() => onEdit(article)}
-                      title="Редакция"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                        <path d="m15 5 4 4" />
-                      </svg>
-                      <span className="article-table__action-label">Редактирай</span>
-                    </button>
-                    <button
-                      className={`article-table__action-btn ${
-                        article.isActive
-                          ? 'article-table__action-btn--deactivate'
-                          : 'article-table__action-btn--activate'
-                      }`}
-                      onClick={() => onToggleStatus(article.id)}
-                      title={article.isActive ? 'Деактивирай' : 'Активирай'}
-                    >
-                      {article.isActive ? (
-                        <>
+                    {!isReadOnly && (
+                      <>
+                        <button
+                          className="article-table__action-btn article-table__action-btn--edit"
+                          onClick={() => onEdit(article)}
+                          title="Редакция"
+                        >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="m15 9-6 6" />
-                            <path d="m9 9 6 6" />
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
                           </svg>
-                          <span className="article-table__action-label">Деактивирай</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="m9 12 2 2 4-4" />
-                          </svg>
-                          <span className="article-table__action-label">Активирай</span>
-                        </>
-                      )}
-                    </button>
+                          <span className="article-table__action-label">Редактирай</span>
+                        </button>
+                        <button
+                          className={`article-table__action-btn ${
+                            article.isActive
+                              ? 'article-table__action-btn--deactivate'
+                              : 'article-table__action-btn--activate'
+                          }`}
+                          onClick={() => onToggleStatus(article.id)}
+                          title={article.isActive ? 'Деактивирай' : 'Активирай'}
+                        >
+                          {article.isActive ? (
+                            <>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="m15 9-6 6" />
+                                <path d="m9 9 6 6" />
+                              </svg>
+                              <span className="article-table__action-label">Деактивирай</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="m9 12 2 2 4-4" />
+                              </svg>
+                              <span className="article-table__action-label">Активирай</span>
+                            </>
+                          )}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -127,7 +134,7 @@ export const ArticleTable = ({
       <DataCards
         data={articles}
         keyExtractor={(a) => a.id}
-        onItemClick={(a) => onEdit(a)}
+        onItemClick={(a) => !isReadOnly && onEdit(a)}
         cardClassName={(a) => (!a.isActive ? 'inactive' : '')}
         fields={[
           {
@@ -162,15 +169,19 @@ export const ArticleTable = ({
         )}
         renderCardActions={(a) => (
           <>
-            <button className="edit" onClick={() => onEdit(a)}>
-              ✏️ Редакция
-            </button>
-            <button
-              className={a.isActive ? 'danger' : 'success'}
-              onClick={() => onToggleStatus(a.id)}
-            >
-              {a.isActive ? '⏸️ Деактивирай' : '▶️ Активирай'}
-            </button>
+            {!isReadOnly && (
+              <>
+                <button className="edit" onClick={() => onEdit(a)}>
+                  ✏️ Редакция
+                </button>
+                <button
+                  className={a.isActive ? 'danger' : 'success'}
+                  onClick={() => onToggleStatus(a.id)}
+                >
+                  {a.isActive ? '⏸️ Деактивирай' : '▶️ Активирай'}
+                </button>
+              </>
+            )}
           </>
         )}
       />

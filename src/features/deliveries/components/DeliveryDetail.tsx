@@ -1,5 +1,6 @@
 import type { DeliveryWithComputed, SaleFromDelivery } from '../types';
 import { formatDate, formatDateTime, formatKg, formatEur } from '../utils/deliveryUtils';
+import { useAuth } from '../../../shared/context/AuthContext';
 import './DeliveryDetail.css';
 
 interface DeliveryDetailProps {
@@ -15,6 +16,8 @@ export const DeliveryDetail = ({
   onBack,
   onEdit,
 }: DeliveryDetailProps) => {
+  const { isReadOnly } = useAuth();
+
   // Изчисляваме сумарни стойности от продажбите
   const totalRevenue = sales.reduce((sum, s) => sum + s.revenueEur, 0);
   const totalCost = sales.reduce((sum, s) => sum + s.costEur, 0);
@@ -41,7 +44,7 @@ export const DeliveryDetail = ({
               {delivery.isInvoiced ? 'Фактурна' : 'Без фактура'}
             </span>
           </div>
-          <button className="delivery-detail__edit-btn" onClick={onEdit}>
+          <button className="delivery-detail__edit-btn" onClick={onEdit} style={isReadOnly ? { display: 'none' } : undefined}>
             ✏️ Редакция
           </button>
         </div>

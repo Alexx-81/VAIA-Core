@@ -1,5 +1,6 @@
 import type { SaleWithComputed } from '../types';
 import { formatDateTime, formatEur, formatKg, formatPercent, getPaymentMethodLabel, getProfitClass, getMarginClass } from '../utils/salesUtils';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { DataCards } from '../../../shared/components/DataCards';
 import './SalesTable.css';
 
@@ -19,6 +20,8 @@ export const SalesTable = ({
   onNewSale,
   stats,
 }: SalesTableProps) => {
+  const { isReadOnly } = useAuth();
+
   if (sales.length === 0) {
     return (
       <div className="sales-table-container">
@@ -29,10 +32,12 @@ export const SalesTable = ({
           <div className="sales-table__empty-icon">🛒</div>
           <h3>Няма намерени продажби</h3>
           <p>Няма продажби, които да отговарят на филтрите, или все още няма въведени продажби.</p>
-          <button className="sales-table__empty-btn" onClick={onNewSale}>
-            <span>+</span>
-            Нова продажба
-          </button>
+          {!isReadOnly && (
+            <button className="sales-table__empty-btn" onClick={onNewSale}>
+              <span>+</span>
+              Нова продажба
+            </button>
+          )}
         </div>
       </div>
     );

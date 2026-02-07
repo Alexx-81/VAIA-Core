@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useSettings } from '../hooks/useSettings';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { 
   SettingsSectionCard, 
   FormGroup, 
@@ -26,6 +27,8 @@ import type {
 import './Settings.css';
 
 export const Settings: React.FC = () => {
+  const { isReadOnly } = useAuth();
+
   const {
     settings,
     expandedSection,
@@ -89,19 +92,23 @@ export const Settings: React.FC = () => {
           </p>
         </div>
         <div className="settings__header-actions">
-          <button
-            className="settings__btn settings__btn--secondary"
-            onClick={resetToDefaults}
-          >
-            🔄 Възстанови по подразбиране
-          </button>
-          <button
-            className="settings__btn settings__btn--primary"
-            onClick={save}
-            disabled={!hasChanges}
-          >
-            💾 Запази всички
-          </button>
+          {!isReadOnly && (
+            <>
+              <button
+                className="settings__btn settings__btn--secondary"
+                onClick={resetToDefaults}
+              >
+                🔄 Възстанови по подразбиране
+              </button>
+              <button
+                className="settings__btn settings__btn--primary"
+                onClick={save}
+                disabled={!hasChanges}
+              >
+                💾 Запази всички
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -122,8 +129,9 @@ export const Settings: React.FC = () => {
           description="Валута, часова зона, формат на номера"
           isExpanded={expandedSection === 'general'}
           onToggle={toggleSection}
-          onSave={save}
+          onSave={isReadOnly ? undefined : save}
           hasChanges={hasChanges}
+          disabled={isReadOnly}
         >
           <FormGroup label="Валута" helper="Всички суми се показват в EUR.">
             <Input
@@ -168,8 +176,9 @@ export const Settings: React.FC = () => {
           description="Десетични знаци, закръгляне"
           isExpanded={expandedSection === 'formatting'}
           onToggle={toggleSection}
-          onSave={save}
+          onSave={isReadOnly ? undefined : save}
           hasChanges={hasChanges}
+          disabled={isReadOnly}
         >
           <div className="settings-row">
             <FormGroup label="Десетични за EUR">
@@ -231,8 +240,9 @@ export const Settings: React.FC = () => {
           description="Прагове, блокиране на продажби, редактиране"
           isExpanded={expandedSection === 'inventory'}
           onToggle={toggleSection}
-          onSave={save}
+          onSave={isReadOnly ? undefined : save}
           hasChanges={hasChanges}
+          disabled={isReadOnly}
         >
           <FormGroup 
             label="Минимум kg (аларма)" 
@@ -313,8 +323,9 @@ export const Settings: React.FC = () => {
           description="Формати, именуване, настройки за файлове"
           isExpanded={expandedSection === 'export'}
           onToggle={toggleSection}
-          onSave={save}
+          onSave={isReadOnly ? undefined : save}
           hasChanges={hasChanges}
+          disabled={isReadOnly}
         >
           {/* Общи */}
           <FormGroup label="Формат по подразбиране">
@@ -489,8 +500,9 @@ export const Settings: React.FC = () => {
           description="Фирмени данни за PDF и Excel"
           isExpanded={expandedSection === 'reportHeader'}
           onToggle={toggleSection}
-          onSave={save}
+          onSave={isReadOnly ? undefined : save}
           hasChanges={hasChanges}
+          disabled={isReadOnly}
         >
           <FormGroup label="Име на фирма / магазин">
             <Input
@@ -563,25 +575,30 @@ export const Settings: React.FC = () => {
           description="Експорт и импорт на настройки"
           isExpanded={expandedSection === 'backup'}
           onToggle={toggleSection}
+          disabled={isReadOnly}
         >
           <div className="settings__backup-info">
             <p>Тук можете да експортирате настройките като JSON файл или да импортирате от съществуващ файл.</p>
           </div>
 
           <div className="settings__backup-actions">
-            <button className="settings__btn settings__btn--outline" onClick={exportSettings}>
-              📥 Експорт на настройки
-            </button>
-            <button className="settings__btn settings__btn--outline" onClick={handleImportClick}>
-              📤 Импорт на настройки
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
+            {!isReadOnly && (
+              <>
+                <button className="settings__btn settings__btn--outline" onClick={exportSettings}>
+                  📥 Експорт на настройки
+                </button>
+                <button className="settings__btn settings__btn--outline" onClick={handleImportClick}>
+                  📤 Импорт на настройки
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+              </>
+            )}
           </div>
 
           <div className="settings__backup-warning">
@@ -598,6 +615,7 @@ export const Settings: React.FC = () => {
           description="Изчистване на кеширани данни"
           isExpanded={expandedSection === 'data'}
           onToggle={toggleSection}
+          disabled={isReadOnly}
         >
           <div className="settings__backup-info">
             <p>Данните се съхраняват в кеша на браузъра (localStorage). Тук можете да ги изчистите при нужда.</p>
@@ -611,12 +629,14 @@ export const Settings: React.FC = () => {
           )}
 
           <div className="settings__backup-actions">
-            <button 
-              className="settings__btn settings__btn--danger" 
-              onClick={handleClearAllData}
-            >
-              🗑️ Изчисти всички данни
-            </button>
+            {!isReadOnly && (
+              <button 
+                className="settings__btn settings__btn--danger" 
+                onClick={handleClearAllData}
+              >
+                🗑️ Изчисти всички данни
+              </button>
+            )}
           </div>
 
           <div className="settings__backup-warning">

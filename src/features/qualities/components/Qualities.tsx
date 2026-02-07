@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DataCards } from '../../../shared/components/DataCards';
 import { ImportQualitiesDialog } from './ImportQualitiesDialog';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import type { Quality as DbQuality } from '../../../lib/supabase/types';
 import './Qualities.css';
@@ -47,6 +48,8 @@ const mapDbQuality = (q: DbQuality): Quality => ({
 });
 
 export const Qualities = () => {
+  const { isReadOnly } = useAuth();
+
   // State
   const [qualities, setQualities] = useState<Quality[]>([]);
   const [loading, setLoading] = useState(true);
@@ -375,14 +378,18 @@ export const Qualities = () => {
         </div>
 
         <div className="qualities-actions">
-          <button className="action-btn secondary" onClick={handleOpenImportDialog}>
-            <span className="btn-icon">📥</span>
-            Импорт
-          </button>
-          <button className="action-btn primary" onClick={handleOpenNewDialog}>
-            <span className="btn-icon">+</span>
-            Ново качество
-          </button>
+          {!isReadOnly && (
+            <>
+              <button className="action-btn secondary" onClick={handleOpenImportDialog}>
+                <span className="btn-icon">📥</span>
+                Импорт
+              </button>
+              <button className="action-btn primary" onClick={handleOpenNewDialog}>
+                <span className="btn-icon">+</span>
+                Ново качество
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -404,10 +411,12 @@ export const Qualities = () => {
                 <div className="empty-icon">📋</div>
                 <h3>Нямаш въведени качества</h3>
                 <p>Започни като добавиш първото качество в каталога.</p>
-                <button className="action-btn primary" onClick={handleOpenNewDialog}>
-                  <span className="btn-icon">+</span>
-                  Ново качество
-                </button>
+                {!isReadOnly && (
+                  <button className="action-btn primary" onClick={handleOpenNewDialog}>
+                    <span className="btn-icon">+</span>
+                    Ново качество
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -438,8 +447,9 @@ export const Qualities = () => {
                       <td>
                         <button 
                           className="quality-name-btn"
-                          onClick={() => handleOpenEditDialog(quality)}
-                          title="Редактирай"
+                          onClick={() => !isReadOnly && handleOpenEditDialog(quality)}
+                          title={isReadOnly ? quality.name : "Редактирай"}
+                          style={isReadOnly ? { cursor: 'default' } : undefined}
                         >
                           {quality.name}
                         </button>
@@ -464,20 +474,24 @@ export const Qualities = () => {
                         {formatDate(quality.createdAt)}
                       </td>
                       <td className="text-center actions-cell">
-                        <button 
-                          className="row-action-btn edit"
-                          onClick={() => handleOpenEditDialog(quality)}
-                          title="Редакция"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          className={`row-action-btn ${quality.isActive ? 'deactivate' : 'activate'}`}
-                          onClick={() => handleToggleStatus(quality.id, quality.isActive)}
-                          title={quality.isActive ? 'Деактивирай' : 'Активирай'}
-                        >
-                          {quality.isActive ? '⏸️' : '▶️'}
-                        </button>
+                        {!isReadOnly && (
+                          <>
+                            <button 
+                              className="row-action-btn edit"
+                              onClick={() => handleOpenEditDialog(quality)}
+                              title="Редакция"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              className={`row-action-btn ${quality.isActive ? 'deactivate' : 'activate'}`}
+                              onClick={() => handleToggleStatus(quality.id, quality.isActive)}
+                              title={quality.isActive ? 'Деактивирай' : 'Активирай'}
+                            >
+                              {quality.isActive ? '⏸️' : '▶️'}
+                            </button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -489,7 +503,7 @@ export const Qualities = () => {
             <DataCards
               data={filteredQualities}
               keyExtractor={(q) => q.id}
-              onItemClick={(q) => handleOpenEditDialog(q)}
+              onItemClick={(q) => !isReadOnly && handleOpenEditDialog(q)}
               cardClassName={(q) => (!q.isActive ? 'inactive' : '')}
               fields={[
                 {
@@ -519,18 +533,22 @@ export const Qualities = () => {
               )}
               renderCardActions={(q) => (
                 <>
-                  <button
-                    className="edit"
-                    onClick={() => handleOpenEditDialog(q)}
-                  >
-                    ✏️ Редакция
-                  </button>
-                  <button
-                    className={q.isActive ? 'warning' : 'success'}
-                    onClick={() => handleToggleStatus(q.id, q.isActive)}
-                  >
-                    {q.isActive ? '⏸️ Деактивирай' : '▶️ Активирай'}
-                  </button>
+                  {!isReadOnly && (
+                    <>
+                      <button
+                        className="edit"
+                        onClick={() => handleOpenEditDialog(q)}
+                      >
+                        ✏️ Редакция
+                      </button>
+                      <button
+                        className={q.isActive ? 'warning' : 'success'}
+                        onClick={() => handleToggleStatus(q.id, q.isActive)}
+                      >
+                        {q.isActive ? '⏸️ Деактивирай' : '▶️ Активирай'}
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             />

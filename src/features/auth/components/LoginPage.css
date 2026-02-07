@@ -147,6 +147,53 @@
   cursor: not-allowed;
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 2rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.login-divider span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.login-demo {
+  padding: 0 2rem 1.5rem;
+  text-align: center;
+}
+
+.login-btn--demo {
+  background: transparent;
+  color: #0B4F8A;
+  border: 2px solid #0B4F8A;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.login-btn--demo:hover:not(:disabled) {
+  background: rgba(11, 79, 138, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 79, 138, 0.15);
+}
+
+.login-demo__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
 .login-footer {
   padding: 1.25rem 2rem;
   text-align: center;

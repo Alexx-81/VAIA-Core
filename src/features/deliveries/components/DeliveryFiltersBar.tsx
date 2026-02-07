@@ -1,4 +1,5 @@
 import type { DeliveryFilters, DateRange, Quality, DateRangePreset } from '../types';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { toDateInputValue } from '../utils/deliveryUtils';
 import './DeliveryFiltersBar.css';
 
@@ -46,6 +47,8 @@ export const DeliveryFiltersBar = ({
   totalCount,
   filteredCount,
 }: DeliveryFiltersBarProps) => {
+  const { isReadOnly } = useAuth();
+
   const handlePresetChange = (preset: DateRangePreset) => {
     if (preset === 'custom') {
       const now = new Date();
@@ -217,16 +220,18 @@ export const DeliveryFiltersBar = ({
               ? `${totalCount} доставки`
               : `${filteredCount} от ${totalCount}`}
           </span>
-          {onImportDeliveries && (
+          {!isReadOnly && onImportDeliveries && (
             <button className="delivery-filters__btn-import" onClick={onImportDeliveries}>
               <span className="delivery-filters__btn-icon">📥</span>
               Импорт
             </button>
           )}
-          <button className="delivery-filters__btn-new" onClick={onNewDelivery}>
-            <span className="delivery-filters__btn-icon">+</span>
-            Нова доставка
-          </button>
+          {!isReadOnly && (
+            <button className="delivery-filters__btn-new" onClick={onNewDelivery}>
+              <span className="delivery-filters__btn-icon">+</span>
+              Нова доставка
+            </button>
+          )}
         </div>
       </div>
     </div>

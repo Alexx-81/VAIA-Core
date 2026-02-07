@@ -1,5 +1,6 @@
 import type { DeliveryWithComputed } from '../types';
 import { formatDate, formatKg, formatEur } from '../utils/deliveryUtils';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { DataCards } from '../../../shared/components/DataCards';
 import './DeliveryTable.css';
 
@@ -16,6 +17,8 @@ export const DeliveryTable = ({
   onEdit,
   onNewDelivery,
 }: DeliveryTableProps) => {
+  const { isReadOnly } = useAuth();
+
   if (deliveries.length === 0) {
     return (
       <div className="delivery-table-container">
@@ -26,10 +29,12 @@ export const DeliveryTable = ({
           <div className="delivery-table__empty-icon">📦</div>
           <h3>Няма намерени доставки</h3>
           <p>Няма доставки, които да отговарят на филтрите, или все още няма въведени доставки.</p>
-          <button className="delivery-table__empty-btn" onClick={onNewDelivery}>
-            <span>+</span>
-            Нова доставка
-          </button>
+          {!isReadOnly && (
+            <button className="delivery-table__empty-btn" onClick={onNewDelivery}>
+              <span>+</span>
+              Нова доставка
+            </button>
+          )}
         </div>
       </div>
     );
@@ -111,13 +116,15 @@ export const DeliveryTable = ({
                   >
                     👁️
                   </button>
-                  <button
-                    className="delivery-table__action-btn edit"
-                    onClick={() => onEdit(delivery)}
-                    title="Редакция"
-                  >
-                    ✏️
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      className="delivery-table__action-btn edit"
+                      onClick={() => onEdit(delivery)}
+                      title="Редакция"
+                    >
+                      ✏️
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -169,9 +176,11 @@ export const DeliveryTable = ({
             <button className="edit" onClick={() => onViewDetail(d)}>
               👁️ Детайл
             </button>
-            <button className="warning" onClick={() => onEdit(d)}>
-              ✏️ Редакция
-            </button>
+            {!isReadOnly && (
+              <button className="warning" onClick={() => onEdit(d)}>
+                ✏️ Редакция
+              </button>
+            )}
           </>
         )}
       />

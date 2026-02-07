@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useEmployees } from '../hooks/useEmployees';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { EmployeeTable } from './EmployeeTable';
 import { EmployeeDialog } from './EmployeeDialog';
 import { PermissionsDialog } from './PermissionsDialog';
@@ -10,6 +11,8 @@ import type { EmployeeFormData } from '../types';
 import './Admin.css';
 
 export const Admin = () => {
+  const { isReadOnly } = useAuth();
+
   const {
     employees,
     loading,
@@ -122,18 +125,20 @@ export const Admin = () => {
           <h1 className="admin__title">Администрация</h1>
           <p className="admin__subtitle">Управление на служители и права за достъп</p>
         </div>
-        <button
-          className="admin__create-btn"
-          onClick={() => setShowCreateDialog(true)}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <line x1="19" y1="8" x2="19" y2="14" />
-            <line x1="22" y1="11" x2="16" y2="11" />
-          </svg>
-          Нов служител
-        </button>
+        {!isReadOnly && (
+          <button
+            className="admin__create-btn"
+            onClick={() => setShowCreateDialog(true)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="22" y1="11" x2="16" y2="11" />
+            </svg>
+            Нов служител
+          </button>
+        )}
       </div>
 
       <div className="admin__filters">
@@ -183,6 +188,7 @@ export const Admin = () => {
         actionLoading={actionLoading}
         onToggleStatus={handleToggleStatus}
         onEditPermissions={handleEditPermissions}
+        isReadOnly={isReadOnly}
       />
 
       {showCreateDialog && (

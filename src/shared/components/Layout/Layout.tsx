@@ -14,7 +14,7 @@ interface LayoutProps {
 
 export const Layout = ({ children, activeTab, onTabChange, allowedTabs }: LayoutProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { employee, signOut } = useAuth();
+  const { employee, isReadOnly, signOut } = useAuth();
 
   // Close menu when tab changes
   const handleTabChange = (tabId: TabId) => {
@@ -107,6 +107,15 @@ export const Layout = ({ children, activeTab, onTabChange, allowedTabs }: Layout
         </nav>
       </header>
       <main className="layout-main">
+        {isReadOnly && (
+          <div className="layout-demo-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Демо режим — разглеждане без възможност за промени</span>
+          </div>
+        )}
         {children}
       </main>
     </div>

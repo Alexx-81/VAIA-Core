@@ -79,6 +79,17 @@
   animation: slideDown 0.2s ease;
 }
 
+.settings-section__fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.settings-section__fieldset:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

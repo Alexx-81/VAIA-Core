@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { TabId } from '../../../shared/components/Tabs';
+import { useAuth } from '../../../shared/context/AuthContext';
 import { DataCards } from '../../../shared/components/DataCards';
 import { getSales } from '../../../lib/api/sales';
 import { getDeliveries } from '../../../lib/api/deliveries';
@@ -156,6 +157,8 @@ const isDateInRange = (date: Date, range: DateRange): boolean => {
 };
 
 export const Dashboard = ({ onTabChange }: DashboardProps) => {
+  const { isReadOnly } = useAuth();
+
   // State
   const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>('this_month');
   const [customDateRange, setCustomDateRange] = useState<DateRange>(() => calculateDateRange('this_month'));
@@ -542,14 +545,18 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
 
         {/* Action Buttons */}
         <div className="dashboard-actions">
-          <button className="action-btn primary" onClick={handleNewSale}>
-            <span className="btn-icon">+</span>
-            Нова продажба
-          </button>
-          <button className="action-btn primary" onClick={handleNewDelivery}>
-            <span className="btn-icon">+</span>
-            Нова доставка
-          </button>
+          {!isReadOnly && (
+            <>
+              <button className="action-btn primary" onClick={handleNewSale}>
+                <span className="btn-icon">+</span>
+                Нова продажба
+              </button>
+              <button className="action-btn primary" onClick={handleNewDelivery}>
+                <span className="btn-icon">+</span>
+                Нова доставка
+              </button>
+            </>
+          )}
           <button className="action-btn secondary" onClick={handleExport}>
             <span className="btn-icon">📋</span>
             Експорт (месец)
@@ -669,13 +676,15 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
                       >
                         👁️
                       </button>
-                      <button 
-                        className="row-action-btn danger" 
-                        onClick={() => handleVoidSale(sale.id)}
-                        title="Сторно"
-                      >
-                        ✕
-                      </button>
+                      {!isReadOnly && (
+                        <button 
+                          className="row-action-btn danger" 
+                          onClick={() => handleVoidSale(sale.id)}
+                          title="Сторно"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -723,9 +732,11 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
                 <button className="edit" onClick={() => handleOpenSale(s.id)}>
                   👁️ Отвори
                 </button>
-                <button className="danger" onClick={() => handleVoidSale(s.id)}>
-                  ✕ Сторно
-                </button>
+                {!isReadOnly && (
+                  <button className="danger" onClick={() => handleVoidSale(s.id)}>
+                    ✕ Сторно
+                  </button>
+                )}
               </>
             )}
           />

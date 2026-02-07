@@ -1,4 +1,5 @@
 import type { SalesFilters, SalesDateRange, PaymentMethod } from '../types';
+import { useAuth } from '../../../shared/context/AuthContext';
 import './SalesFiltersBar.css';
 
 interface SalesFiltersBarProps {
@@ -20,6 +21,8 @@ export const SalesFiltersBar = ({
   totalCount,
   filteredCount,
 }: SalesFiltersBarProps) => {
+  const { isReadOnly } = useAuth();
+
   const handlePresetChange = (preset: SalesDateRange['preset']) => {
     onDateRangeChange({ preset });
   };
@@ -102,14 +105,18 @@ export const SalesFiltersBar = ({
         Показани: <strong>{filteredCount}</strong> от {totalCount}
       </span>
 
-      <button className="sales-filters__btn-secondary" onClick={onImport}>
-        📥 Импорт
-      </button>
+      {!isReadOnly && (
+        <button className="sales-filters__btn-secondary" onClick={onImport}>
+          📥 Импорт
+        </button>
+      )}
 
-      <button className="sales-filters__btn-primary" onClick={onNewSale}>
-        <span>+</span>
-        Нова продажба
-      </button>
+      {!isReadOnly && (
+        <button className="sales-filters__btn-primary" onClick={onNewSale}>
+          <span>+</span>
+          Нова продажба
+        </button>
+      )}
     </div>
   );
 };

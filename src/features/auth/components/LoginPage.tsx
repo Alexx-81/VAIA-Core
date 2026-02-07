@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { useAuth } from '../../../shared/context/AuthContext';
 import './LoginPage.css';
 
+const DEMO_EMAIL = 'demo@vaia.bg';
+const DEMO_PASSWORD = 'demo123';
+
 export const LoginPage = () => {
   const { signIn, authError, clearAuthError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
   const errorMessage = error || authError;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,6 +30,17 @@ export const LoginPage = () => {
     console.log('Login: signIn result', result);
     setIsLoading(false);
 
+    if (result.error) {
+      setError(result.error);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError('');
+    clearAuthError();
+    setIsDemoLoading(true);
+    const result = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    setIsDemoLoading(false);
     if (result.error) {
       setError(result.error);
     }
@@ -98,11 +113,26 @@ export const LoginPage = () => {
           <button
             type="submit"
             className="login-btn"
-            disabled={isLoading}
+            disabled={isLoading || isDemoLoading}
           >
             {isLoading ? 'Влизане...' : 'Вход'}
           </button>
         </form>
+
+        <div className="login-divider">
+          <span>или</span>
+        </div>
+
+        <div className="login-demo">
+          <button
+            className="login-btn login-btn--demo"
+            onClick={handleDemoLogin}
+            disabled={isLoading || isDemoLoading}
+          >
+            {isDemoLoading ? 'Влизане...' : '👁️ Демо вход'}
+          </button>
+          <p className="login-demo__hint">Разгледайте приложението без да правите промени</p>
+        </div>
 
         <div className="login-footer">
           <p>ERP система за управление на бизнеса</p>

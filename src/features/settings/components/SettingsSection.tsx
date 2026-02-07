@@ -12,6 +12,7 @@ interface SettingsSectionProps {
   children: React.ReactNode;
   onSave?: () => void;
   hasChanges?: boolean;
+  disabled?: boolean;
 }
 
 export const SettingsSectionCard: React.FC<SettingsSectionProps> = ({
@@ -24,6 +25,7 @@ export const SettingsSectionCard: React.FC<SettingsSectionProps> = ({
   children,
   onSave,
   hasChanges,
+  disabled,
 }) => {
   return (
     <div className={`settings-section ${isExpanded ? 'settings-section--expanded' : ''}`}>
@@ -46,7 +48,9 @@ export const SettingsSectionCard: React.FC<SettingsSectionProps> = ({
       
       {isExpanded && (
         <div className="settings-section__content">
-          {children}
+          <fieldset disabled={disabled} className="settings-section__fieldset">
+            {children}
+          </fieldset>
           
           {onSave && (
             <div className="settings-section__footer">
