@@ -509,6 +509,8 @@ export type Database = {
           total_cogs_acc_eur: number | null
           total_cogs_real_eur: number | null
           total_kg: number | null
+          total_margin_acc_percent: number | null
+          total_margin_real_percent: number | null
           total_pieces: number | null
           total_profit_acc_eur: number | null
           total_profit_real_eur: number | null

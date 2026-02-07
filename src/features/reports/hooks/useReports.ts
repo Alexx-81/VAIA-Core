@@ -114,7 +114,7 @@ export const useReports = () => {
   // Качества за филтъра
   const qualityOptions: QualityOption[] = useMemo(() => {
     return qualities.map(q => ({
-      id: String(q.id),
+      id: q.id,
       name: q.name,
       isActive: q.is_active,
     }));
@@ -122,25 +122,35 @@ export const useReports = () => {
 
   // Доставки за филтъра
   const deliveryOptions: DeliveryOption[] = useMemo(() => {
-    return deliveries.map(d => ({
-      id: d.id,
-      displayId: d.display_id,
-      qualityName: d.quality_name,
-      isInvoiced: d.is_invoiced,
-    }));
+    return deliveries
+      .filter(d => d.id && d.display_id && d.quality_name)
+      .map(d => ({
+        id: d.id as string,
+        displayId: d.display_id as string,
+        qualityName: d.quality_name as string,
+        isInvoiced: d.is_invoiced ?? false,
+      }));
   }, [deliveries]);
 
   // Map sales by id for quick lookup
   const salesById = useMemo(() => {
-    const map = new Map<number, Sale>();
-    sales.forEach(s => map.set(s.id, s));
+    const map = new Map<string, Sale>();
+    sales.forEach(s => {
+      if (s.id) {
+        map.set(s.id, s);
+      }
+    });
     return map;
   }, [sales]);
 
   // Map deliveries by id for quick lookup
   const deliveriesById = useMemo(() => {
     const map = new Map<string, DeliveryInventory>();
-    deliveries.forEach(d => map.set(d.id, d));
+    deliveries.forEach(d => {
+      if (d.id) {
+        map.set(d.id, d);
+      }
+    });
     return map;
   }, [deliveries]);
 
@@ -150,8 +160,12 @@ export const useReports = () => {
     const rows: TransactionReportRow[] = [];
     
     for (const line of saleLines) {
+      if (!line.sale_id || !line.real_delivery_id || !line.article_name) {
+        continue;
+      }
       const sale = salesById.get(line.sale_id);
       if (!sale) continue;
+      if (!sale.date_time) continue;
       
       // Date filter
       const saleDate = new Date(sale.date_time);
@@ -169,8 +183,13 @@ export const useReports = () => {
       if (!realDelivery) continue;
       
       // Quality filter
-      if (filters.qualityIds.length > 0 && !filters.qualityIds.includes(String(realDelivery.quality_id))) {
-        continue;
+      if (filters.qualityIds.length > 0) {
+        if (realDelivery.quality_id == null) {
+          continue;
+        }
+        if (!filters.qualityIds.includes(String(realDelivery.quality_id))) {
+          continue;
+        }
       }
       
       // Delivery filter
@@ -196,23 +215,23 @@ export const useReports = () => {
       
       rows.push({
         saleDateTime: saleDate,
-        saleNumber: sale.sale_number,
-        paymentMethod: sale.payment_method,
+        saleNumber: sale.sale_number || '',
+        paymentMethod: sale.payment_method || 'other',
         articleName: line.article_name,
-        pieces: line.quantity,
-        kg: line.kg_line,
-        pricePerPieceEur: line.unit_price_eur,
-        revenueEur: line.revenue_eur,
+        pieces: line.quantity ?? 0,
+        kg: line.kg_line ?? 0,
+        pricePerPieceEur: line.unit_price_eur ?? 0,
+        revenueEur: line.revenue_eur ?? 0,
         realDeliveryId: line.real_delivery_id,
-        realDeliveryDisplayId: realDelivery.display_id,
+        realDeliveryDisplayId: realDelivery.display_id || '',
         accountingDeliveryId: accDeliveryId,
-        accountingDeliveryDisplayId: accDelivery?.display_id || realDelivery.display_id,
-        eurPerKgRealSnapshot: line.unit_cost_per_kg_real_snapshot,
-        eurPerKgAccSnapshot: line.unit_cost_per_kg_acc_snapshot,
-        cogsRealEur: line.cogs_real_eur,
-        cogsAccEur: line.cogs_acc_eur,
-        profitRealEur: line.profit_real_eur,
-        profitAccEur: line.profit_acc_eur,
+        accountingDeliveryDisplayId: accDelivery?.display_id || realDelivery.display_id || '',
+        eurPerKgRealSnapshot: line.unit_cost_per_kg_real_snapshot ?? 0,
+        eurPerKgAccSnapshot: line.unit_cost_per_kg_acc_snapshot ?? line.unit_cost_per_kg_real_snapshot ?? 0,
+        cogsRealEur: line.cogs_real_eur ?? 0,
+        cogsAccEur: line.cogs_acc_eur ?? 0,
+        profitRealEur: line.profit_real_eur ?? 0,
+        profitAccEur: line.profit_acc_eur ?? 0,
       });
     }
     
@@ -269,17 +288,17 @@ export const useReports = () => {
         ? rows.reduce((sum, r) => sum + r.cogsRealEur, 0)
         : rows.reduce((sum, r) => sum + r.cogsAccEur, 0);
       const profitEur = revenueEur - cogsEur;
-      const totalDeliveryCostEur = delivery.kg_in * delivery.unit_cost_per_kg;
+      const totalDeliveryCostEur = (delivery.kg_in ?? 0) * (delivery.unit_cost_per_kg ?? 0);
       
       result.push({
         deliveryId,
         deliveryDisplayId: rows[0][displayKey],
-        deliveryDate: new Date(delivery.date),
-        qualityName: delivery.quality_name,
+        deliveryDate: new Date(delivery.date || 0),
+        qualityName: delivery.quality_name || '',
         invoiceNumber: delivery.invoice_number || '',
-        isInvoiced: delivery.is_invoiced,
-        kgIn: delivery.kg_in,
-        eurPerKgDelivery: delivery.unit_cost_per_kg,
+        isInvoiced: delivery.is_invoiced ?? false,
+        kgIn: delivery.kg_in ?? 0,
+        eurPerKgDelivery: delivery.unit_cost_per_kg ?? 0,
         totalDeliveryCostEur,
         kgSold,
         piecesSold,
@@ -305,6 +324,7 @@ export const useReports = () => {
       );
       if (!delivery) continue;
       
+      if (delivery.quality_id == null) continue;
       const qualityId = delivery.quality_id;
       if (!grouped.has(qualityId)) {
         grouped.set(qualityId, []);

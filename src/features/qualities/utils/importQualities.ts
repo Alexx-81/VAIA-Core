@@ -1,5 +1,3 @@
-import * as XLSX from 'xlsx';
-
 export interface QualityImportRow {
   name: string;
 }
@@ -16,8 +14,9 @@ export function parseQualitiesExcel(file: File): Promise<QualityImportRow[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         

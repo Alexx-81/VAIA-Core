@@ -234,37 +234,46 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   // Low stock deliveries
   const lowStockDeliveries = useMemo((): LowStockDelivery[] => {
     return computedDeliveries
-      .filter(d => {
-        const remaining = ledgerView === 'real' ? d.kg_remaining_real : d.kg_remaining_acc;
-        return remaining > 0 && remaining <= LOW_STOCK_THRESHOLD_KG;
+      .flatMap(d => {
+        if (!d.id || !d.display_id || !d.date || !d.quality_name) {
+          return [];
+        }
+        const kgIn = d.kg_in ?? 0;
+        const kgRemaining = ledgerView === 'real'
+          ? d.kg_remaining_real ?? 0
+          : d.kg_remaining_acc ?? 0;
+        if (kgRemaining <= 0 || kgRemaining > LOW_STOCK_THRESHOLD_KG) {
+          return [];
+        }
+        return [{
+          id: d.id,
+          deliveryId: d.display_id,
+          date: new Date(d.date),
+          quality: d.quality_name,
+          isInvoiced: d.is_invoiced ?? false,
+          kgIn,
+          kgOut: ledgerView === 'real' ? d.kg_sold_real ?? 0 : d.kg_sold_acc ?? 0,
+          kgRemaining,
+          percentRemaining: kgIn > 0 ? (kgRemaining / kgIn) * 100 : 0,
+          costPerKg: d.unit_cost_per_kg ?? 0,
+        }];
       })
-      .map(d => ({
-        id: d.id,
-        deliveryId: d.display_id,
-        date: new Date(d.date),
-        quality: d.quality_name,
-        isInvoiced: d.is_invoiced,
-        kgIn: d.kg_in,
-        kgOut: ledgerView === 'real' ? d.kg_sold_real : d.kg_sold_acc,
-        kgRemaining: ledgerView === 'real' ? d.kg_remaining_real : d.kg_remaining_acc,
-        percentRemaining: d.kg_in > 0 
-          ? ((ledgerView === 'real' ? d.kg_remaining_real : d.kg_remaining_acc) / d.kg_in) * 100 
-          : 0,
-        costPerKg: d.unit_cost_per_kg,
-      }))
       .sort((a, b) => a.kgRemaining - b.kgRemaining);
   }, [computedDeliveries, ledgerView]);
 
   // Transform sales for display
   const displaySales = useMemo((): DashboardSale[] => {
     return filteredSales
+      .filter((sale): sale is SalesSummary & { id: string; sale_number: string; date_time: string } => {
+        return !!sale.id && !!sale.sale_number && !!sale.date_time;
+      })
       .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime())
       .slice(0, 10) // Last 10 sales
       .map(sale => ({
         id: sale.id,
         saleNumber: sale.sale_number,
         datetime: new Date(sale.date_time),
-        paymentMethod: sale.payment_method as PaymentMethod,
+        paymentMethod: (sale.payment_method ?? 'other') as PaymentMethod,
         linesCount: sale.lines_count ?? 0,
         pieces: sale.total_pieces ?? 0,
         kg: sale.total_kg ?? 0,

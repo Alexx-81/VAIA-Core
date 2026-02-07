@@ -1,15 +1,15 @@
-import * as XLSX from 'xlsx';
 import type { Delivery, DeliveryImportRow, ImportResult, Quality } from '../types';
 import { generateId } from './deliveryUtils';
 
 /**
  * Парсва дата от различни формати
  */
-function parseDate(value: unknown): string {
+async function parseDate(value: unknown): Promise<string> {
   if (!value) return new Date().toISOString().split('T')[0];
   
   // Ако е число (Excel serial date)
   if (typeof value === 'number') {
+    const XLSX = await import('xlsx');
     const date = XLSX.SSF.parse_date_code(value);
     return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
   }
@@ -52,7 +52,7 @@ function parseNumber(value: unknown): number {
 /**
  * Мапва ред от Excel към DeliveryImportRow
  */
-function mapRowToDelivery(row: Record<string, unknown>, rowIndex: number): DeliveryImportRow | null {
+async function mapRowToDelivery(row: Record<string, unknown>, rowIndex: number): Promise<DeliveryImportRow | null> {
   // Възможни имена на колони (български и английски)
   const columnMappings = {
     deliveryId: ['Доставка ID', 'ID', 'Delivery ID', 'DeliveryId', 'id'],
@@ -86,7 +86,7 @@ function mapRowToDelivery(row: Record<string, unknown>, rowIndex: number): Deliv
 
   return {
     deliveryId: parseNumber(deliveryId) || rowIndex,
-    date: parseDate(date),
+    date: await parseDate(date),
     quality: String(quality).trim(),
     kilograms: parseNumber(kilograms),
     pricePerKg: parseNumber(pricePerKg),
@@ -202,6 +202,7 @@ export async function importDeliveriesFromExcel(
   const existingIds = new Set(existingDisplayIds);
 
   try {
+    const XLSX = await import('xlsx');
     const buffer = await file.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
     
@@ -222,9 +223,9 @@ export async function importDeliveriesFromExcel(
     }
 
     // Обработва всеки ред
-    rows.forEach((row, index) => {
+    const rowPromises = rows.map(async (row: Record<string, unknown>, index: number) => {
       try {
-        const mappedRow = mapRowToDelivery(row, index + 1);
+        const mappedRow = await mapRowToDelivery(row, index + 1);
         
         if (mappedRow) {
           const { delivery, error } = importRowToDelivery(mappedRow, existingIds, qualities);
@@ -240,6 +241,8 @@ export async function importDeliveriesFromExcel(
         errors.push(`Ред ${index + 2}: ${err instanceof Error ? err.message : 'Неизвестна грешка'}`);
       }
     });
+    
+    await Promise.all(rowPromises);
 
     return {
       success: deliveries.length > 0,

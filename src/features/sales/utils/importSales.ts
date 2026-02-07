@@ -1,5 +1,3 @@
-import * as XLSX from 'xlsx';
-
 // Типове за импорт на продажби
 export interface SaleImportRow {
   date: string;
@@ -25,9 +23,10 @@ interface ExcelRow {
 /**
  * Парсва дата от Excel формат
  */
-function parseDate(value: string | number): string {
+async function parseDate(value: string | number): Promise<string> {
   if (typeof value === 'number') {
     // Excel serial date
+    const XLSX = await import('xlsx');
     const date = XLSX.SSF.parse_date_code(value);
     return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
   }
@@ -60,8 +59,9 @@ export function parseExcelFile(file: File): Promise<SaleImportRow[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         
@@ -70,14 +70,14 @@ export function parseExcelFile(file: File): Promise<SaleImportRow[]> {
         
         const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet);
         
-        const rows: SaleImportRow[] = jsonData.map((row) => ({
-          date: parseDate(row['Дата']),
+        const rowPromises = jsonData.map(async (row) => ({
+          date: await parseDate(row['Дата']),
           articleName: row['Артикул'] || '',
           quantity: row['Брой'] || 0,
           unitPrice: parsePrice(row['Единична продажна цена на бройка']),
           deliveryId: row['Доставка ID'] || 0,
-        }));
-        
+        }));        
+        const rows = await Promise.all(rowPromises);        
         resolve(rows);
       } catch {
         reject(new Error('Грешка при четене на файла'));
