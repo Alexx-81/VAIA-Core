@@ -1,0 +1,150 @@
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin__title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.admin__subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.admin__create-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--vaia-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.admin__create-btn:hover {
+  background: var(--vaia-dark, #093d6b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 79, 138, 0.3);
+}
+
+.admin__filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin__search {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-color);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.admin__search:focus {
+  outline: none;
+  border-color: var(--vaia-color);
+  box-shadow: 0 0 0 3px rgba(11, 79, 138, 0.15);
+}
+
+.admin__search::placeholder {
+  color: var(--text-secondary);
+}
+
+.admin__status-filters {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.admin__filter-btn {
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin__filter-btn:hover {
+  color: var(--text-color);
+  background: var(--surface-hover);
+}
+
+.admin__filter-btn--active {
+  background: var(--vaia-color);
+  color: white;
+}
+
+.admin__filter-btn--active:hover {
+  background: var(--vaia-color);
+  color: white;
+}
+
+.admin__error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .admin__header {
+    flex-direction: column;
+  }
+
+  .admin__create-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin__filters {
+    flex-direction: column;
+  }
+
+  .admin__search {
+    width: 100%;
+  }
+}

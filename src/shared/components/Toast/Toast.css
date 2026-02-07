@@ -1,0 +1,216 @@
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  min-width: 320px;
+  max-width: 480px;
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.98), rgba(20, 20, 30, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 60px var(--toast-glow, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  z-index: 10000;
+  animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Gradient glow effect */
+.toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, var(--toast-glow, rgba(255, 255, 255, 0.1)), transparent 60%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.toast--success {
+  --toast-glow: rgba(52, 199, 89, 0.3);
+  border-left: 3px solid #34c759;
+}
+
+.toast--error {
+  --toast-glow: rgba(255, 68, 68, 0.3);
+  border-left: 3px solid #ff4444;
+}
+
+.toast--warning {
+  --toast-glow: rgba(255, 149, 0, 0.3);
+  border-left: 3px solid #ff9500;
+}
+
+.toast--info {
+  --toast-glow: rgba(11, 79, 138, 0.3);
+  border-left: 3px solid #0b4f8a;
+}
+
+.toast__icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.toast__icon svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.toast--success .toast__icon {
+  color: #34c759;
+}
+
+.toast--error .toast__icon {
+  color: #ff4444;
+}
+
+.toast--warning .toast__icon {
+  color: #ff9500;
+}
+
+.toast--info .toast__icon {
+  color: #0b4f8a;
+}
+
+.toast__message {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  position: relative;
+  z-index: 1;
+}
+
+.toast__close {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.toast__close:hover {
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.toast__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toast__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+}
+
+.toast__progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--toast-glow), transparent);
+  animation: toastProgress linear forwards;
+  transform-origin: left;
+}
+
+@keyframes toastProgress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.toast--success .toast__progress-bar {
+  background: linear-gradient(90deg, #34c759, #28a745);
+}
+
+.toast--error .toast__progress-bar {
+  background: linear-gradient(90deg, #ff4444, #cc0000);
+}
+
+.toast--warning .toast__progress-bar {
+  background: linear-gradient(90deg, #ff9500, #cc7700);
+}
+
+.toast--info .toast__progress-bar {
+  background: linear-gradient(90deg, #0b4f8a, #084070);
+}
+
+/* Hover pause animation */
+.toast:hover .toast__progress-bar {
+  animation-play-state: paused;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .toast {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    min-width: auto;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast {
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+
+  .toast__icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .toast__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+}

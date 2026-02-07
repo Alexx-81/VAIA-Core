@@ -8,6 +8,7 @@ import {
   Input, 
   Textarea 
 } from './SettingsSection';
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
 import { clearAllStorage } from '../../../shared/utils/storage';
 import type { 
   SaleNumberFormat,
@@ -45,6 +46,7 @@ export const Settings: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [clearDataMessage, setClearDataMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState<'first' | 'final' | null>(null);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -59,16 +61,21 @@ export const Settings: React.FC = () => {
   };
 
   const handleClearAllData = () => {
-    if (window.confirm('⚠️ ВНИМАНИЕ!\n\nТова ще изтрие ВСИЧКИ данни:\n- Доставки\n- Продажби\n- Наличности\n- Артикули\n\nТова действие е необратимо!\n\nСигурни ли сте?')) {
-      if (window.confirm('Последно потвърждение: Наистина ли искате да изтриете всички данни?')) {
-        clearAllStorage();
-        setClearDataMessage({ type: 'success', text: 'Всички данни бяха изтрити. Презаредете страницата, за да видите промените.' });
-        // Презареждане на страницата след 2 секунди
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-    }
+    setShowClearConfirm('first');
+  };
+
+  const handleFirstConfirm = () => {
+    setShowClearConfirm('final');
+  };
+
+  const handleFinalConfirm = () => {
+    setShowClearConfirm(null);
+    clearAllStorage();
+    setClearDataMessage({ type: 'success', text: 'Всички данни бяха изтрити. Презаредете страницата, за да видите промените.' });
+    // Презареждане на страницата след 2 секунди
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
   };
 
   return (
@@ -618,6 +625,30 @@ export const Settings: React.FC = () => {
           </div>
         </SettingsSectionCard>
       </div>
+
+      {/* First confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showClearConfirm === 'first'}
+        title="Изтриване на всички данни"
+        message="Това ще изтрие ВСИЧКИ данни: доставки, продажби, наличности и артикули. Това действие е необратимо! Сигурни ли сте?"
+        variant="danger"
+        confirmText="Продължи"
+        cancelText="Откажи"
+        onConfirm={handleFirstConfirm}
+        onCancel={() => setShowClearConfirm(null)}
+      />
+
+      {/* Final confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showClearConfirm === 'final'}
+        title="Последно потвърждение"
+        message="Наистина ли искате да изтриете всички данни? Това действие НЕ МОЖЕ да бъде отменено!"
+        variant="danger"
+        confirmText="Да, изтрий всичко"
+        cancelText="Откажи"
+        onConfirm={handleFinalConfirm}
+        onCancel={() => setShowClearConfirm(null)}
+      />
     </div>
   );
 };

@@ -6,7 +6,8 @@ export type TabId =
   | 'sales'
   | 'inventory'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'admin';
 
 export interface Tab {
   id: TabId;

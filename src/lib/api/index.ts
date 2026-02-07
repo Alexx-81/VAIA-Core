@@ -5,3 +5,4 @@ export * from './deliveries';
 export * from './sales';
 export * from './settings';
 export * from './inventory';
+export * from './employees';

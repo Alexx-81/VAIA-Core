@@ -9,4 +9,5 @@ export const tabs: Tab[] = [
   { id: 'inventory', label: 'Наличности' },
   { id: 'reports', label: 'Отчети' },
   { id: 'settings', label: 'Настройки' },
+  { id: 'admin', label: 'Администрация' },
 ];

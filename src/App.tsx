@@ -8,17 +8,21 @@ import { Sales } from './features/sales';
 import { Inventory } from './features/inventory';
 import { Reports } from './features/reports';
 import { Settings } from './features/settings';
+import { Admin } from './features/admin';
+import { LoginPage } from './features/auth';
+import { AuthProvider, useAuth } from './shared/context/AuthContext';
 import type { TabId } from './shared/components/Tabs';
 import './App.css';
 
-const validTabs: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'settings'];
+const allTabs: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'settings', 'admin'];
 
 function getTabFromUrl(): TabId {
   const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-  return validTabs.includes(path as TabId) ? (path as TabId) : 'dashboard';
+  return allTabs.includes(path as TabId) ? (path as TabId) : 'dashboard';
 }
 
-function App() {
+function AppContent() {
+  const { user, employee, permissions, isAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>(getTabFromUrl);
   const [theme] = useState<'dark' | 'light'>('dark');
 
@@ -44,7 +48,48 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Redirect to allowed tab if current tab is not accessible
+  useEffect(() => {
+    if (!loading && user && employee && permissions.length > 0) {
+      if (!permissions.includes(activeTab)) {
+        const firstAllowed = permissions[0] || 'dashboard';
+        handleTabChange(firstAllowed);
+      }
+    }
+  }, [loading, user, employee, permissions, activeTab, handleTabChange]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className={`app theme-${theme}`}>
+        <div className="app-loading">
+          <div className="app-loading__spinner" />
+          <span>Зареждане...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated — show login
+  if (!user || !employee) {
+    return (
+      <div className={`app theme-${theme}`}>
+        <LoginPage />
+      </div>
+    );
+  }
+
   const renderContent = () => {
+    // Check permission (admins bypass)
+    if (!isAdmin && !permissions.includes(activeTab)) {
+      return (
+        <div className="app-no-access">
+          <h2>Нямате достъп</h2>
+          <p>Свържете се с администратора за достъп до тази страница.</p>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard onTabChange={handleTabChange} />;
@@ -62,17 +107,32 @@ function App() {
         return <Reports />;
       case 'settings':
         return <Settings />;
+      case 'admin':
+        return isAdmin ? <Admin /> : (
+          <div className="app-no-access">
+            <h2>Нямате достъп</h2>
+            <p>Само администраторите имат достъп до тази страница.</p>
+          </div>
+        );
       default:
-        return <Dashboard />;
+        return <Dashboard onTabChange={handleTabChange} />;
     }
   };
 
   return (
     <div className={`app theme-${theme}`}>
-      <Layout activeTab={activeTab} onTabChange={handleTabChange}>
+      <Layout activeTab={activeTab} onTabChange={handleTabChange} allowedTabs={permissions}>
         {renderContent()}
       </Layout>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

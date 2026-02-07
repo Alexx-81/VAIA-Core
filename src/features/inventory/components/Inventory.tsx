@@ -3,6 +3,7 @@ import { useInventory } from '../hooks/useInventory';
 import { InventoryFiltersBar } from './InventoryFiltersBar';
 import { InventoryTable } from './InventoryTable';
 import { InventoryComparison } from './InventoryComparison';
+import { Toast } from '../../../shared/components/Toast';
 import { exportToCSV, exportComparisonToCSV, formatKg, formatEur } from '../utils/inventoryUtils';
 import type { InventoryTab } from '../types';
 import './Inventory.css';
@@ -23,18 +24,31 @@ export const Inventory = () => {
   } = useInventory();
 
   const [activeTab, setActiveTab] = useState<InventoryTab>('real');
+  const [toast, setToast] = useState<{ isOpen: boolean; message: string; variant: 'info' | 'success' | 'warning' | 'error' }>({
+    isOpen: false,
+    message: '',
+    variant: 'info',
+  });
 
   // Handlers
   const handleViewDelivery = useCallback((deliveryId: string) => {
     // TODO: Navigate to deliveries tab with selected delivery
     console.log('View delivery:', deliveryId);
-    alert(`Навигация към доставка ${deliveryId} (TODO: интеграция с таб Доставки)`);
+    setToast({
+      isOpen: true,
+      message: `Навигация към доставка ${deliveryId} (TODO: интеграция с таб Доставки)`,
+      variant: 'info',
+    });
   }, []);
 
   const handleViewSales = useCallback((deliveryId: string, type: InventoryTab) => {
     // TODO: Navigate to sales tab with filter
     console.log('View sales for delivery:', deliveryId, 'type:', type);
-    alert(`Навигация към продажби за доставка ${deliveryId} (${type}) (TODO: интеграция с таб Продажби)`);
+    setToast({
+      isOpen: true,
+      message: `Навигация към продажби за доставка ${deliveryId} (${type}) (TODO: интеграция с таб Продажби)`,
+      variant: 'info',
+    });
   }, []);
 
   const handleExport = useCallback(() => {
@@ -179,6 +193,13 @@ export const Inventory = () => {
           onViewDelivery={handleViewDelivery}
         />
       )}
+
+      <Toast
+        isOpen={toast.isOpen}
+        message={toast.message}
+        variant={toast.variant}
+        onClose={() => setToast({ ...toast, isOpen: false })}
+      />
     </div>
   );
 };

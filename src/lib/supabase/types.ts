@@ -1,4 +1,5 @@
 // Auto-generated TypeScript types from Supabase schema
+// Last updated: 2026-02-06
 
 export type Json =
   | string
@@ -225,6 +226,68 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
+      }
+      employee_permissions: {
+        Row: {
+          can_access: boolean
+          employee_id: string
+          id: string
+          tab_id: string
+        }
+        Insert: {
+          can_access?: boolean
+          employee_id: string
+          id?: string
+          tab_id: string
+        }
+        Update: {
+          can_access?: boolean
+          employee_id?: string
+          id?: string
+          tab_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_permissions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      employees: {
+        Row: {
+          auth_user_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_former: boolean
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          is_former?: boolean
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          is_former?: boolean
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       qualities: {
         Row: {
@@ -458,6 +521,8 @@ export type Database = {
     Functions: {
       finalize_sale: { Args: { p_sale_id: string }; Returns: undefined }
       generate_sale_number: { Args: Record<string, never>; Returns: string }
+      get_my_role: { Args: Record<string, never>; Returns: string }
+      is_admin: { Args: Record<string, never>; Returns: boolean }
     }
     Enums: {
       payment_method: "cash" | "card" | "other"
@@ -507,3 +572,11 @@ export type SaleLineComputed = Views<"sale_lines_computed">
 
 export type PaymentMethod = Enums<"payment_method">
 export type SaleStatus = Enums<"sale_status">
+
+export type Employee = Tables<"employees">
+export type EmployeeInsert = TablesInsert<"employees">
+export type EmployeeUpdate = TablesUpdate<"employees">
+
+export type EmployeePermission = Tables<"employee_permissions">
+export type EmployeePermissionInsert = TablesInsert<"employee_permissions">
+export type EmployeePermissionUpdate = TablesUpdate<"employee_permissions">
