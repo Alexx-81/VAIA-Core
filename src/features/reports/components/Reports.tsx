@@ -20,6 +20,7 @@ export const Reports: React.FC = () => {
     deliveryOptions,
     supplierOptions,
     isGenerating,
+    loading,
     updateFilters,
     updatePeriod,
     updateMode,
@@ -110,23 +111,33 @@ export const Reports: React.FC = () => {
         isGenerating={isGenerating || isExporting}
       />
 
-      {/* Summary */}
-      <ReportsSummary
-        summary={summary}
-        mode={filters.mode}
-        periodLabel={periodLabel}
-      />
+      {/* Loading state */}
+      {loading ? (
+        <div className="reports__loading">
+          <div className="reports__loading-spinner"></div>
+          <p>Зареждане на данни...</p>
+        </div>
+      ) : (
+        <>
+          {/* Summary */}
+          <ReportsSummary
+            summary={summary}
+            mode={filters.mode}
+            periodLabel={periodLabel}
+          />
 
-      {/* Table */}
-      <ReportsTable
-        reportType={filters.reportType}
-        mode={filters.mode}
-        deliveryRows={deliveryRows}
-        qualityRows={qualityRows}
-        articleRows={articleRows}
-        transactionRows={transactionRows}
-        onViewDeliveryDetail={handleViewDeliveryDetail}
-      />
+          {/* Table */}
+          <ReportsTable
+            reportType={filters.reportType}
+            mode={filters.mode}
+            deliveryRows={deliveryRows}
+            qualityRows={qualityRows}
+            articleRows={articleRows}
+            transactionRows={transactionRows}
+            onViewDeliveryDetail={handleViewDeliveryDetail}
+          />
+        </>
+      )}
 
       {/* Info panel */}
       <div className="reports__info">

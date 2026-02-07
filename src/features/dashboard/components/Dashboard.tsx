@@ -1,12 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { TabId } from '../../../shared/components/Tabs';
 import { DataCards } from '../../../shared/components/DataCards';
-import { loadFromStorage, STORAGE_KEYS } from '../../../shared/utils/storage';
-import type { Sale as SaleData } from '../../sales/types';
-import type { Delivery, Quality } from '../../deliveries/types';
-import { computeSale } from '../../sales/utils/salesUtils';
-import { computeDeliveryValues } from '../../deliveries/utils/deliveryUtils';
-import { mockQualities as defaultQualities } from '../../deliveries/data/mockDeliveries';
+import { getSales } from '../../../lib/api/sales';
+import { getDeliveries } from '../../../lib/api/deliveries';
+import { getQualities } from '../../../lib/api/qualities';
+import type { SalesSummary, DeliveryInventory, Quality } from '../../../lib/supabase/types';
 import './Dashboard.css';
 
 // Types
@@ -165,22 +163,32 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   const [selectedQualities, setSelectedQualities] = useState<number[]>([]);
   const [isQualityDropdownOpen, setIsQualityDropdownOpen] = useState(false);
   
-  // Data state - зареждаме от localStorage
-  const [rawSales, setRawSales] = useState<SaleData[]>([]);
-  const [rawDeliveries, setRawDeliveries] = useState<Delivery[]>([]);
-  const [qualities, setQualities] = useState<Quality[]>(defaultQualities);
+  // Data state - зареждаме от Supabase
+  const [rawSales, setRawSales] = useState<SalesSummary[]>([]);
+  const [rawDeliveries, setRawDeliveries] = useState<DeliveryInventory[]>([]);
+  const [qualities, setQualities] = useState<Quality[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load data from localStorage on mount
+  // Load data from Supabase on mount
   useEffect(() => {
-    const loadedSales = loadFromStorage<SaleData[]>(STORAGE_KEYS.SALES);
-    const loadedDeliveries = loadFromStorage<Delivery[]>(STORAGE_KEYS.DELIVERIES);
-    const loadedQualities = loadFromStorage<Quality[]>(STORAGE_KEYS.QUALITIES);
-    
-    if (loadedSales) setRawSales(loadedSales);
-    if (loadedDeliveries) setRawDeliveries(loadedDeliveries);
-    if (loadedQualities && loadedQualities.length > 0) {
-      setQualities(loadedQualities);
-    }
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [salesData, deliveriesData, qualitiesData] = await Promise.all([
+          getSales({ status: 'finalized' }),
+          getDeliveries(),
+          getQualities(),
+        ]);
+        setRawSales(salesData);
+        setRawDeliveries(deliveriesData);
+        setQualities(qualitiesData.filter(q => q.is_active));
+      } catch (error) {
+        console.error('Dashboard: Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   // Computed values
@@ -191,17 +199,21 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
     return calculateDateRange(dateRangeOption);
   }, [dateRangeOption, customDateRange]);
 
-  // Compute sales with values
+  // Sales are already finalized and computed from sales_summary view
   const computedSales = useMemo(() => {
-    return rawSales
-      .filter(s => s.status === 'finalized')
-      .map(computeSale);
+    return rawSales;
   }, [rawSales]);
 
   // Filter sales by date range and qualities
   const filteredSales = useMemo(() => {
     return computedSales.filter(sale => {
-      const saleDate = sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime);
+      if (!sale.date_time) {
+        return false;
+      }
+      const saleDate = new Date(sale.date_time);
+      if (Number.isNaN(saleDate.getTime())) {
+        return false;
+      }
       if (!isDateInRange(saleDate, activeDateRange)) {
         return false;
       }
@@ -214,31 +226,31 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
     });
   }, [computedSales, activeDateRange, selectedQualities, qualities.length]);
 
-  // Compute deliveries with values
+  // Deliveries already have computed values from delivery_inventory view
   const computedDeliveries = useMemo(() => {
-    return rawDeliveries.map(computeDeliveryValues);
+    return rawDeliveries;
   }, [rawDeliveries]);
 
   // Low stock deliveries
   const lowStockDeliveries = useMemo((): LowStockDelivery[] => {
     return computedDeliveries
       .filter(d => {
-        const remaining = ledgerView === 'real' ? d.kgRemainingReal : d.kgRemainingAccounting;
+        const remaining = ledgerView === 'real' ? d.kg_remaining_real : d.kg_remaining_acc;
         return remaining > 0 && remaining <= LOW_STOCK_THRESHOLD_KG;
       })
       .map(d => ({
         id: d.id,
-        deliveryId: d.displayId,
-        date: d.date instanceof Date ? d.date : new Date(d.date),
-        quality: d.qualityName,
-        isInvoiced: d.isInvoiced,
-        kgIn: d.kgIn,
-        kgOut: ledgerView === 'real' ? d.kgSoldReal : d.kgSoldAccounting,
-        kgRemaining: ledgerView === 'real' ? d.kgRemainingReal : d.kgRemainingAccounting,
-        percentRemaining: d.kgIn > 0 
-          ? ((ledgerView === 'real' ? d.kgRemainingReal : d.kgRemainingAccounting) / d.kgIn) * 100 
+        deliveryId: d.display_id,
+        date: new Date(d.date),
+        quality: d.quality_name,
+        isInvoiced: d.is_invoiced,
+        kgIn: d.kg_in,
+        kgOut: ledgerView === 'real' ? d.kg_sold_real : d.kg_sold_acc,
+        kgRemaining: ledgerView === 'real' ? d.kg_remaining_real : d.kg_remaining_acc,
+        percentRemaining: d.kg_in > 0 
+          ? ((ledgerView === 'real' ? d.kg_remaining_real : d.kg_remaining_acc) / d.kg_in) * 100 
           : 0,
-        costPerKg: d.unitCostPerKg,
+        costPerKg: d.unit_cost_per_kg,
       }))
       .sort((a, b) => a.kgRemaining - b.kgRemaining);
   }, [computedDeliveries, ledgerView]);
@@ -246,33 +258,33 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   // Transform sales for display
   const displaySales = useMemo((): DashboardSale[] => {
     return filteredSales
-      .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime())
+      .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime())
       .slice(0, 10) // Last 10 sales
       .map(sale => ({
         id: sale.id,
-        saleNumber: sale.saleNumber,
-        datetime: sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime),
-        paymentMethod: sale.paymentMethod as PaymentMethod,
-        linesCount: sale.linesCount,
-        pieces: sale.totalPieces,
-        kg: sale.totalKg,
-        revenue: sale.totalRevenueEur,
-        cogs: ledgerView === 'real' ? sale.totalCogsRealEur : sale.totalCogsAccEur,
-        profit: ledgerView === 'real' ? sale.totalProfitRealEur : sale.totalProfitAccEur,
-        margin: ledgerView === 'real' ? sale.totalMarginRealPercent : sale.totalMarginAccPercent,
+        saleNumber: sale.sale_number,
+        datetime: new Date(sale.date_time),
+        paymentMethod: sale.payment_method as PaymentMethod,
+        linesCount: sale.lines_count ?? 0,
+        pieces: sale.total_pieces ?? 0,
+        kg: sale.total_kg ?? 0,
+        revenue: sale.total_revenue_eur ?? 0,
+        cogs: ledgerView === 'real' ? sale.total_cogs_real_eur ?? 0 : sale.total_cogs_acc_eur ?? 0,
+        profit: ledgerView === 'real' ? sale.total_profit_real_eur ?? 0 : sale.total_profit_acc_eur ?? 0,
+        margin: ledgerView === 'real' ? sale.total_margin_real_percent ?? 0 : sale.total_margin_acc_percent ?? 0,
       }));
   }, [filteredSales, ledgerView]);
 
   // KPI data calculated from filtered sales
   const kpiData = useMemo(() => {
-    const revenue = filteredSales.reduce((sum, s) => sum + s.totalRevenueEur, 0);
-    const cogsReal = filteredSales.reduce((sum, s) => sum + s.totalCogsRealEur, 0);
-    const cogsAcc = filteredSales.reduce((sum, s) => sum + s.totalCogsAccEur, 0);
+    const revenue = filteredSales.reduce((sum, s) => sum + (s.total_revenue_eur ?? 0), 0);
+    const cogsReal = filteredSales.reduce((sum, s) => sum + (s.total_cogs_real_eur ?? 0), 0);
+    const cogsAcc = filteredSales.reduce((sum, s) => sum + (s.total_cogs_acc_eur ?? 0), 0);
     const cogs = ledgerView === 'real' ? cogsReal : cogsAcc;
     const profit = revenue - cogs;
     const profitMargin = revenue > 0 ? (profit / revenue) * 100 : 0;
-    const soldKg = filteredSales.reduce((sum, s) => sum + s.totalKg, 0);
-    const totalItems = filteredSales.reduce((sum, s) => sum + s.totalPieces, 0);
+    const soldKg = filteredSales.reduce((sum, s) => sum + (s.total_kg ?? 0), 0);
+    const totalItems = filteredSales.reduce((sum, s) => sum + (s.total_pieces ?? 0), 0);
     const salesCount = filteredSales.length;
     const avgSaleValue = salesCount > 0 ? revenue / salesCount : 0;
 
@@ -548,8 +560,16 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
         <span className="ledger-badge">{ledgerView === 'real' ? 'Реален' : 'Счетоводен'}</span>
       </div>
 
-      {/* KPI Cards */}
-      <div className="kpi-section">
+      {/* Loading state */}
+      {loading ? (
+        <div className="dashboard__loading">
+          <div className="dashboard__loading-spinner"></div>
+          <p>Зареждане на данни...</p>
+        </div>
+      ) : (
+        <>
+          {/* KPI Cards */}
+          <div className="kpi-section">
         <div className="kpi-row">
           <h3 className="kpi-row-title">Оборот и марж</h3>
           <div className="kpi-cards">
@@ -825,6 +845,8 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { 
   ReportFilters,
   ReportSummary,
@@ -13,8 +13,13 @@ import type {
   QualityOption,
   DeliveryOption,
 } from '../types';
-import { mockSales } from '../../sales/data/mockSales';
-import { mockDeliveries, mockQualities } from '../../deliveries/data/mockDeliveries';
+import { supabase } from '../../../lib/supabase';
+import type { Database } from '../../../lib/supabase/types';
+
+type SaleLineComputed = Database['public']['Views']['sale_lines_computed']['Row'];
+type DeliveryInventory = Database['public']['Views']['delivery_inventory']['Row'];
+type Quality = Database['public']['Tables']['qualities']['Row'];
+type Sale = Database['public']['Tables']['sales']['Row'];
 
 const defaultFilters: ReportFilters = {
   period: { preset: 'this-month' },
@@ -66,112 +71,153 @@ const formatPeriodLabel = (period: ReportPeriod): string => {
 export const useReports = () => {
   const [filters, setFilters] = useState<ReportFilters>(defaultFilters);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  // Raw data from Supabase
+  const [saleLines, setSaleLines] = useState<SaleLineComputed[]>([]);
+  const [deliveries, setDeliveries] = useState<DeliveryInventory[]>([]);
+  const [qualities, setQualities] = useState<Quality[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+
+  // Load data from Supabase
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        const [saleLinesRes, deliveriesRes, qualitiesRes, salesRes] = await Promise.all([
+          supabase.from('sale_lines_computed').select('*'),
+          supabase.from('delivery_inventory').select('*'),
+          supabase.from('qualities').select('*').eq('is_active', true),
+          supabase.from('sales').select('*').eq('status', 'finalized'),
+        ]);
+
+        if (saleLinesRes.error) throw saleLinesRes.error;
+        if (deliveriesRes.error) throw deliveriesRes.error;
+        if (qualitiesRes.error) throw qualitiesRes.error;
+        if (salesRes.error) throw salesRes.error;
+
+        setSaleLines(saleLinesRes.data || []);
+        setDeliveries(deliveriesRes.data || []);
+        setQualities(qualitiesRes.data || []);
+        setSales(salesRes.data || []);
+      } catch (error) {
+        console.error('Reports: Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   // Качества за филтъра
   const qualityOptions: QualityOption[] = useMemo(() => {
-    return mockQualities.map(q => ({
-      id: q.id,
+    return qualities.map(q => ({
+      id: String(q.id),
       name: q.name,
-      isActive: q.isActive,
+      isActive: q.is_active,
     }));
-  }, []);
+  }, [qualities]);
 
   // Доставки за филтъра
   const deliveryOptions: DeliveryOption[] = useMemo(() => {
-    return mockDeliveries.map(d => ({
+    return deliveries.map(d => ({
       id: d.id,
-      displayId: d.displayId,
-      qualityName: d.qualityName,
-      isInvoiced: !!d.invoiceNumber,
+      displayId: d.display_id,
+      qualityName: d.quality_name,
+      isInvoiced: d.is_invoiced,
     }));
-  }, []);
+  }, [deliveries]);
 
-  // Филтрирани финализирани продажби
-  const filteredSales = useMemo(() => {
-    const { from, to } = getPeriodDates(filters.period);
-    
-    return mockSales
-      .filter(s => s.status === 'finalized')
-      .filter(s => {
-        // Ensure dateTime is a Date object
-        const saleDate = s.dateTime instanceof Date ? s.dateTime : new Date(s.dateTime);
-        return saleDate >= from && saleDate <= to;
-      })
-      .filter(s => filters.paymentMethod === 'all' || s.paymentMethod === filters.paymentMethod);
-  }, [filters.period, filters.paymentMethod]);
+  // Map sales by id for quick lookup
+  const salesById = useMemo(() => {
+    const map = new Map<number, Sale>();
+    sales.forEach(s => map.set(s.id, s));
+    return map;
+  }, [sales]);
 
-  // Всички редове от филтрираните продажби с изчислени стойности
+  // Map deliveries by id for quick lookup
+  const deliveriesById = useMemo(() => {
+    const map = new Map<string, DeliveryInventory>();
+    deliveries.forEach(d => map.set(d.id, d));
+    return map;
+  }, [deliveries]);
+
+  // Филтрирани транзакции
   const allTransactionRows = useMemo((): TransactionReportRow[] => {
+    const { from, to } = getPeriodDates(filters.period);
     const rows: TransactionReportRow[] = [];
     
-    for (const sale of filteredSales) {
-      for (const line of sale.lines) {
-        const realDelivery = mockDeliveries.find(d => d.id === line.realDeliveryId);
-        const accDeliveryId = line.accountingDeliveryId || line.realDeliveryId;
-        const accDelivery = mockDeliveries.find(d => d.id === accDeliveryId);
-        
-        // Пропускаме ако няма доставка
-        if (!realDelivery) continue;
-        
-        // Филтър по качество
-        if (filters.qualityIds.length > 0 && !filters.qualityIds.includes(String(realDelivery.qualityId))) {
-          continue;
-        }
-        
-        // Филтър по доставка
-        if (filters.deliveryId) {
-          const matchesReal = line.realDeliveryId === filters.deliveryId;
-          const matchesAcc = accDeliveryId === filters.deliveryId;
-          if (filters.mode === 'real' && !matchesReal) continue;
-          if (filters.mode === 'accounting' && !matchesAcc) continue;
-        }
-
-        // Филтър по доставчик
-        if (filters.supplierName && filters.supplierName !== 'all') {
-          const deliveryForSupplier = filters.mode === 'real' ? realDelivery : accDelivery;
-          if (!deliveryForSupplier || deliveryForSupplier.supplierName !== filters.supplierName) {
-            continue;
-          }
-        }
-        
-        // В accounting режим показваме само фактурни
-        if (filters.mode === 'accounting' && !accDelivery?.invoiceNumber) {
-          continue;
-        }
-        
-        const kg = line.quantity * line.kgPerPieceSnapshot;
-        const revenue = line.quantity * line.unitPriceEur;
-        const cogsReal = kg * line.unitCostPerKgRealSnapshot;
-        const cogsAcc = kg * (line.unitCostPerKgAccSnapshot || line.unitCostPerKgRealSnapshot);
-        
-        // Ensure dateTime is a Date object
-        const saleDateTime = sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime);
-        
-        rows.push({
-          saleDateTime,
-          saleNumber: sale.saleNumber,
-          paymentMethod: sale.paymentMethod,
-          articleName: line.articleName,
-          pieces: line.quantity,
-          kg,
-          pricePerPieceEur: line.unitPriceEur,
-          revenueEur: revenue,
-          realDeliveryId: line.realDeliveryId,
-          realDeliveryDisplayId: realDelivery.displayId,
-          accountingDeliveryId: accDeliveryId,
-          accountingDeliveryDisplayId: accDelivery?.displayId || realDelivery.displayId,
-          eurPerKgRealSnapshot: line.unitCostPerKgRealSnapshot,
-          eurPerKgAccSnapshot: line.unitCostPerKgAccSnapshot || line.unitCostPerKgRealSnapshot,
-          cogsRealEur: cogsReal,
-          cogsAccEur: cogsAcc,
-          profitRealEur: revenue - cogsReal,
-          profitAccEur: revenue - cogsAcc,
-        });
+    for (const line of saleLines) {
+      const sale = salesById.get(line.sale_id);
+      if (!sale) continue;
+      
+      // Date filter
+      const saleDate = new Date(sale.date_time);
+      if (saleDate < from || saleDate > to) continue;
+      
+      // Payment method filter
+      if (filters.paymentMethod !== 'all' && sale.payment_method !== filters.paymentMethod) {
+        continue;
       }
+      
+      const realDelivery = deliveriesById.get(line.real_delivery_id);
+      const accDeliveryId = line.accounting_delivery_id || line.real_delivery_id;
+      const accDelivery = deliveriesById.get(accDeliveryId);
+      
+      if (!realDelivery) continue;
+      
+      // Quality filter
+      if (filters.qualityIds.length > 0 && !filters.qualityIds.includes(String(realDelivery.quality_id))) {
+        continue;
+      }
+      
+      // Delivery filter
+      if (filters.deliveryId) {
+        const matchesReal = line.real_delivery_id === filters.deliveryId;
+        const matchesAcc = accDeliveryId === filters.deliveryId;
+        if (filters.mode === 'real' && !matchesReal) continue;
+        if (filters.mode === 'accounting' && !matchesAcc) continue;
+      }
+
+      // Supplier filter
+      if (filters.supplierName && filters.supplierName !== 'all') {
+        const deliveryForSupplier = filters.mode === 'real' ? realDelivery : accDelivery;
+        if (!deliveryForSupplier || deliveryForSupplier.supplier_name !== filters.supplierName) {
+          continue;
+        }
+      }
+      
+      // В accounting режим показваме само фактурни
+      if (filters.mode === 'accounting' && !accDelivery?.is_invoiced) {
+        continue;
+      }
+      
+      rows.push({
+        saleDateTime: saleDate,
+        saleNumber: sale.sale_number,
+        paymentMethod: sale.payment_method,
+        articleName: line.article_name,
+        pieces: line.quantity,
+        kg: line.kg_line,
+        pricePerPieceEur: line.unit_price_eur,
+        revenueEur: line.revenue_eur,
+        realDeliveryId: line.real_delivery_id,
+        realDeliveryDisplayId: realDelivery.display_id,
+        accountingDeliveryId: accDeliveryId,
+        accountingDeliveryDisplayId: accDelivery?.display_id || realDelivery.display_id,
+        eurPerKgRealSnapshot: line.unit_cost_per_kg_real_snapshot,
+        eurPerKgAccSnapshot: line.unit_cost_per_kg_acc_snapshot,
+        cogsRealEur: line.cogs_real_eur,
+        cogsAccEur: line.cogs_acc_eur,
+        profitRealEur: line.profit_real_eur,
+        profitAccEur: line.profit_acc_eur,
+      });
     }
     
     return rows.sort((a, b) => a.saleDateTime.getTime() - b.saleDateTime.getTime());
-  }, [filteredSales, filters.qualityIds, filters.deliveryId, filters.supplierName, filters.mode]);
+  }, [saleLines, salesById, deliveriesById, filters]);
 
   // Summary статистики
   const summary = useMemo((): ReportSummary => {
@@ -197,10 +243,10 @@ export const useReports = () => {
 
   // Групиране по доставки
   const deliveryRows = useMemo((): DeliveryReportRow[] => {
+    const grouped = new Map<string, TransactionReportRow[]>();
+    
     const groupKey = filters.mode === 'real' ? 'realDeliveryId' : 'accountingDeliveryId';
     const displayKey = filters.mode === 'real' ? 'realDeliveryDisplayId' : 'accountingDeliveryDisplayId';
-    
-    const grouped = new Map<string, TransactionReportRow[]>();
     
     for (const row of allTransactionRows) {
       const key = row[groupKey];
@@ -213,7 +259,7 @@ export const useReports = () => {
     const result: DeliveryReportRow[] = [];
     
     for (const [deliveryId, rows] of grouped) {
-      const delivery = mockDeliveries.find(d => d.id === deliveryId);
+      const delivery = deliveriesById.get(deliveryId);
       if (!delivery) continue;
       
       const kgSold = rows.reduce((sum, r) => sum + r.kg, 0);
@@ -223,20 +269,17 @@ export const useReports = () => {
         ? rows.reduce((sum, r) => sum + r.cogsRealEur, 0)
         : rows.reduce((sum, r) => sum + r.cogsAccEur, 0);
       const profitEur = revenueEur - cogsEur;
-      const totalDeliveryCostEur = delivery.kgIn * delivery.unitCostPerKg;
-      
-      // Ensure date is a Date object
-      const deliveryDate = delivery.date instanceof Date ? delivery.date : new Date(delivery.date);
+      const totalDeliveryCostEur = delivery.kg_in * delivery.unit_cost_per_kg;
       
       result.push({
         deliveryId,
         deliveryDisplayId: rows[0][displayKey],
-        deliveryDate,
-        qualityName: delivery.qualityName,
-        invoiceNumber: delivery.invoiceNumber || '',
-        isInvoiced: !!delivery.invoiceNumber,
-        kgIn: delivery.kgIn,
-        eurPerKgDelivery: delivery.unitCostPerKg,
+        deliveryDate: new Date(delivery.date),
+        qualityName: delivery.quality_name,
+        invoiceNumber: delivery.invoice_number || '',
+        isInvoiced: delivery.is_invoiced,
+        kgIn: delivery.kg_in,
+        eurPerKgDelivery: delivery.unit_cost_per_kg,
         totalDeliveryCostEur,
         kgSold,
         piecesSold,
@@ -250,19 +293,19 @@ export const useReports = () => {
     }
     
     return result.sort((a, b) => a.deliveryDate.getTime() - b.deliveryDate.getTime());
-  }, [allTransactionRows, filters.mode]);
+  }, [allTransactionRows, filters.mode, deliveriesById]);
 
   // Групиране по качества
   const qualityRows = useMemo((): QualityReportRow[] => {
     const grouped = new Map<number, TransactionReportRow[]>();
     
     for (const row of allTransactionRows) {
-      const delivery = mockDeliveries.find(d => 
-        filters.mode === 'real' ? d.id === row.realDeliveryId : d.id === row.accountingDeliveryId
+      const delivery = deliveriesById.get(
+        filters.mode === 'real' ? row.realDeliveryId : row.accountingDeliveryId
       );
       if (!delivery) continue;
       
-      const qualityId = delivery.qualityId;
+      const qualityId = delivery.quality_id;
       if (!grouped.has(qualityId)) {
         grouped.set(qualityId, []);
       }
@@ -272,7 +315,7 @@ export const useReports = () => {
     const result: QualityReportRow[] = [];
     
     for (const [qualityId, rows] of grouped) {
-      const quality = mockQualities.find(q => q.id === qualityId);
+      const quality = qualities.find(q => q.id === qualityId);
       if (!quality) continue;
       
       const kgSold = rows.reduce((sum, r) => sum + r.kg, 0);
@@ -297,22 +340,22 @@ export const useReports = () => {
     }
     
     return result.sort((a, b) => b.revenueEur - a.revenueEur);
-  }, [allTransactionRows, filters.mode]);
+  }, [allTransactionRows, filters.mode, deliveriesById, qualities]);
 
   // Групиране по артикули
   const articleRows = useMemo((): ArticleReportRow[] => {
-    const grouped = new Map<string, { name: string; rows: TransactionReportRow[] }>();
+    const grouped = new Map<string, TransactionReportRow[]>();
     
     for (const row of allTransactionRows) {
       if (!grouped.has(row.articleName)) {
-        grouped.set(row.articleName, { name: row.articleName, rows: [] });
+        grouped.set(row.articleName, []);
       }
-      grouped.get(row.articleName)!.rows.push(row);
+      grouped.get(row.articleName)!.push(row);
     }
     
     const result: ArticleReportRow[] = [];
     
-    for (const [articleName, { rows }] of grouped) {
+    for (const [articleName, rows] of grouped) {
       const piecesSold = rows.reduce((sum, r) => sum + r.pieces, 0);
       const kgSold = rows.reduce((sum, r) => sum + r.kg, 0);
       const revenueEur = rows.reduce((sum, r) => sum + r.revenueEur, 0);
@@ -375,13 +418,13 @@ export const useReports = () => {
   // Уникални доставчици за dropdown
   const supplierOptions: string[] = useMemo(() => {
     const uniqueSuppliers = new Set<string>();
-    mockDeliveries.forEach(d => {
-      if (d.supplierName) {
-        uniqueSuppliers.add(d.supplierName);
+    deliveries.forEach(d => {
+      if (d.supplier_name) {
+        uniqueSuppliers.add(d.supplier_name);
       }
     });
     return Array.from(uniqueSuppliers).sort();
-  }, []);
+  }, [deliveries]);
 
   // Генериране на отчет (симулация)
   const generateReport = useCallback(async () => {
@@ -413,6 +456,7 @@ export const useReports = () => {
     deliveryOptions,
     supplierOptions,
     isGenerating,
+    loading,
     updateFilters,
     updatePeriod,
     updateMode,
