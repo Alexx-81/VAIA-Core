@@ -1,21 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { EmployeeFormData } from '../types';
+import type { Employee } from '../../../lib/supabase/types';
 
 interface UseEmployeeFormOptions {
+  employee?: Employee | null; // For edit mode
   onSubmit: (data: EmployeeFormData) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
 }
 
-export function useEmployeeForm({ onSubmit, onClose }: UseEmployeeFormOptions) {
+export function useEmployeeForm({ employee, onSubmit, onClose }: UseEmployeeFormOptions) {
+  const isEditMode = !!employee;
+  
   const [formData, setFormData] = useState<EmployeeFormData>({
-    fullName: '',
-    email: '',
+    fullName: employee?.full_name || '',
+    email: employee?.email || '',
     password: '',
-    role: 'employee',
+    role: employee?.role || 'employee',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormData, string>>>({});
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Update form data when employee changes
+  useEffect(() => {
+    if (employee) {
+      setFormData({
+        fullName: employee.full_name,
+        email: employee.email,
+        password: '',
+        role: employee.role,
+      });
+    }
+  }, [employee]);
 
   const updateField = <K extends keyof EmployeeFormData>(
     field: K,
@@ -42,9 +58,15 @@ export function useEmployeeForm({ onSubmit, onClose }: UseEmployeeFormOptions) {
       newErrors.email = 'Невалиден имейл адрес';
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = 'Паролата е задължителна';
-    } else if (formData.password.length < 6) {
+    // Password is required only when creating new employee
+    if (!isEditMode) {
+      if (!formData.password.trim()) {
+        newErrors.password = 'Паролата е задължителна';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Паролата трябва да е поне 6 символа';
+      }
+    } else if (formData.password.trim() && formData.password.length < 6) {
+      // When editing, validate password only if provided
       newErrors.password = 'Паролата трябва да е поне 6 символа';
     }
 
@@ -80,6 +102,7 @@ export function useEmployeeForm({ onSubmit, onClose }: UseEmployeeFormOptions) {
     errors,
     submitError,
     isSubmitting,
+    isEditMode,
     updateField,
     handleSubmit,
     reset,

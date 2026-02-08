@@ -5,7 +5,7 @@ import { EmployeeTable } from './EmployeeTable';
 import { EmployeeDialog } from './EmployeeDialog';
 import { PermissionsDialog } from './PermissionsDialog';
 import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
-import { createEmployee, manageEmployeeStatus, updateEmployeePermissions } from '../../../lib/api/employees';
+import { createEmployee, manageEmployeeStatus, updateEmployee, updateEmployeePermissions } from '../../../lib/api/employees';
 import type { Employee } from '../../../lib/supabase/types';
 import type { EmployeeFormData } from '../types';
 import './Admin.css';
@@ -26,6 +26,8 @@ export const Admin = () => {
   } = useEmployees();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -57,6 +59,28 @@ export const Admin = () => {
     } catch (err) {
       console.error('Admin: Failed to create employee:', err);
       const errorMessage = err instanceof Error ? err.message : 'Неуспешно създаване на служител';
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  };
+
+  const handleEditEmployee = async (data: EmployeeFormData): Promise<{ success: boolean; error?: string }> => {
+    if (!editingEmployee) return { success: false, error: 'Няма избран служител' };
+    try {
+      console.log('Admin: Updating employee with data:', { ...data, password: data.password ? '***' : 'unchanged' });
+      await updateEmployee(editingEmployee.id, {
+        full_name: data.fullName,
+        email: data.email,
+        role: data.role,
+      });
+      console.log('Admin: Employee updated successfully');
+      await refresh();
+      return { success: true };
+    } catch (err) {
+      console.error('Admin: Failed to update employee:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Неуспешно актуализиране на служител';
       return {
         success: false,
         error: errorMessage,
@@ -100,6 +124,11 @@ export const Admin = () => {
   const handleEditPermissions = (employee: Employee) => {
     selectEmployee(employee);
     setShowPermissionsDialog(true);
+  };
+
+  const handleEdit = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setShowEditDialog(true);
   };
 
   const handleSavePermissions = async (
@@ -188,6 +217,7 @@ export const Admin = () => {
         actionLoading={actionLoading}
         onToggleStatus={handleToggleStatus}
         onEditPermissions={handleEditPermissions}
+        onEdit={handleEdit}
         isReadOnly={isReadOnly}
       />
 
@@ -196,6 +226,18 @@ export const Admin = () => {
           isOpen={showCreateDialog}
           onSubmit={handleCreateEmployee}
           onClose={() => setShowCreateDialog(false)}
+        />
+      )}
+
+      {showEditDialog && (
+        <EmployeeDialog
+          isOpen={showEditDialog}
+          employee={editingEmployee}
+          onSubmit={handleEditEmployee}
+          onClose={() => {
+            setShowEditDialog(false);
+            setEditingEmployee(null);
+          }}
         />
       )}
 

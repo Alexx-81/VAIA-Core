@@ -1,22 +1,25 @@
 import { useEmployeeForm } from '../hooks/useEmployeeForm';
 import type { EmployeeFormData } from '../types';
+import type { Employee } from '../../../lib/supabase/types';
 import './EmployeeDialog.css';
 
 interface EmployeeDialogProps {
   isOpen: boolean;
+  employee?: Employee | null; // For edit mode
   onSubmit: (data: EmployeeFormData) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
 }
 
-export const EmployeeDialog = ({ isOpen, onSubmit, onClose }: EmployeeDialogProps) => {
+export const EmployeeDialog = ({ isOpen, employee, onSubmit, onClose }: EmployeeDialogProps) => {
   const {
     formData,
     errors,
     submitError,
     isSubmitting,
+    isEditMode,
     updateField,
     handleSubmit,
-  } = useEmployeeForm({ onSubmit, onClose });
+  } = useEmployeeForm({ employee, onSubmit, onClose });
 
   if (!isOpen) return null;
 
@@ -30,7 +33,7 @@ export const EmployeeDialog = ({ isOpen, onSubmit, onClose }: EmployeeDialogProp
         aria-labelledby="employee-dialog-title"
       >
         <div className="employee-dialog__header">
-          <h2 id="employee-dialog-title">Нов служител</h2>
+          <h2 id="employee-dialog-title">{isEditMode ? 'Редакция на служител' : 'Нов служител'}</h2>
           <button
             className="employee-dialog__close"
             onClick={onClose}
@@ -86,20 +89,25 @@ export const EmployeeDialog = ({ isOpen, onSubmit, onClose }: EmployeeDialogProp
           {/* Парола */}
           <div className="employee-dialog__field">
             <label htmlFor="emp-password" className="employee-dialog__label">
-              Парола <span className="employee-dialog__required">*</span>
+              Парола {!isEditMode && <span className="employee-dialog__required">*</span>}
             </label>
             <input
               id="emp-password"
               type="password"
               value={formData.password}
               onChange={(e) => updateField('password', e.target.value)}
-              placeholder="Минимум 6 символа"
+              placeholder={isEditMode ? "Оставете празно за без промяна" : "Минимум 6 символа"}
               className={`employee-dialog__input ${errors.password ? 'employee-dialog__input--error' : ''}`}
               disabled={isSubmitting}
               autoComplete="new-password"
             />
             {errors.password && (
               <span className="employee-dialog__error">{errors.password}</span>
+            )}
+            {isEditMode && !errors.password && (
+              <span className="employee-dialog__hint">
+                Ако искате да промените паролата, въведете нова (минимум 6 символа)
+              </span>
             )}
           </div>
 
@@ -170,7 +178,10 @@ export const EmployeeDialog = ({ isOpen, onSubmit, onClose }: EmployeeDialogProp
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Създаване...' : 'Създай служител'}
+            {isSubmitting 
+              ? (isEditMode ? 'Записване...' : 'Създаване...') 
+              : (isEditMode ? 'Запази промените' : 'Създай служител')
+            }
           </button>
         </div>
       </div>

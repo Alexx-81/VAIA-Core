@@ -317,6 +317,20 @@
   transform: translateY(-2px);
 }
 
+.employee-card__btn--edit {
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.3), rgba(255, 122, 0, 0.2));
+  color: #FF9500;
+  border: 1px solid rgba(255, 122, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);
+}
+
+.employee-card__btn--edit:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.4), rgba(255, 122, 0, 0.3));
+  border-color: rgba(255, 122, 0, 0.6);
+  box-shadow: 0 6px 20px rgba(255, 122, 0, 0.3);
+  transform: translateY(-2px);
+}
+
 .employee-card__btn--deactivate {
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.2));
   color: #f87171;
