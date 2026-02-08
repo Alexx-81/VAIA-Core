@@ -1,13 +1,16 @@
 /* Filter Bar Styles */
 .filters-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   align-items: center;
-  gap: 24px;
-  padding: 20px 24px;
-  background: #1a1a1a;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  gap: clamp(1rem, 3vw, 2rem);
+  padding-block: clamp(1rem, 3vh, 1.5rem);
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  background: var(--surface-color);
+  border-radius: clamp(10px, 2vw, 16px);
+  margin-block-end: clamp(1rem, 3vh, 2rem);
+  container-type: inline-size;
+  container-name: filters;
 }
 
 .filter-group {
@@ -55,19 +58,24 @@
 
 /* Select Dropdown */
 .select-modern {
-  padding: 10px 40px 10px 16px;
-  background: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  border-radius: 8px;
-  color: #e0e0e0;
-  font-size: 14px;
+  padding-block: clamp(0.625rem, 1.5vh, 0.875rem);
+  padding-inline-start: clamp(0.875rem, 2vw, 1.25rem);
+  padding-inline-end: clamp(2.25rem, 4vw, 3rem);
+  background: var(--surface-elevated, var(--surface-color));
+  border: 1px solid var(--border-color);
+  border-radius: clamp(6px, 1vw, 10px);
+  color: var(--text-color);
+  font-size: clamp(0.8125rem, 1.5vw, 0.9375rem);
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  min-width: 180px;
+  inline-size: 100%;
+  min-inline-size: min(100%, 160px);
   transition: all 0.2s ease;
+  /* Touch-friendly */
+  min-block-size: 44px;
 }
 
 .select-modern:hover {
@@ -82,13 +90,17 @@
 
 /* Input Modern */
 .input-modern {
-  padding: 10px 16px;
-  background: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  border-radius: 8px;
-  color: #e0e0e0;
-  font-size: 14px;
+  padding-block: clamp(0.625rem, 1.5vh, 0.875rem);
+  padding-inline: clamp(0.875rem, 2vw, 1.25rem);
+  background: var(--surface-elevated, var(--surface-color));
+  border: 1px solid var(--border-color);
+  border-radius: clamp(6px, 1vw, 10px);
+  color: var(--text-color);
+  font-size: clamp(0.8125rem, 1.5vw, 0.9375rem);
   transition: all 0.2s ease;
+  inline-size: 100%;
+  /* Touch-friendly */
+  min-block-size: 44px;
 }
 
 .input-modern:hover {
@@ -107,11 +119,13 @@
 
 /* Card Styles */
 .card {
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #2a2a2a;
+  background: var(--surface-color);
+  border-radius: clamp(10px, 2vw, 16px);
+  padding-inline: clamp(1.25rem, 4vw, 2rem);
+  padding-block: clamp(1.25rem, 3vh, 2rem);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+  container-type: inline-size;
 }
 
 .card:hover {
@@ -123,9 +137,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #2a2a2a;
+  margin-block-end: clamp(1rem, 3vh, 1.5rem);
+  padding-block-end: clamp(0.875rem, 2vh, 1.25rem);
+  border-block-end: 1px solid var(--border-color);
 }
 
 .card-title {

@@ -62,8 +62,8 @@
   .tabs {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    gap: var(--space-sm);
+    inline-size: 100%;
+    gap: clamp(0.5rem, 1.5vh, 0.75rem);
     padding: 0;
     background: transparent;
     border: none;
@@ -72,10 +72,11 @@
   
   .tab {
     display: block;
-    width: 100%;
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
-    text-align: left;
+    inline-size: 100%;
+    padding-block: clamp(0.875rem, 2vh, 1.125rem);
+    padding-inline: clamp(1rem, 3vw, 1.5rem);
+    font-size: clamp(0.9375rem, 2vw, 1.0625rem);
+    text-align: start;
     border-radius: var(--radius-lg);
     background: var(--surface-hover);
     cursor: pointer;
@@ -84,6 +85,8 @@
     user-select: none;
     position: relative;
     z-index: 1;
+    /* Touch-friendly */
+    min-block-size: 48px;
   }
   
   .tab:hover,

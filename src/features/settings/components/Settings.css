@@ -1,5 +1,6 @@
 .settings {
   padding: 0;
+  padding-block-start: clamp(1rem, 3vh, 2rem);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

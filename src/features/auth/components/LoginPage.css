@@ -2,20 +2,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-block-size: 100svh; /* Small viewport height */
+  block-size: 100dvh; /* Dynamic viewport height */
   background: var(--bg-gradient, var(--bg-color));
-  padding: 1rem;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  padding-block: clamp(1rem, 3vh, 2rem);
 }
 
 .login-card {
   background: var(--surface-color);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 420px;
+  border-radius: clamp(14px, 2vw, 20px);
+  inline-size: 100%;
+  max-inline-size: min(95vw, 460px);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   animation: loginSlideUp 0.3s ease-out;
+  container-type: inline-size;
+  container-name: login;
 }
 
 @keyframes loginSlideUp {
@@ -31,8 +34,10 @@
 
 .login-header {
   text-align: center;
-  padding: 2.5rem 2rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  padding-block-start: clamp(2rem, 5vh, 3rem);
+  padding-block-end: clamp(1.25rem, 3vh, 1.75rem);
+  padding-inline: clamp(1.5rem, 4vw, 2rem);
+  border-block-end: 1px solid var(--border-color);
 }
 
 .login-logo {
@@ -44,14 +49,14 @@
 }
 
 .login-logo__vaia {
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
   font-weight: 700;
   color: #0B4F8A;
   letter-spacing: -0.02em;
 }
 
 .login-logo__core {
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
   font-weight: 300;
   color: #FF7A00;
   letter-spacing: -0.02em;
@@ -64,10 +69,11 @@
 }
 
 .login-form {
-  padding: 2rem;
+  padding-inline: clamp(1.5rem, 4vw, 2rem);
+  padding-block: clamp(1.5rem, 4vh, 2.5rem);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: clamp(1rem, 2vh, 1.5rem);
 }
 
 .login-field {
@@ -83,13 +89,17 @@
 }
 
 .login-input {
-  padding: 0.75rem 1rem;
+  padding-block: clamp(0.75rem, 2vh, 1rem);
+  padding-inline: clamp(0.875rem, 2vw, 1.25rem);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--background-color);
   color: var(--text-color);
-  font-size: 0.95rem;
+  font-size: clamp(0.9375rem, 2vw, 1.0625rem);
   transition: border-color 0.2s, box-shadow 0.2s;
+  inline-size: 100%;
+  /* Touch-friendly */
+  min-block-size: 44px;
 }
 
 .login-input:focus {
