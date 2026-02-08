@@ -4,7 +4,7 @@ import { InventoryFiltersBar } from './InventoryFiltersBar';
 import { InventoryTable } from './InventoryTable';
 import { InventoryComparison } from './InventoryComparison';
 import { Toast } from '../../../shared/components/Toast';
-import { exportToCSV, exportComparisonToCSV, formatKg, formatEur } from '../utils/inventoryUtils';
+import { exportToCSV, exportComparisonToCSV, exportToExcel, exportComparisonToExcel, formatKg, formatEur } from '../utils/inventoryUtils';
 import type { InventoryTab } from '../types';
 import './Inventory.css';
 
@@ -60,6 +60,27 @@ export const Inventory = () => {
       exportToCSV(accInventory, 'accounting', `nalichnosti-accounting-${now}`);
     } else {
       exportComparisonToCSV(comparisonInventory, `nalichnosti-sravnenie-${now}`);
+    }
+  }, [activeTab, realInventory, accInventory, comparisonInventory]);
+
+  const handleExportExcel = useCallback(async () => {
+    const now = new Date().toISOString().split('T')[0];
+    
+    try {
+      if (activeTab === 'real') {
+        await exportToExcel(realInventory, 'real', `nalichnosti-real-${now}`);
+      } else if (activeTab === 'accounting') {
+        await exportToExcel(accInventory, 'accounting', `nalichnosti-accounting-${now}`);
+      } else {
+        await exportComparisonToExcel(comparisonInventory, `nalichnosti-sravnenie-${now}`);
+      }
+    } catch (error) {
+      console.error('Грешка при експортиране в Excel:', error);
+      setToast({
+        isOpen: true,
+        message: 'Грешка при експортиране в Excel',
+        variant: 'error',
+      });
     }
   }, [activeTab, realInventory, accInventory, comparisonInventory]);
 
@@ -135,6 +156,7 @@ export const Inventory = () => {
         filters={filters}
         onFilterChange={updateFilters}
         onExport={handleExport}
+        onExportExcel={handleExportExcel}
         qualities={qualities}
         suppliers={suppliers}
         totalCount={totalCount}

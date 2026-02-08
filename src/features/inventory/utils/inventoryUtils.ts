@@ -179,3 +179,147 @@ export const exportComparisonToCSV = (
   link.click();
   URL.revokeObjectURL(link.href);
 };
+
+// Export to Excel
+export const exportToExcel = async (
+  data: InventoryRealRow[] | InventoryAccRow[],
+  type: 'real' | 'accounting',
+  filename: string
+): Promise<void> => {
+  // Динамично зареждаме xlsx библиотеката
+  const XLSX = await import('xlsx');
+  
+  const wb = XLSX.utils.book_new();
+
+  // Подготвяме данните
+  let headers: string[];
+  let worksheetData: (string | number)[][];
+
+  if (type === 'real') {
+    headers = [
+      'Delivery ID',
+      'Дата',
+      'Качество',
+      'Фактура №',
+      'Фактурна',
+      'Доставчик',
+      'kg вход',
+      'kg продадени (Real)',
+      'kg налични (Real)',
+      '% оставащи',
+      'EUR/kg',
+      'Обща сума (EUR)',
+      'Оборот Real (EUR)',
+      'Пари изкарани Real (EUR)',
+      'Стойност остатък Real (EUR)',
+    ];
+    worksheetData = (data as InventoryRealRow[]).map(row => [
+      row.displayId,
+      formatDate(row.date),
+      row.qualityName,
+      row.invoiceNumber || '',
+      row.isInvoiced ? 'Да' : 'Не',
+      row.supplierName || '',
+      row.kgIn,
+      row.kgSoldReal,
+      row.kgRemainingReal,
+      row.percentRemaining,
+      row.unitCostPerKg,
+      row.totalCostEur,
+      row.revenueRealEur,
+      row.earnedRealEur,
+      row.valueRemainingRealEur,
+    ]);
+  } else {
+    headers = [
+      'Delivery ID',
+      'Дата',
+      'Качество',
+      'Фактура №',
+      'Фактурна',
+      'Доставчик',
+      'kg вход',
+      'kg продадени (Acc)',
+      'kg налични (Acc)',
+      '% оставащи',
+      'EUR/kg',
+      'Обща сума (EUR)',
+      'Оборот Acc (EUR)',
+      'Пари изкарани Acc (EUR)',
+      'Стойност остатък Acc (EUR)',
+    ];
+    worksheetData = (data as InventoryAccRow[]).map(row => [
+      row.displayId,
+      formatDate(row.date),
+      row.qualityName,
+      row.invoiceNumber || '',
+      row.isInvoiced ? 'Да' : 'Не',
+      row.supplierName || '',
+      row.kgIn,
+      row.kgSoldAcc,
+      row.kgRemainingAcc,
+      row.percentRemaining,
+      row.unitCostPerKg,
+      row.totalCostEur,
+      row.revenueAccEur,
+      row.earnedAccEur,
+      row.valueRemainingAccEur,
+    ]);
+  }
+
+  // Създаваме worksheet
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...worksheetData]);
+
+  // Добавяме worksheet към workbook
+  XLSX.utils.book_append_sheet(wb, ws, type === 'real' ? 'Real Наличности' : 'Acc Наличности');
+
+  // Записваме файла
+  XLSX.writeFile(wb, `${filename}.xlsx`);
+};
+
+// Export comparison to Excel
+export const exportComparisonToExcel = async (
+  data: InventoryComparisonRow[],
+  filename: string
+): Promise<void> => {
+  // Динамично зареждаме xlsx библиотеката
+  const XLSX = await import('xlsx');
+  
+  const wb = XLSX.utils.book_new();
+
+  // Подготвяме данните
+  const headers = [
+    'Delivery ID',
+    'Качество',
+    'kg налични (Real)',
+    'kg налични (Acc)',
+    'Разлика kg',
+    'Оборот Real (EUR)',
+    'Оборот Acc (EUR)',
+    'Пари изкарани Real (EUR)',
+    'Пари изкарани Acc (EUR)',
+    'Статус',
+  ];
+
+  const worksheetData = data.map(row => [
+    row.displayId,
+    row.qualityName,
+    row.kgRemainingReal,
+    row.kgRemainingAcc,
+    row.kgDifference,
+    row.revenueRealEur,
+    row.revenueAccEur,
+    row.earnedRealEur,
+    row.earnedAccEur,
+    row.status === 'ok' ? 'OK' : row.status === 'warning' ? 'Внимание' : 'Критично',
+  ]);
+
+  // Създаваме worksheet
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...worksheetData]);
+
+  // Добавяме worksheet към workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Сравнение');
+
+  // Записваме файла
+  XLSX.writeFile(wb, `${filename}.xlsx`);
+};

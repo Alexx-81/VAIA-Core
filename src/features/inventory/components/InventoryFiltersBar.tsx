@@ -5,6 +5,7 @@ interface InventoryFiltersBarProps {
   filters: InventoryFilters;
   onFilterChange: (updates: Partial<InventoryFilters>) => void;
   onExport: () => void;
+  onExportExcel: () => void;
   qualities: Quality[];
   suppliers: string[];
   totalCount: number;
@@ -16,6 +17,7 @@ export const InventoryFiltersBar = ({
   filters,
   onFilterChange,
   onExport,
+  onExportExcel,
   qualities,
   suppliers,
   totalCount,
@@ -110,7 +112,11 @@ export const InventoryFiltersBar = ({
       </span>
 
       <button className="inventory-filters__btn inventory-filters__btn--export" onClick={onExport}>
-        📥 Експорт CSV
+        📥 CSV
+      </button>
+
+      <button className="inventory-filters__btn inventory-filters__btn--export" onClick={onExportExcel}>
+        📊 Excel
       </button>
     </div>
   );
