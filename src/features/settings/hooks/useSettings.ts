@@ -44,7 +44,7 @@ const saveSettings = (settings: AppSettings): void => {
 
 export const useSettings = () => {
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
-  const [expandedSection, setExpandedSection] = useState<SettingsSection | null>('general');
+  const [expandedSection, setExpandedSection] = useState<SettingsSection | null>(null);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 

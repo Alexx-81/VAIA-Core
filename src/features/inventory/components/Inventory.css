@@ -1,5 +1,11 @@
 .inventory {
   padding: 0;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .inventory__header {
@@ -7,7 +13,35 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1.5rem;
-  gap: 2rem;
+  gap: 1.5rem;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(135deg, rgba(11, 79, 138, 0.15) 0%, rgba(255, 122, 0, 0.15) 100%);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+.inventory__header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #FF7A00 0%, #0B4F8A 50%, #FF7A00 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .inventory__title-section {
@@ -15,16 +49,22 @@
 }
 
 .inventory__title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0 0 0.5rem 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0B4F8A 0%, #FF7A00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.5px;
+  filter: drop-shadow(0 2px 8px rgba(255, 122, 0, 0.3));
 }
 
 .inventory__subtitle {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
+  font-weight: 500;
 }
 
 .inventory__stats {
@@ -36,29 +76,51 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem 1.25rem;
-  background-color: var(--surface-color);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  min-width: 90px;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  min-width: 100px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.inventory__stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 122, 0, 0.3);
+  border-color: rgba(255, 122, 0, 0.4);
 }
 
 .inventory__stat-value {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--vaia-color);
+  font-size: 1.65rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF7A00 0%, #0B4F8A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 3px rgba(255, 122, 0, 0.3));
 }
 
 .inventory__stat-value.warning {
-  color: #eab308;
+  background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .inventory__stat-value.danger {
-  color: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .inventory__stat-value.success {
-  color: #22c55e;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .inventory__stat-label {
@@ -74,10 +136,13 @@
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  background-color: var(--bg-color);
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
   margin-bottom: 1rem;
   width: fit-content;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .inventory__tab {

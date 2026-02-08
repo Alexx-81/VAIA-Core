@@ -3,12 +3,46 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .reports__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(135deg, rgba(11, 79, 138, 0.15) 0%, rgba(255, 122, 0, 0.15) 100%);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+.reports__header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #FF7A00 0%, #0B4F8A 50%, #FF7A00 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .reports__title-section {
@@ -16,16 +50,22 @@
 }
 
 .reports__title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0 0 0.5rem 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0B4F8A 0%, #FF7A00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.5px;
+  filter: drop-shadow(0 2px 8px rgba(255, 122, 0, 0.3));
 }
 
 .reports__subtitle {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
+  font-weight: 500;
 }
 
 /* Export message */
@@ -50,10 +90,22 @@
 
 /* Info panel */
 .reports__info {
-  background: var(--surface-color);
-  border-radius: 12px;
-  padding: 1.25rem;
-  border: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.6) 0%, rgba(20, 20, 30, 0.8) 100%);
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reports__info:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
 .reports__info-title {
