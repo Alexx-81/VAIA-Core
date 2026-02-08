@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { TabId } from '../../../shared/components/Tabs';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { DataCards } from '../../../shared/components/DataCards';
-import { getSales } from '../../../lib/api/sales';
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
+import { getSales, deleteSale } from '../../../lib/api/sales';
 import { getDeliveries } from '../../../lib/api/deliveries';
 import { getQualities } from '../../../lib/api/qualities';
 import type { SalesSummary, DeliveryInventory, Quality } from '../../../lib/supabase/types';
@@ -11,7 +12,7 @@ import './Dashboard.css';
 // Types
 type DateRangeOption = 'today' | 'this_week' | 'this_month' | 'last_month' | 'this_year' | 'custom';
 type LedgerView = 'real' | 'accounting';
-type PaymentMethod = 'cash' | 'card' | 'other';
+type PaymentMethod = 'cash' | 'card' | 'other' | 'no-cash';
 
 interface DateRange {
   from: Date;
@@ -95,6 +96,7 @@ const getPaymentMethodLabel = (method: PaymentMethod): string => {
     cash: 'В брой',
     card: 'Карта',
     other: 'Друго',
+    'no-cash': 'Без каса',
   };
   return labels[method];
 };
@@ -171,28 +173,43 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   const [rawDeliveries, setRawDeliveries] = useState<DeliveryInventory[]>([]);
   const [qualities, setQualities] = useState<Quality[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info' | 'success';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    variant: 'warning',
+    onConfirm: () => {},
+  });
 
-  // Load data from Supabase on mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [salesData, deliveriesData, qualitiesData] = await Promise.all([
-          getSales({ status: 'finalized' }),
-          getDeliveries(),
-          getQualities(),
-        ]);
-        setRawSales(salesData);
-        setRawDeliveries(deliveriesData);
-        setQualities(qualitiesData.filter(q => q.is_active));
-      } catch (error) {
-        console.error('Dashboard: Error loading data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
+  // Load data from Supabase
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [salesData, deliveriesData, qualitiesData] = await Promise.all([
+        getSales({ status: 'finalized' }),
+        getDeliveries(),
+        getQualities(),
+      ]);
+      setRawSales(salesData);
+      setRawDeliveries(deliveriesData);
+      setQualities(qualitiesData.filter(q => q.is_active));
+    } catch (error) {
+      console.error('Dashboard: Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // Load data on mount
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Computed values
   const activeDateRange = useMemo(() => {
@@ -355,13 +372,25 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
   };
 
   const handleNewSale = () => {
-    // Creates new sale (draft) and opens POS tab
+    // Creates new sale (draft) and opens POS tab in editor mode
     onTabChange?.('sales');
+    // Add query param to signal Sales component to open editor directly
+    window.history.replaceState(
+      { tab: 'sales' },
+      '',
+      '/sales?new=true'
+    );
   };
 
   const handleNewDelivery = () => {
     // Opens Deliveries tab in "Create" mode
     onTabChange?.('deliveries');
+    // Add query param to signal Deliveries component to open create form
+    window.history.replaceState(
+      { tab: 'deliveries' },
+      '',
+      '/deliveries?new=true'
+    );
   };
 
   const handleExport = () => {
@@ -379,10 +408,31 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
     onTabChange?.('sales');
   };
 
-  const handleVoidSale = (saleId: string) => {
-    console.log('Voiding sale:', saleId);
-    // TODO: Implement void/cancel functionality
-  };
+  const handleVoidSale = useCallback((saleId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Сторниране на продажба',
+      message: 'Сигурни ли сте, че искате да сторнирате тази продажба? Това действие е необратимо.',
+      variant: 'danger',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          await deleteSale(saleId);
+          await loadData();
+          console.log('Sale voided successfully:', saleId);
+        } catch (error) {
+          console.error('Error voiding sale:', error);
+          setConfirmDialog({
+            isOpen: true,
+            title: 'Грешка',
+            message: error instanceof Error ? error.message : 'Грешка при сторниране на продажбата. Моля, опитайте отново.',
+            variant: 'danger',
+            onConfirm: () => setConfirmDialog({ ...confirmDialog, isOpen: false }),
+          });
+        }
+      },
+    });
+  }, [loadData, confirmDialog]);
 
   const handleOpenDelivery = (deliveryId: string) => {
     console.log('Opening delivery:', deliveryId);
@@ -867,6 +917,15 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
       </div>
         </>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        variant={confirmDialog.variant}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 };

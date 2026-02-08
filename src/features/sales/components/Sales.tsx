@@ -33,6 +33,17 @@ export const Sales = () => {
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
+  // Check if we should open editor directly from URL query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('new') === 'true') {
+      setCurrentView('editor');
+      setSelectedSaleId(null);
+      // Clean up query param
+      window.history.replaceState({ tab: 'sales' }, '', '/sales');
+    }
+  }, []);
+
   // Handlers
   const handleNewSale = useCallback(() => {
     setCurrentView('editor');

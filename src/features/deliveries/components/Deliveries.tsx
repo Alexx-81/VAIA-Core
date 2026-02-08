@@ -41,6 +41,18 @@ export const Deliveries = () => {
   // Import dialog state
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
+  // Check if we should open create dialog directly from URL query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('new') === 'true') {
+      setEditingDelivery(undefined);
+      setDialogKey((prev) => prev + 1);
+      setDialogOpen(true);
+      // Clean up query param
+      window.history.replaceState({ tab: 'deliveries' }, '', '/deliveries');
+    }
+  }, []);
+
   // Load sales for selected delivery
   useEffect(() => {
     if (selectedDeliveryId) {
