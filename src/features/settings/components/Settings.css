@@ -193,6 +193,29 @@
   color: #b45309;
 }
 
+/* Backup - last backup info */
+.settings__backup-last {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--background-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 0.875rem;
+}
+
+.settings__backup-last-label {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.settings__backup-last-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .settings__header {

@@ -148,4 +148,5 @@ export type SettingsSection =
   | 'export' 
   | 'reportHeader' 
   | 'backup'
+  | 'dataBackup'
   | 'data';

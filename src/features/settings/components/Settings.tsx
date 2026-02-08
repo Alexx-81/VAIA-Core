@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useSettings } from '../hooks/useSettings';
+import { useDataBackup } from '../hooks/useDataBackup';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { 
   SettingsSectionCard, 
@@ -47,7 +48,20 @@ export const Settings: React.FC = () => {
     testExport,
   } = useSettings();
 
+  const {
+    isExporting,
+    isImporting,
+    message: backupMessage,
+    lastBackupFormatted,
+    pendingImport,
+    exportBackup,
+    prepareImport,
+    confirmImport,
+    cancelImport,
+  } = useDataBackup();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const backupFileInputRef = useRef<HTMLInputElement>(null);
   const [clearDataMessage, setClearDataMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState<'first' | 'final' | null>(null);
 
@@ -59,6 +73,18 @@ export const Settings: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       importSettings(file);
+      e.target.value = '';
+    }
+  };
+
+  const handleBackupImportClick = () => {
+    backupFileInputRef.current?.click();
+  };
+
+  const handleBackupFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      prepareImport(file);
       e.target.value = '';
     }
   };
@@ -607,7 +633,69 @@ export const Settings: React.FC = () => {
           </div>
         </SettingsSectionCard>
 
-        {/* 7) Управление на данни */}
+        {/* 7) Архив на данни */}
+        <SettingsSectionCard
+          id="dataBackup"
+          title="Архив на данни"
+          icon="🗃️"
+          description="Архивиране и възстановяване на всички данни от базата"
+          isExpanded={expandedSection === 'dataBackup'}
+          onToggle={toggleSection}
+          disabled={isReadOnly}
+        >
+          <div className="settings__backup-info">
+            <p>Създайте пълно архивно копие на всички данни: <strong>Качества</strong>, <strong>Артикули</strong>, <strong>Доставки</strong>, <strong>Продажби</strong> и <strong>Редове от продажби</strong>.</p>
+            <p>При нужда от възстановяване, импортирайте архивен файл — всички текущи данни ще бъдат заменени.</p>
+          </div>
+
+          <div className="settings__backup-last">
+            <span className="settings__backup-last-label">📅 Последен архив:</span>
+            <span className="settings__backup-last-value">{lastBackupFormatted}</span>
+          </div>
+
+          {backupMessage && (
+            <div className={`settings__message settings__message--${backupMessage.type}`}>
+              {backupMessage.type === 'success' ? '✅' : backupMessage.type === 'error' ? '❌' : 'ℹ️'} {backupMessage.text}
+            </div>
+          )}
+
+          <div className="settings__backup-actions">
+            {!isReadOnly && (
+              <>
+                <button
+                  className="settings__btn settings__btn--primary"
+                  onClick={exportBackup}
+                  disabled={isExporting || isImporting}
+                >
+                  {isExporting ? '⏳ Създаване...' : '📥 Създай архив'}
+                </button>
+
+                <button
+                  className="settings__btn settings__btn--outline"
+                  onClick={handleBackupImportClick}
+                  disabled={isExporting || isImporting}
+                >
+                  {isImporting ? '⏳ Възстановяване...' : '📤 Възстанови от архив'}
+                </button>
+
+                <input
+                  ref={backupFileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleBackupFileChange}
+                  style={{ display: 'none' }}
+                />
+              </>
+            )}
+          </div>
+
+          <div className="settings__backup-warning">
+            ⚠️ <strong>Внимание:</strong> Възстановяването от архив ще замени <strong>ВСИЧКИ</strong> текущи данни
+            (качества, артикули, доставки, продажби) с данните от файла. Това действие е необратимо!
+          </div>
+        </SettingsSectionCard>
+
+        {/* 8) Управление на данни */}
         <SettingsSectionCard
           id="data"
           title="Управление на данни"
@@ -668,6 +756,22 @@ export const Settings: React.FC = () => {
         cancelText="Откажи"
         onConfirm={handleFinalConfirm}
         onCancel={() => setShowClearConfirm(null)}
+      />
+
+      {/* Data backup restore confirmation dialog */}
+      <ConfirmDialog
+        isOpen={!!pendingImport}
+        title="Възстановяване от архив"
+        message={
+          pendingImport
+            ? `Файл: ${pendingImport.fileName}\n\nСъдържание: ${pendingImport.summary}\n\n⚠️ ВСИЧКИ текущи данни ще бъдат ИЗТРИТИ и заменени с данните от архива!\nТова действие е необратимо!`
+            : ''
+        }
+        variant="danger"
+        confirmText="Да, възстанови"
+        cancelText="Откажи"
+        onConfirm={confirmImport}
+        onCancel={cancelImport}
       />
     </div>
   );

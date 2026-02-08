@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   SALES_DATA: 'vaia_sales_data',
   ARTICLES: 'vaia_articles',
   QUALITIES: 'vaia_qualities',
+  LAST_DATA_BACKUP: 'vaia-last-data-backup',
 } as const;
 
 type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];

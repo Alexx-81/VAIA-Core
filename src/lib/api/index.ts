@@ -6,3 +6,4 @@ export * from './sales';
 export * from './settings';
 export * from './inventory';
 export * from './employees';
+export * from './backup';
