@@ -4,6 +4,8 @@ import { ArticleFiltersBar } from './ArticleFiltersBar';
 import { ArticleTable } from './ArticleTable';
 import { ArticleDialog } from './ArticleDialog';
 import { Toast } from '../../../shared/components/Toast';
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
+import { useAuth } from '../../../shared/context/AuthContext';
 import type { Article, ArticleFormData, ImportResult } from '../types';
 import { importArticlesFromExcel, generateArticleImportTemplate } from '../utils/importArticles';
 import './Articles.css';
@@ -18,7 +20,11 @@ export const Articles = () => {
     createArticle,
     updateArticle,
     toggleArticleStatus,
+    deleteArticle,
+    checkArticleDependencies,
   } = useArticles();
+
+  const { isAdmin } = useAuth();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | undefined>();
@@ -27,6 +33,12 @@ export const Articles = () => {
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' | 'warning' | 'info' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   // Отваря диалог за нов артикул
   const handleNewArticle = useCallback(() => {
@@ -57,6 +69,33 @@ export const Articles = () => {
     },
     [editingArticle, createArticle, updateArticle]
   );
+
+  // Delete handler
+  const handleDeleteArticle = useCallback(async (article: Article) => {
+    const deps = await checkArticleDependencies(article.id);
+    
+    let message = `Сигурни ли сте, че искате да изтриете артикул „${article.name}“?`;
+    if (deps.saleCount > 0) {
+      message += `\n\n❗ Ще бъдат изтрити и ${deps.saleCount} свързани продажби!`;
+    }
+    message += '\n\nТова действие е необратимо.';
+
+    setDeleteConfirm({
+      isOpen: true,
+      title: `Изтриване на артикул`,
+      message,
+      onConfirm: async () => {
+        setDeleteConfirm(prev => ({ ...prev, isOpen: false }));
+        const result = await deleteArticle(article.id);
+        if (result.success) {
+          setToast({ message: `Артикул „${article.name}“ е изтрит успешно.`, variant: 'success' });
+          handleCloseDialog();
+        } else {
+          setToast({ message: result.error || 'Грешка при изтриване.', variant: 'error' });
+        }
+      },
+    });
+  }, [checkArticleDependencies, deleteArticle, handleCloseDialog]);
 
   // Списък с имена за валидация на уникалност
   const existingNames = allArticles.map((a) => a.name);
@@ -169,6 +208,7 @@ export const Articles = () => {
         articles={articles}
         onEdit={handleEditArticle}
         onToggleStatus={toggleArticleStatus}
+        onDelete={isAdmin ? handleDeleteArticle : undefined}
       />
 
       <ArticleDialog
@@ -178,6 +218,7 @@ export const Articles = () => {
         existingNames={existingNames}
         onSubmit={handleSubmit}
         onClose={handleCloseDialog}
+        onDelete={isAdmin ? handleDeleteArticle : undefined}
       />
 
       {/* Hidden file input за импорт */}
@@ -199,6 +240,17 @@ export const Articles = () => {
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title={deleteConfirm.title}
+        message={deleteConfirm.message}
+        confirmText="Изтрий"
+        variant="danger"
+        onConfirm={deleteConfirm.onConfirm}
+        onCancel={() => setDeleteConfirm(prev => ({ ...prev, isOpen: false }))}
+      />
 
       {/* Import result dialog */}
       {importResult && importResult.invalidRecords.length > 0 && (

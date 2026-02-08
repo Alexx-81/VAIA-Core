@@ -8,6 +8,7 @@ interface SalesTableProps {
   sales: SaleWithComputed[];
   onViewDetail: (sale: SaleWithComputed) => void;
   onNewSale: () => void;
+  onDelete?: (sale: SaleWithComputed) => void;
   stats: {
     totalRevenueEur: number;
     totalProfitRealEur: number;
@@ -18,9 +19,10 @@ export const SalesTable = ({
   sales,
   onViewDetail,
   onNewSale,
+  onDelete,
   stats,
 }: SalesTableProps) => {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, isAdmin } = useAuth();
 
   if (sales.length === 0) {
     return (
@@ -118,6 +120,15 @@ export const SalesTable = ({
                   >
                     👁️
                   </button>
+                  {isAdmin && onDelete && (
+                    <button
+                      className="sales-table__action-btn delete"
+                      onClick={() => onDelete(sale)}
+                      title="Изтрий"
+                    >
+                      🗑️
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -160,9 +171,16 @@ export const SalesTable = ({
           </span>
         )}
         renderCardActions={(s) => (
-          <button className="edit" onClick={() => onViewDetail(s)}>
-            👁️ Виж детайл
-          </button>
+          <>
+            <button className="edit" onClick={() => onViewDetail(s)}>
+              👁️ Виж детайл
+            </button>
+            {isAdmin && onDelete && (
+              <button className="danger" onClick={() => onDelete(s)}>
+                🗑️ Изтрий
+              </button>
+            )}
+          </>
         )}
       />
 

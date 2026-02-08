@@ -9,6 +9,7 @@ interface DeliveryTableProps {
   onViewDetail: (delivery: DeliveryWithComputed) => void;
   onEdit: (delivery: DeliveryWithComputed) => void;
   onNewDelivery: () => void;
+  onDelete?: (delivery: DeliveryWithComputed) => void;
 }
 
 export const DeliveryTable = ({
@@ -16,8 +17,9 @@ export const DeliveryTable = ({
   onViewDetail,
   onEdit,
   onNewDelivery,
+  onDelete,
 }: DeliveryTableProps) => {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, isAdmin } = useAuth();
 
   if (deliveries.length === 0) {
     return (
@@ -125,6 +127,15 @@ export const DeliveryTable = ({
                       ✏️
                     </button>
                   )}
+                  {isAdmin && onDelete && (
+                    <button
+                      className="delivery-table__action-btn delete"
+                      onClick={() => onDelete(delivery)}
+                      title="Изтрий"
+                    >
+                      🗑️
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -179,6 +190,11 @@ export const DeliveryTable = ({
             {!isReadOnly && (
               <button className="warning" onClick={() => onEdit(d)}>
                 ✏️ Редакция
+              </button>
+            )}
+            {isAdmin && onDelete && (
+              <button className="danger" onClick={() => onDelete(d)}>
+                🗑️ Изтрий
               </button>
             )}
           </>

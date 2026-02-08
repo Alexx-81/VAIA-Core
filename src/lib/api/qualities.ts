@@ -127,6 +127,90 @@ export async function getQualitiesWithStats(): Promise<QualityWithStats[]> {
   return qualitiesWithStats;
 }
 
+// Проверява зависимости на качество (за UI предупреждение)
+export async function getQualityDependencies(id: number): Promise<{ deliveryCount: number; saleCount: number }> {
+  // Намираме доставки за това качество
+  const { data: deliveries, error: delError } = await supabase
+    .from('deliveries')
+    .select('id')
+    .eq('quality_id', id);
+
+  if (delError) throw delError;
+
+  const deliveryIds = (deliveries || []).map(d => d.id);
+  let saleCount = 0;
+
+  if (deliveryIds.length > 0) {
+    // Намираме уникалните продажби, свързани с тези доставки
+    const { data: saleLines, error: slError } = await supabase
+      .from('sale_lines')
+      .select('sale_id, real_delivery_id, accounting_delivery_id')
+      .or(deliveryIds.map(id => `real_delivery_id.eq.${id}`).join(','));
+
+    if (slError) throw slError;
+
+    const uniqueSaleIds = new Set((saleLines || []).map(l => l.sale_id));
+    saleCount = uniqueSaleIds.size;
+  }
+
+  return { deliveryCount: deliveryIds.length, saleCount };
+}
+
+// Изтрива качество каскадно (триe свързаните продажби и доставки)
+export async function deleteQuality(id: number): Promise<{ deletedSales: number; deletedDeliveries: number }> {
+  // 1. Намираме доставките за това качество
+  const { data: deliveries, error: delError } = await supabase
+    .from('deliveries')
+    .select('id')
+    .eq('quality_id', id);
+
+  if (delError) throw delError;
+
+  const deliveryIds = (deliveries || []).map(d => d.id);
+  let deletedSales = 0;
+
+  if (deliveryIds.length > 0) {
+    // 2. Намираме уникалните продажби, свързани с тези доставки
+    const { data: saleLines, error: slError } = await supabase
+      .from('sale_lines')
+      .select('sale_id, real_delivery_id')
+      .or(deliveryIds.map(id => `real_delivery_id.eq.${id}`).join(','));
+
+    if (slError) throw slError;
+
+    const uniqueSaleIds = [...new Set((saleLines || []).map(l => l.sale_id))];
+
+    // 3. Трием продажбите (CASCADE трие sale_lines автоматично)
+    if (uniqueSaleIds.length > 0) {
+      const { error: salesDelError } = await supabase
+        .from('sales')
+        .delete()
+        .in('id', uniqueSaleIds);
+
+      if (salesDelError) throw salesDelError;
+      deletedSales = uniqueSaleIds.length;
+    }
+
+    // 4. Трием доставките
+    const { error: deliveriesDelError } = await supabase
+      .from('deliveries')
+      .delete()
+      .in('id', deliveryIds);
+
+    if (deliveriesDelError) throw deliveriesDelError;
+  }
+
+  // 5. Трием качеството
+  const { error } = await supabase
+    .from('qualities')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+
+  return { deletedSales, deletedDeliveries: deliveryIds.length };
+}
+
 // Импортира качества от масив
 export async function importQualities(qualities: QualityInsert[]): Promise<Quality[]> {
   const { data, error } = await supabase

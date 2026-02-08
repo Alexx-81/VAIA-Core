@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { DataCards } from '../../../shared/components/DataCards';
 import { ImportQualitiesDialog } from './ImportQualitiesDialog';
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
+import { Toast } from '../../../shared/components/Toast';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { supabase } from '../../../lib/supabase';
+import { deleteQuality as deleteQualityApi, getQualityDependencies } from '../../../lib/api/qualities';
 import type { Quality as DbQuality } from '../../../lib/supabase/types';
 import './Qualities.css';
 
@@ -48,7 +51,7 @@ const mapDbQuality = (q: DbQuality): Quality => ({
 });
 
 export const Qualities = () => {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, isAdmin } = useAuth();
 
   // State
   const [qualities, setQualities] = useState<Quality[]>([]);
@@ -121,6 +124,13 @@ export const Qualities = () => {
     action: 'deactivate',
   });
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   const filteredQualities = useMemo(() => {
     return qualitiesWithStats.filter(quality => {
@@ -313,6 +323,42 @@ export const Qualities = () => {
     return qualities.map(q => q.name);
   }, [qualities]);
 
+  // Delete handler
+  const handleDeleteQuality = useCallback(async (quality: Quality | QualityWithStats) => {
+    try {
+      const deps = await getQualityDependencies(quality.id);
+
+      let message = `Сигурни ли сте, че искате да изтриете качество „${quality.name}“?`;
+      if (deps.deliveryCount > 0 || deps.saleCount > 0) {
+        message += `\n\n❗ Ще бъдат изтрити и:`;
+        if (deps.deliveryCount > 0) message += `\n  • ${deps.deliveryCount} доставки`;
+        if (deps.saleCount > 0) message += `\n  • ${deps.saleCount} продажби`;
+      }
+      message += '\n\nТова действие е необратимо.';
+
+      setDeleteConfirm({
+        isOpen: true,
+        title: 'Изтриване на качество',
+        message,
+        onConfirm: async () => {
+          setDeleteConfirm(prev => ({ ...prev, isOpen: false }));
+          try {
+            await deleteQualityApi(quality.id);
+            setQualities(prev => prev.filter(q => q.id !== quality.id));
+            setToast({ message: `Качество „${quality.name}“ е изтрито успешно.`, variant: 'success' });
+            handleCloseDialog();
+          } catch (err) {
+            console.error('Error deleting quality:', err);
+            setToast({ message: 'Грешка при изтриване на качеството.', variant: 'error' });
+          }
+        },
+      });
+    } catch (err) {
+      console.error('Error checking dependencies:', err);
+      setToast({ message: 'Грешка при проверка на зависимости.', variant: 'error' });
+    }
+  }, [handleCloseDialog]);
+
   const getStatusFilterLabel = (status: StatusFilter): string => {
     const labels: Record<StatusFilter, string> = {
       all: 'Всички',
@@ -490,6 +536,15 @@ export const Qualities = () => {
                             >
                               {quality.isActive ? '⏸️' : '▶️'}
                             </button>
+                            {isAdmin && (
+                              <button
+                                className="row-action-btn delete"
+                                onClick={() => handleDeleteQuality(quality)}
+                                title="Изтрий"
+                              >
+                                🗑️
+                              </button>
+                            )}
                           </>
                         )}
                       </td>
@@ -547,6 +602,11 @@ export const Qualities = () => {
                       >
                         {q.isActive ? '⏸️ Деактивирай' : '▶️ Активирай'}
                       </button>
+                      {isAdmin && (
+                        <button className="danger" onClick={() => handleDeleteQuality(q)}>
+                          🗑️ Изтрий
+                        </button>
+                      )}
                     </>
                   )}
                 </>
@@ -618,12 +678,23 @@ export const Qualities = () => {
             </div>
 
             <div className="dialog-footer">
-              <button className="dialog-btn secondary" onClick={handleCloseDialog} disabled={saving}>
-                Откажи
-              </button>
-              <button className="dialog-btn primary" onClick={handleSave} disabled={saving}>
-                {saving ? 'Запазване...' : 'Запази'}
-              </button>
+              {editingQuality && isAdmin && (
+                <button 
+                  className="dialog-btn danger"
+                  onClick={() => handleDeleteQuality(editingQuality)}
+                  disabled={saving}
+                >
+                  🗑️ Изтрий
+                </button>
+              )}
+              <div className="dialog-footer-right">
+                <button className="dialog-btn secondary" onClick={handleCloseDialog} disabled={saving}>
+                  Откажи
+                </button>
+                <button className="dialog-btn primary" onClick={handleSave} disabled={saving}>
+                  {saving ? 'Запазване...' : 'Запази'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -679,6 +750,27 @@ export const Qualities = () => {
         onClose={handleCloseImportDialog}
         onImport={handleImportQualities}
         existingNames={existingQualityNames}
+      />
+
+      {/* Toast notifications */}
+      {toast && (
+        <Toast
+          isOpen={true}
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title={deleteConfirm.title}
+        message={deleteConfirm.message}
+        confirmText="Изтрий"
+        variant="danger"
+        onConfirm={deleteConfirm.onConfirm}
+        onCancel={() => setDeleteConfirm(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

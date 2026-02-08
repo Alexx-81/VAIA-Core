@@ -246,11 +246,30 @@
 /* Footer */
 .article-dialog__footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--border-color);
   background: var(--background-color);
+}
+
+.article-dialog__footer-right {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.article-dialog__btn--delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.article-dialog__btn--delete:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
 }
 
 .article-dialog__btn {

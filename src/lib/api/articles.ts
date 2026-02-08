@@ -96,6 +96,52 @@ export async function activateArticle(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// Проверява зависимости на артикул (за UI предупреждение)
+export async function getArticleDependencies(id: string): Promise<{ saleCount: number }> {
+  const { data: saleLines, error } = await supabase
+    .from('sale_lines')
+    .select('sale_id')
+    .eq('article_id', id);
+
+  if (error) throw error;
+
+  const uniqueSaleIds = new Set((saleLines || []).map(l => l.sale_id));
+  return { saleCount: uniqueSaleIds.size };
+}
+
+// Изтрива артикул каскадно (трие свързаните продажби)
+export async function deleteArticle(id: string): Promise<{ deletedSales: number }> {
+  // 1. Намираме уникалните продажби, свързани с този артикул
+  const { data: saleLines, error: slError } = await supabase
+    .from('sale_lines')
+    .select('sale_id')
+    .eq('article_id', id);
+
+  if (slError) throw slError;
+
+  const uniqueSaleIds = [...new Set((saleLines || []).map(l => l.sale_id))];
+
+  // 2. Трием продажбите (CASCADE трие sale_lines автоматично)
+  if (uniqueSaleIds.length > 0) {
+    const { error: salesDelError } = await supabase
+      .from('sales')
+      .delete()
+      .in('id', uniqueSaleIds);
+
+    if (salesDelError) throw salesDelError;
+  }
+
+  // 3. Трием артикула
+  const { error } = await supabase
+    .from('articles')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+
+  return { deletedSales: uniqueSaleIds.length };
+}
+
 // Взима най-използваните артикули (по last_sold_at)
 export async function getMostUsedArticles(limit: number = 10): Promise<ArticleWithComputed[]> {
   const { data, error } = await supabase

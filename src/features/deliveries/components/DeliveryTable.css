@@ -165,6 +165,10 @@
   background: rgba(245, 158, 11, 0.15);
 }
 
+.delivery-table__action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
 /* Empty State */
 .delivery-table__empty {
   display: flex;

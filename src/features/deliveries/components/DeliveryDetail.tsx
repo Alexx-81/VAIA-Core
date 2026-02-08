@@ -8,6 +8,7 @@ interface DeliveryDetailProps {
   sales: SaleFromDelivery[];
   onBack: () => void;
   onEdit: () => void;
+  onDelete?: () => void;
 }
 
 export const DeliveryDetail = ({
@@ -15,8 +16,9 @@ export const DeliveryDetail = ({
   sales,
   onBack,
   onEdit,
+  onDelete,
 }: DeliveryDetailProps) => {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, isAdmin } = useAuth();
 
   // Изчисляваме сумарни стойности от продажбите
   const totalRevenue = sales.reduce((sum, s) => sum + s.revenueEur, 0);
@@ -47,6 +49,11 @@ export const DeliveryDetail = ({
           <button className="delivery-detail__edit-btn" onClick={onEdit} style={isReadOnly ? { display: 'none' } : undefined}>
             ✏️ Редакция
           </button>
+          {isAdmin && onDelete && (
+            <button className="delivery-detail__delete-btn" onClick={onDelete}>
+              🗑️ Изтрий
+            </button>
+          )}
         </div>
 
         <div className="delivery-detail__header-grid">

@@ -5,6 +5,9 @@ import { DeliveryTable } from './DeliveryTable';
 import { DeliveryDialog } from './DeliveryDialog';
 import { DeliveryDetail } from './DeliveryDetail';
 import { ImportDeliveriesDialog } from './ImportDeliveriesDialog';
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
+import { Toast } from '../../../shared/components/Toast';
+import { useAuth } from '../../../shared/context/AuthContext';
 import type { DeliveryWithComputed, DeliveryView, DeliveryFormData, Delivery, SaleFromDelivery } from '../types';
 import './Deliveries.css';
 
@@ -20,6 +23,8 @@ export const Deliveries = () => {
     updateDateRange,
     createDelivery,
     updateDelivery,
+    deleteDelivery,
+    checkDeliveryDependencies,
     importDeliveries,
     getDeliveryById,
     getSalesForDelivery,
@@ -27,6 +32,8 @@ export const Deliveries = () => {
     stats,
     qualities,
   } = useDeliveries();
+
+  const { isAdmin } = useAuth();
 
   // View state
   const [currentView, setCurrentView] = useState<DeliveryView>('list');
@@ -40,6 +47,15 @@ export const Deliveries = () => {
 
   // Import dialog state
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // Toast & delete confirm state
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   // Check if we should open create dialog directly from URL query param
   useEffect(() => {
@@ -123,6 +139,44 @@ export const Deliveries = () => {
     }
   }, [selectedDeliveryId, getDeliveryById, handleEditDelivery]);
 
+  // Delete handler
+  const handleDeleteDelivery = useCallback(async (delivery: DeliveryWithComputed) => {
+    const deps = await checkDeliveryDependencies(delivery.id);
+
+    let message = `Сигурни ли сте, че искате да изтриете доставка „${delivery.displayId}“?`;
+    if (deps.saleCount > 0) {
+      message += `\n\n❗ Ще бъдат изтрити и ${deps.saleCount} свързани продажби!`;
+    }
+    message += '\n\nТова действие е необратимо.';
+
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Изтриване на доставка',
+      message,
+      onConfirm: async () => {
+        setDeleteConfirm(prev => ({ ...prev, isOpen: false }));
+        const result = await deleteDelivery(delivery.id);
+        if (result.success) {
+          setToast({ message: `Доставка „${delivery.displayId}“ е изтрита успешно.`, variant: 'success' });
+          if (currentView === 'detail') {
+            handleBackToList();
+          }
+        } else {
+          setToast({ message: result.error || 'Грешка при изтриване.', variant: 'error' });
+        }
+      },
+    });
+  }, [checkDeliveryDependencies, deleteDelivery, currentView, handleBackToList]);
+
+  const handleDeleteFromDetail = useCallback(() => {
+    if (selectedDeliveryId) {
+      const delivery = getDeliveryById(selectedDeliveryId);
+      if (delivery) {
+        handleDeleteDelivery(delivery);
+      }
+    }
+  }, [selectedDeliveryId, getDeliveryById, handleDeleteDelivery]);
+
   // Get selected delivery for detail view
   const selectedDelivery = selectedDeliveryId ? getDeliveryById(selectedDeliveryId) : undefined;
 
@@ -144,6 +198,7 @@ export const Deliveries = () => {
           sales={salesForDelivery}
           onBack={handleBackToList}
           onEdit={handleEditFromDetail}
+          onDelete={isAdmin ? handleDeleteFromDetail : undefined}
         />
 
         <DeliveryDialog
@@ -198,6 +253,7 @@ export const Deliveries = () => {
         onViewDetail={handleViewDetail}
         onEdit={handleEditDelivery}
         onNewDelivery={handleNewDelivery}
+        onDelete={isAdmin ? handleDeleteDelivery : undefined}
       />
 
       <DeliveryDialog
@@ -216,6 +272,27 @@ export const Deliveries = () => {
         onImport={handleImportDeliveries}
         existingDisplayIds={existingDisplayIds}
         qualities={qualities}
+      />
+
+      {/* Toast notifications */}
+      {toast && (
+        <Toast
+          isOpen={true}
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title={deleteConfirm.title}
+        message={deleteConfirm.message}
+        confirmText="Изтрий"
+        variant="danger"
+        onConfirm={deleteConfirm.onConfirm}
+        onCancel={() => setDeleteConfirm(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

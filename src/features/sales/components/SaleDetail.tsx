@@ -1,13 +1,16 @@
 import type { SaleWithComputed } from '../types';
 import { formatDateTime, formatEur, formatKg, formatPercent, getPaymentMethodLabel, getProfitClass, getMarginClass } from '../utils/salesUtils';
+import { useAuth } from '../../../shared/context/AuthContext';
 import './SaleDetail.css';
 
 interface SaleDetailProps {
   sale: SaleWithComputed;
   onBack: () => void;
+  onDelete?: () => void;
 }
 
-export const SaleDetail = ({ sale, onBack }: SaleDetailProps) => {
+export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
+  const { isAdmin } = useAuth();
   const getPaymentIcon = (method: string): string => {
     switch (method) {
       case 'cash': return '💵';
@@ -57,6 +60,11 @@ export const SaleDetail = ({ sale, onBack }: SaleDetailProps) => {
         </div>
         
         <div className="sale-detail__header-actions">
+          {isAdmin && onDelete && (
+            <button className="sale-detail__btn sale-detail__btn--danger" onClick={onDelete}>
+              🗑️ Изтрий
+            </button>
+          )}
           <button className="sale-detail__btn sale-detail__btn--secondary" onClick={onBack}>
             ← Назад към списъка
           </button>

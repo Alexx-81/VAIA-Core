@@ -441,6 +441,29 @@ export const useDeliveries = () => {
     }
   }, []);
 
+  // Изтрива доставка каскадно
+  const deleteDelivery = useCallback(async (id: string): Promise<{ success: boolean; error?: string; deletedSales?: number }> => {
+    try {
+      const { deleteDelivery: deleteDeliveryApi } = await import('../../../lib/api/deliveries');
+      const result = await deleteDeliveryApi(id);
+      setDeliveries((prev) => prev.filter((d) => d.id !== id));
+      return { success: true, deletedSales: result.deletedSales };
+    } catch (err) {
+      console.error('Error deleting delivery:', err);
+      return { success: false, error: 'Грешка при изтриване на доставка.' };
+    }
+  }, []);
+
+  // Проверка на зависимости
+  const checkDeliveryDependencies = useCallback(async (id: string) => {
+    try {
+      const { getDeliveryDependencies } = await import('../../../lib/api/deliveries');
+      return await getDeliveryDependencies(id);
+    } catch {
+      return { saleCount: 0 };
+    }
+  }, []);
+
   // Refresh deliveries
   const refreshDeliveries = useCallback(async () => {
     try {
@@ -473,6 +496,8 @@ export const useDeliveries = () => {
     // Операции
     createDelivery,
     updateDelivery,
+    deleteDelivery,
+    checkDeliveryDependencies,
     importDeliveries,
     getDeliveryById,
     getSalesForDelivery,

@@ -119,14 +119,50 @@ export async function updateDelivery(id: string, updates: DeliveryUpdate): Promi
   return data;
 }
 
-// Изтрива доставка (само ако няма продажби)
-export async function deleteDelivery(id: string): Promise<void> {
+// Проверява зависимости на доставка (за UI предупреждение)
+export async function getDeliveryDependencies(id: string): Promise<{ saleCount: number }> {
+  const { data: saleLines, error } = await supabase
+    .from('sale_lines')
+    .select('sale_id')
+    .or(`real_delivery_id.eq.${id},accounting_delivery_id.eq.${id}`);
+
+  if (error) throw error;
+
+  const uniqueSaleIds = new Set((saleLines || []).map(l => l.sale_id));
+  return { saleCount: uniqueSaleIds.size };
+}
+
+// Изтрива доставка каскадно (трие свързаните продажби)
+export async function deleteDelivery(id: string): Promise<{ deletedSales: number }> {
+  // 1. Намираме уникалните продажби, свързани с тази доставка
+  const { data: saleLines, error: slError } = await supabase
+    .from('sale_lines')
+    .select('sale_id')
+    .or(`real_delivery_id.eq.${id},accounting_delivery_id.eq.${id}`);
+
+  if (slError) throw slError;
+
+  const uniqueSaleIds = [...new Set((saleLines || []).map(l => l.sale_id))];
+
+  // 2. Трием продажбите (CASCADE трие sale_lines автоматично)
+  if (uniqueSaleIds.length > 0) {
+    const { error: salesDelError } = await supabase
+      .from('sales')
+      .delete()
+      .in('id', uniqueSaleIds);
+
+    if (salesDelError) throw salesDelError;
+  }
+
+  // 3. Трием доставката
   const { error } = await supabase
     .from('deliveries')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+
+  return { deletedSales: uniqueSaleIds.length };
 }
 
 // Взима следващ display_id за доставка

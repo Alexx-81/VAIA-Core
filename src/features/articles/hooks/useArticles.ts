@@ -7,6 +7,7 @@ import {
   validateArticleName,
   validatePiecesPerKg,
 } from '../utils/articleUtils';
+import { deleteArticle as deleteArticleApi, getArticleDependencies } from '../../../lib/api/articles';
 
 const initialFilters: ArticleFilters = {
   search: '',
@@ -183,6 +184,27 @@ export const useArticles = () => {
     }
   }, [articles]);
 
+  // Изтрива артикул каскадно
+  const deleteArticle = useCallback(async (id: string): Promise<{ success: boolean; error?: string; deletedSales?: number }> => {
+    try {
+      const result = await deleteArticleApi(id);
+      setArticles((prev) => prev.filter((a) => a.id !== id));
+      return { success: true, deletedSales: result.deletedSales };
+    } catch (err) {
+      console.error('Error deleting article:', err);
+      return { success: false, error: 'Грешка при изтриване на артикул.' };
+    }
+  }, []);
+
+  // Проверка на зависимости
+  const checkArticleDependencies = useCallback(async (id: string) => {
+    try {
+      return await getArticleDependencies(id);
+    } catch {
+      return { saleCount: 0 };
+    }
+  }, []);
+
   // Взима артикул по ID
   const getArticleById = useCallback(
     (id: string): Article | undefined => {
@@ -200,6 +222,8 @@ export const useArticles = () => {
     createArticle,
     updateArticle,
     toggleArticleStatus,
+    deleteArticle,
+    checkArticleDependencies,
     getArticleById,
   };
 };

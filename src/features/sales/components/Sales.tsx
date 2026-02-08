@@ -5,6 +5,9 @@ import { SalesTable } from './SalesTable';
 import { SaleEditor } from './SaleEditor';
 import { SaleDetail } from './SaleDetail';
 import { ImportSalesDialog } from './ImportSalesDialog';
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
+import { Toast } from '../../../shared/components/Toast';
+import { useAuth } from '../../../shared/context/AuthContext';
 import type { SalesView, SaleWithComputed, Sale, SaleLine } from '../types';
 import type { SaleImportRow } from '../utils/importSales';
 import { groupRowsByDate } from '../utils/importSales';
@@ -20,6 +23,7 @@ export const Sales = () => {
     updateFilters,
     updateDateRange,
     createSale,
+    deleteSale,
     importSales,
     getSaleById,
     stats,
@@ -28,10 +32,21 @@ export const Sales = () => {
     getDeliveryOptionsAccounting,
   } = useSales();
 
+  const { isAdmin } = useAuth();
+
   // View state
   const [currentView, setCurrentView] = useState<SalesView>('list');
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+
+  // Toast & delete confirm state
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   // Check if we should open editor directly from URL query param
   useEffect(() => {
@@ -80,6 +95,36 @@ export const Sales = () => {
     setSelectedSaleId(sale.id);
     setCurrentView('list');
   }, []);
+
+  // Delete handler
+  const handleDeleteSale = useCallback((sale: SaleWithComputed) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Изтриване на продажба',
+      message: `Сигурни ли сте, че искате да изтриете продажба „${sale.saleNumber}“?\n\nПродажбата и всички нейни редове ще бъдат изтрити перманентно.\n\nТова действие е необратимо.`,
+      onConfirm: async () => {
+        setDeleteConfirm(prev => ({ ...prev, isOpen: false }));
+        const result = await deleteSale(sale.id);
+        if (result.success) {
+          setToast({ message: `Продажба „${sale.saleNumber}“ е изтрита успешно.`, variant: 'success' });
+          if (selectedSaleId === sale.id) {
+            setSelectedSaleId(null);
+          }
+        } else {
+          setToast({ message: result.error || 'Грешка при изтриване.', variant: 'error' });
+        }
+      },
+    });
+  }, [deleteSale, selectedSaleId]);
+
+  const handleDeleteFromDetail = useCallback(() => {
+    if (selectedSaleId) {
+      const sale = getSaleById(selectedSaleId);
+      if (sale) {
+        handleDeleteSale(sale);
+      }
+    }
+  }, [selectedSaleId, getSaleById, handleDeleteSale]);
 
   // Import handlers
   const handleOpenImport = useCallback(() => {
@@ -173,7 +218,7 @@ export const Sales = () => {
   if (selectedSale) {
     return (
       <div className="sales">
-        <SaleDetail sale={selectedSale} onBack={handleBackToList} />
+        <SaleDetail sale={selectedSale} onBack={handleBackToList} onDelete={isAdmin ? handleDeleteFromDetail : undefined} />
       </div>
     );
   }
@@ -214,6 +259,7 @@ export const Sales = () => {
         sales={sales}
         onViewDetail={handleViewDetail}
         onNewSale={handleNewSale}
+        onDelete={isAdmin ? handleDeleteSale : undefined}
         stats={stats}
       />
 
@@ -222,6 +268,27 @@ export const Sales = () => {
         onClose={handleCloseImport}
         onImport={handleImportSales}
         existingArticles={existingArticleNames}
+      />
+
+      {/* Toast notifications */}
+      {toast && (
+        <Toast
+          isOpen={true}
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title={deleteConfirm.title}
+        message={deleteConfirm.message}
+        confirmText="Изтрий"
+        variant="danger"
+        onConfirm={deleteConfirm.onConfirm}
+        onCancel={() => setDeleteConfirm(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

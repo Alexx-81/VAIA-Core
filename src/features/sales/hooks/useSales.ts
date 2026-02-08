@@ -518,6 +518,29 @@ export const useSales = () => {
     }
   }, []);
 
+  // Изтрива продажба
+  const deleteSale = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { deleteSale: deleteSaleApi } = await import('../../../lib/api/sales');
+      await deleteSaleApi(id);
+      setSales((prev) => prev.filter((s) => s.id !== id));
+
+      // Опресняваме доставките за актуализирани наличности
+      const { data: deliveriesData } = await supabase
+        .from('delivery_inventory')
+        .select('id, display_id, quality_name, kg_in, unit_cost_per_kg, is_invoiced, kg_remaining_real, kg_remaining_acc');
+
+      if (deliveriesData) {
+        setDeliveries(deliveriesData);
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error deleting sale:', err);
+      return { success: false, error: 'Грешка при изтриване на продажба.' };
+    }
+  }, []);
+
   // Refresh function
   const refreshSales = useCallback(async () => {
     try {
@@ -558,6 +581,7 @@ export const useSales = () => {
     updateFilters,
     updateDateRange,
     createSale,
+    deleteSale,
     importSales,
     getSaleById,
     stats,

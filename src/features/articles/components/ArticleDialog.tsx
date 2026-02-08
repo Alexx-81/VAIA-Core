@@ -1,5 +1,6 @@
 import type { Article, ArticleFormData } from '../types';
 import { useArticleForm } from '../hooks/useArticleForm';
+import { useAuth } from '../../../shared/context/AuthContext';
 import './ArticleDialog.css';
 
 interface ArticleDialogProps {
@@ -8,6 +9,7 @@ interface ArticleDialogProps {
   existingNames: string[];
   onSubmit: (data: ArticleFormData) => Promise<{ success: boolean; error?: string }>;
   onClose: () => void;
+  onDelete?: (article: Article) => void;
 }
 
 export const ArticleDialog = ({
@@ -16,7 +18,9 @@ export const ArticleDialog = ({
   existingNames,
   onSubmit,
   onClose,
+  onDelete,
 }: ArticleDialogProps) => {
+  const { isAdmin } = useAuth();
   const {
     formData,
     errors,
@@ -153,20 +157,31 @@ export const ArticleDialog = ({
         </div>
 
         <div className="article-dialog__footer">
-          <button
-            type="button"
-            className="article-dialog__btn article-dialog__btn--cancel"
-            onClick={onClose}
-          >
-            Откажи
-          </button>
-          <button
-            type="button"
-            className="article-dialog__btn article-dialog__btn--save"
-            onClick={handleSubmit}
-          >
-            Запази
-          </button>
+          {isEdit && isAdmin && onDelete && article && (
+            <button
+              type="button"
+              className="article-dialog__btn article-dialog__btn--delete"
+              onClick={() => onDelete(article)}
+            >
+              🗑️ Изтрий
+            </button>
+          )}
+          <div className="article-dialog__footer-right">
+            <button
+              type="button"
+              className="article-dialog__btn article-dialog__btn--cancel"
+              onClick={onClose}
+            >
+              Откажи
+            </button>
+            <button
+              type="button"
+              className="article-dialog__btn article-dialog__btn--save"
+              onClick={handleSubmit}
+            >
+              Запази
+            </button>
+          </div>
         </div>
       </div>
     </div>
