@@ -38,7 +38,6 @@ export const DeliveryFiltersBar = ({
   onFilterChange,
   onDateRangeChange,
   qualities,
-  hasInactiveQualities,
   totalCount,
   filteredCount,
 }: DeliveryFiltersBarProps) => {
