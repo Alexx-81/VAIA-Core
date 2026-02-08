@@ -61,6 +61,48 @@ const downloadFile = (content: string, filename: string, mimeType: string) => {
   }, 1000);
 };
 
+// Форматира процентни колони в Excel worksheet
+const formatPercentageColumns = (XLSX: any, ws: any, percentColumnIndexes: number[], startRow: number = 1) => {
+  if (!ws['!ref']) return;
+  
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  percentColumnIndexes.forEach(colIdx => {
+    for (let rowIdx = startRow; rowIdx <= range.e.r; rowIdx++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+      const cell = ws[cellAddress];
+      
+      if (cell && typeof cell.v === 'number') {
+        // Делим на 100, защото Excel очаква 0.10 за 10%
+        cell.v = cell.v / 100;
+        // Задаваме процентен формат с 2 знака след запетаята
+        cell.z = '0.00%';
+        cell.t = 'n'; // Тип number
+      }
+    }
+  });
+};
+
+// Форматира числови колони с 2 десетични знака в Excel worksheet
+const formatNumberColumns = (XLSX: any, ws: any, numberColumnIndexes: number[], startRow: number = 1) => {
+  if (!ws['!ref']) return;
+  
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  numberColumnIndexes.forEach(colIdx => {
+    for (let rowIdx = startRow; rowIdx <= range.e.r; rowIdx++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+      const cell = ws[cellAddress];
+      
+      if (cell && typeof cell.v === 'number') {
+        // Задаваме числов формат с 2 знака след запетаята
+        cell.z = '0.00';
+        cell.t = 'n'; // Тип number
+      }
+    }
+  });
+};
+
 // ============ CSV EXPORT ============
 
 const arrayToCSV = (headers: string[], rows: string[][]): string => {
@@ -243,6 +285,15 @@ export const exportToExcel = async (data: ReportData) => {
     ['Брой продажби', data.summary.salesCount],
   ];
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+  
+  // Форматираме клетката с процента в Summary (ред 9, колона 1)
+  const marginCell = wsSummary['B10']; // Row 10 (0-based: 9), Column B (index 1)
+  if (marginCell && typeof marginCell.v === 'number') {
+    marginCell.v = marginCell.v / 100;
+    marginCell.z = '0.00%';
+    marginCell.t = 'n';
+  }
+  
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // Sheet 2: By Deliveries
@@ -294,6 +345,13 @@ export const exportToExcel = async (data: ReportData) => {
   }
   
   const wsDeliveries = XLSX.utils.aoa_to_sheet([deliveriesHeaders, ...deliveriesData]);
+  
+  // Форматираме процентната колона "Марж %" (индекс 14)
+  formatPercentageColumns(XLSX, wsDeliveries, [14], 1);
+  
+  // Форматираме числовите колони с EUR/kg стойности (индекс 7 или 7 за EUR/kg, 15 за EUR/kg прод.)
+  formatNumberColumns(XLSX, wsDeliveries, [7, 15], 1);
+  
   XLSX.utils.book_append_sheet(wb, wsDeliveries, 'By Deliveries');
 
   // Sheet 3: By Qualities (само за Real)
@@ -311,6 +369,13 @@ export const exportToExcel = async (data: ReportData) => {
       r.avgPricePerKgEur || 0,
     ]);
     const wsQualities = XLSX.utils.aoa_to_sheet([qualitiesHeaders, ...qualitiesData]);
+    
+    // Форматираме процентната колона "Марж %" (индекс 7)
+    formatPercentageColumns(XLSX, wsQualities, [7], 1);
+    
+    // Форматираме числовата колона "EUR/kg" (индекс 8)
+    formatNumberColumns(XLSX, wsQualities, [8], 1);
+    
     XLSX.utils.book_append_sheet(wb, wsQualities, 'By Qualities');
   }
 
@@ -328,6 +393,13 @@ export const exportToExcel = async (data: ReportData) => {
     r.avgPricePerPieceEur || 0,
   ]);
   const wsArticles = XLSX.utils.aoa_to_sheet([articlesHeaders, ...articlesData]);
+  
+  // Форматираме процентната колона "Марж %" (индекс 7)
+  formatPercentageColumns(XLSX, wsArticles, [7], 1);
+  
+  // Форматираме числовата колона "EUR/бр" (индекс 8)
+  formatNumberColumns(XLSX, wsArticles, [8], 1);
+  
   XLSX.utils.book_append_sheet(wb, wsArticles, 'By Articles');
 
   // Sheet 5 (or 4 for Accounting): Transactions
@@ -375,6 +447,10 @@ export const exportToExcel = async (data: ReportData) => {
   }
   
   const wsTrans = XLSX.utils.aoa_to_sheet([transHeaders, ...transData]);
+  
+  // Форматираме числовите колони (Цена/бр (EUR) - индекс 6, EUR/kg - индекс 12)
+  formatNumberColumns(XLSX, wsTrans, [6, 12], 1);
+  
   XLSX.utils.book_append_sheet(wb, wsTrans, 'Transactions');
 
   // Записваме файла

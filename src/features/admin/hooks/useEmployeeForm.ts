@@ -15,7 +15,7 @@ export function useEmployeeForm({ employee, onSubmit, onClose }: UseEmployeeForm
     fullName: employee?.full_name || '',
     email: employee?.email || '',
     password: '',
-    role: employee?.role || 'employee',
+    role: (employee?.role as 'admin' | 'employee') || 'employee',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormData, string>>>({});
   const [submitError, setSubmitError] = useState('');
@@ -28,7 +28,7 @@ export function useEmployeeForm({ employee, onSubmit, onClose }: UseEmployeeForm
         fullName: employee.full_name,
         email: employee.email,
         password: '',
-        role: employee.role,
+        role: employee.role as 'admin' | 'employee',
       });
     }
   }, [employee]);

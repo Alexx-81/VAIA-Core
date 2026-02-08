@@ -332,11 +332,7 @@ export const SaleEditor = ({
   }, [lines.length, onCancel]);
 
   // Editing inline: check if the editing real delivery needs accounting
-  const editRealDelivery = editValues.realDeliveryId 
-    ? deliveryOptionsReal.find(d => d.id === editValues.realDeliveryId) 
-    : null;
-  const editNeedsAccounting = editRealDelivery && !editRealDelivery.isInvoiced;
-
+  
   return (
     <div className="sale-editor">
       {/* ─── Header: Title + Meta fields ─── */}

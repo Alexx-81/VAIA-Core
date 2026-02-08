@@ -180,6 +180,48 @@ export const exportComparisonToCSV = (
   URL.revokeObjectURL(link.href);
 };
 
+// Форматира процентни колони в Excel worksheet
+const formatPercentageColumns = (XLSX: any, ws: any, percentColumnIndexes: number[], startRow: number = 1) => {
+  if (!ws['!ref']) return;
+  
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  percentColumnIndexes.forEach(colIdx => {
+    for (let rowIdx = startRow; rowIdx <= range.e.r; rowIdx++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+      const cell = ws[cellAddress];
+      
+      if (cell && typeof cell.v === 'number') {
+        // Делим на 100, защото Excel очаква 0.10 за 10%
+        cell.v = cell.v / 100;
+        // Задаваме процентен формат с 2 знака след запетаята
+        cell.z = '0.00%';
+        cell.t = 'n'; // Тип number
+      }
+    }
+  });
+};
+
+// Форматира числови колони с 2 десетични знака в Excel worksheet
+const formatNumberColumns = (XLSX: any, ws: any, numberColumnIndexes: number[], startRow: number = 1) => {
+  if (!ws['!ref']) return;
+  
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  numberColumnIndexes.forEach(colIdx => {
+    for (let rowIdx = startRow; rowIdx <= range.e.r; rowIdx++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+      const cell = ws[cellAddress];
+      
+      if (cell && typeof cell.v === 'number') {
+        // Задаваме числов формат с 2 знака след запетаята
+        cell.z = '0.00';
+        cell.t = 'n'; // Тип number
+      }
+    }
+  });
+};
+
 // Export to Excel
 export const exportToExcel = async (
   data: InventoryRealRow[] | InventoryAccRow[],
@@ -269,6 +311,12 @@ export const exportToExcel = async (
 
   // Създаваме worksheet
   const ws = XLSX.utils.aoa_to_sheet([headers, ...worksheetData]);
+
+  // Форматираме процентната колона "% оставащи" (индекс 9)
+  formatPercentageColumns(XLSX, ws, [9], 1);
+  
+  // Форматираме числовата колона "EUR/kg" (индекс 10)
+  formatNumberColumns(XLSX, ws, [10], 1);
 
   // Добавяме worksheet към workbook
   XLSX.utils.book_append_sheet(wb, ws, type === 'real' ? 'Real Наличности' : 'Acc Наличности');
