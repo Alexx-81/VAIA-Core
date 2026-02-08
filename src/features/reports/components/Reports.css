@@ -16,7 +16,7 @@
 
 .reports__header {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr auto;
   gap: clamp(1rem, 2vw, 1.5rem);
   padding-block: clamp(1.5rem, 3vw, 2.5rem);
   padding-inline: clamp(1.5rem, 4vw, 2.5rem);
@@ -70,6 +70,27 @@
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
   font-weight: 500;
+}
+
+.reports__header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+@container reports (max-width: 768px) {
+  .reports__header {
+    grid-template-columns: 1fr;
+  }
+  
+  .reports__header-actions {
+    width: 100%;
+  }
+  
+  .reports__header-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 /* Export message */

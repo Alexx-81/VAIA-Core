@@ -33,7 +33,7 @@ export const Deliveries = () => {
     qualities,
   } = useDeliveries();
 
-  const { isAdmin } = useAuth();
+  const { isAdmin, isReadOnly } = useAuth();
 
   // View state
   const [currentView, setCurrentView] = useState<DeliveryView>('list');
@@ -224,15 +224,42 @@ export const Deliveries = () => {
             Управление на доставки, наличности и доставни цени
           </p>
         </div>
-        <div className="deliveries__stats">
-          <div className="deliveries__stat">
-            <span className="deliveries__stat-value">{stats.inStock}</span>
-            <span className="deliveries__stat-label">с наличност</span>
+
+        <div className="deliveries__header-right">
+          <div className="deliveries__stats">
+            <div className="deliveries__stat">
+              <span className="deliveries__stat-value">{stats.inStock}</span>
+              <span className="deliveries__stat-label">с наличност</span>
+            </div>
+            <div className="deliveries__stat">
+              <span className="deliveries__stat-value">{stats.depleted}</span>
+              <span className="deliveries__stat-label">изчерпани</span>
+            </div>
           </div>
-          <div className="deliveries__stat">
-            <span className="deliveries__stat-value">{stats.depleted}</span>
-            <span className="deliveries__stat-label">изчерпани</span>
-          </div>
+
+          {!isReadOnly && (
+            <div className="deliveries__actions">
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleOpenImportDialog}
+                title="Импорт на доставки"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                <span className="btn-text">Импорт</span>
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleNewDelivery}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span className="btn-text">Нова доставка</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -240,8 +267,6 @@ export const Deliveries = () => {
         filters={filters}
         onFilterChange={updateFilters}
         onDateRangeChange={updateDateRange}
-        onNewDelivery={handleNewDelivery}
-        onImportDeliveries={handleOpenImportDialog}
         qualities={availableQualities}
         hasInactiveQualities={hasInactiveQualities}
         totalCount={allDeliveries.length}

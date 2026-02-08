@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import type { 
   ReportFilters, 
   ReportMode, 
@@ -6,7 +6,6 @@ import type {
   ReportPeriod,
   QualityOption,
   DeliveryOption,
-  ExportFormat,
 } from '../types';
 import './ReportsFiltersBar.css';
 
@@ -19,9 +18,6 @@ interface ReportsFiltersBarProps {
   onPeriodChange: (period: ReportPeriod) => void;
   onModeChange: (mode: ReportMode) => void;
   onReportTypeChange: (type: ReportType) => void;
-  onGenerate: () => void;
-  onExport: (format: ExportFormat) => void;
-  isGenerating: boolean;
 }
 
 const formatDate = (date: Date): string => {
@@ -37,12 +33,7 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
   onPeriodChange,
   onModeChange,
   onReportTypeChange,
-  onGenerate,
-  onExport,
-  isGenerating,
 }) => {
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
 
   const handlePeriodPresetChange = (preset: ReportPeriod['preset']) => {
     if (preset === 'custom') {
@@ -82,26 +73,8 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
     }
   };
 
-  const handleExportClick = (format: ExportFormat) => {
-    setShowExportMenu(false);
-    onExport(format);
-  };
-
-  // Затваряне на менюто при клик навън
-  React.useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-        setShowExportMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   return (
     <div className="reports-filters">
-      {/* Ред 1: Основни филтри */}
-      <div className="reports-filters__row">
         {/* Период */}
         <div className="reports-filters__group">
           <label className="reports-filters__label">Период</label>
@@ -173,11 +146,7 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
             <option value="detailed">Детайлен отчет</option>
           </select>
         </div>
-      </div>
-
-      {/* Ред 2: Допълнителни филтри + бутони */}
-      <div className="reports-filters__row">
-        {/* Качество */}
+      {/* Качество */}
         <div className="reports-filters__group">
           <label className="reports-filters__label">Качество</label>
           <select
@@ -242,40 +211,6 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
             <option value="other">Друго</option>
           </select>
         </div>
-
-        {/* Бутони */}
-        <div className="reports-filters__actions">
-          <button
-            className="reports-filters__btn reports-filters__btn--primary"
-            onClick={onGenerate}
-            disabled={isGenerating}
-          >
-            {isGenerating ? '⏳ Генериране...' : '📊 Генерирай отчет'}
-          </button>
-
-          <div className="reports-filters__export-wrapper" ref={exportRef}>
-            <button
-              className="reports-filters__btn reports-filters__btn--export"
-              onClick={() => setShowExportMenu(!showExportMenu)}
-            >
-              📤 Експорт ▾
-            </button>
-            {showExportMenu && (
-              <div className="reports-filters__export-menu">
-                <button onClick={() => handleExportClick('csv')}>
-                  📄 CSV
-                </button>
-                <button onClick={() => handleExportClick('excel')}>
-                  📊 Excel (.xlsx)
-                </button>
-                <button onClick={() => handleExportClick('pdf')}>
-                  📕 PDF
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

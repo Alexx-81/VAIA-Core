@@ -16,8 +16,8 @@
 .articles__header {
   margin-block-start: clamp(0.5rem, 2vh, 1rem);
   margin-block-end: var(--space-lg);
-  padding-block: clamp(1.5rem, 3vw, 2.5rem);
-  padding-inline: clamp(1.5rem, 4vw, 2.5rem);
+  padding-block: clamp(1rem, 2vw, 1.5rem);
+  padding-inline: clamp(1rem, 2.5vw, 1.75rem);
   background: linear-gradient(135deg, rgba(11, 79, 138, 0.15) 0%, rgba(255, 122, 0, 0.15) 100%);
   border-radius: clamp(16px, 2vw, 24px);
   backdrop-filter: blur(20px);
@@ -54,7 +54,7 @@
 }
 
 .articles__title {
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-size: 1.75rem;
   font-weight: 800;
   background: linear-gradient(135deg, #0B4F8A 0%, #FF7A00 100%);
   -webkit-background-clip: text;
@@ -66,7 +66,7 @@
 }
 
 .articles__subtitle {
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
   font-weight: 500;

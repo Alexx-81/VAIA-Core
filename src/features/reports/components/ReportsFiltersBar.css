@@ -1,31 +1,25 @@
 .reports-filters {
   background: var(--surface-color);
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 0.875rem 1rem;
   border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.reports-filters__row {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .reports-filters__group {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  min-width: 140px;
+  flex-shrink: 0;
 }
 
 .reports-filters__label {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -34,36 +28,41 @@
 .reports-filters__input {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   font-size: 0.875rem;
-  background: var(--background-color);
+  background: var(--surface-elevated, var(--surface-color));
   color: var(--text-color);
-  min-width: 150px;
+  min-width: 120px;
+  transition: all var(--transition-fast);
+}
+
+.reports-filters__select:hover {
+  border-color: var(--vaia-color);
 }
 
 .reports-filters__select:focus,
 .reports-filters__input:focus {
   outline: none;
   border-color: var(--vaia-color);
-  box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.15);
 }
 
 /* Segmented control */
 .reports-filters__segmented {
   display: flex;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .reports-filters__segment {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.625rem;
   border: none;
-  background: var(--background-color);
+  background: var(--surface-elevated, var(--surface-color));
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
   flex: 1;
   white-space: nowrap;
 }
@@ -73,7 +72,7 @@
 }
 
 .reports-filters__segment:hover:not(.active) {
-  background: var(--hover-color);
+  background: var(--surface-hover);
 }
 
 .reports-filters__segment.active {
@@ -81,73 +80,22 @@
   color: white;
 }
 
-/* Actions */
-.reports-filters__actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-left: auto;
-}
+/* Responsive */
+@media (max-width: 768px) {
+  .reports-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.reports-filters__btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
+  .reports-filters__group {
+    width: 100%;
+  }
 
-.reports-filters__btn--primary {
-  background: linear-gradient(135deg, #FF7A00 0%, #ff9a3c 100%);
-  color: white;
-  border: 2px solid #FF7A00;
-  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+  .reports-filters__select,
+  .reports-filters__input {
+    width: 100%;
+  }
 }
-
-.reports-filters__btn--primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
-  border-color: #0B4F8A;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
-}
-
-.reports-filters__btn--primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.reports-filters__btn--export {
-  background: transparent;
-  color: #FF7A00;
-  border: 2px solid #FF7A00;
-}
-
-.reports-filters__btn--export:hover {
-  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
-  color: #ffffff;
-  border-color: #0B4F8A;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
-}
-
-/* Export dropdown */
-.reports-filters__export-wrapper {
-  position: relative;
-}
-
-.reports-filters__export-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  min-width: 150px;
   overflow: hidden;
 }
 

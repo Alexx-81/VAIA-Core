@@ -3,6 +3,7 @@ import { useReports } from '../hooks/useReports';
 import { ReportsFiltersBar } from './ReportsFiltersBar';
 import { ReportsSummary } from './ReportsSummary';
 import { ReportsTable } from './ReportsTable';
+import { ExportDropdown } from './ExportDropdown';
 import { exportToCSV, exportToExcel, exportToPDF } from '../utils/exportUtils';
 import type { ExportFormat } from '../types';
 import './Reports.css';
@@ -87,6 +88,21 @@ export const Reports: React.FC = () => {
             Генерирайте месечни отчети в реален или счетоводен режим с възможност за експорт
           </p>
         </div>
+
+        <div className="reports__header-actions">
+          <button
+            className="btn btn-primary"
+            onClick={handleGenerate}
+            disabled={isGenerating || isExporting}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="btn-text">{isGenerating ? 'Генериране...' : 'Генерирай отчет'}</span>
+          </button>
+
+          <ExportDropdown onExport={handleExport} disabled={isGenerating || isExporting} />
+        </div>
       </div>
 
       {/* Export message */}
@@ -106,9 +122,6 @@ export const Reports: React.FC = () => {
         onPeriodChange={updatePeriod}
         onModeChange={updateMode}
         onReportTypeChange={updateReportType}
-        onGenerate={handleGenerate}
-        onExport={handleExport}
-        isGenerating={isGenerating || isExporting}
       />
 
       {/* Loading state */}
