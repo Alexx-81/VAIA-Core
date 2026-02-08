@@ -154,7 +154,7 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
             value={filters.qualityIds.length > 0 ? filters.qualityIds[0] : 'all'}
             onChange={handleQualityChange}
           >
-            <option value="all">Всички качества</option>
+            <option value="all">Всички</option>
             {qualityOptions.filter(q => q.isActive).map(q => (
               <option key={q.id} value={String(q.id)}>{q.name}</option>
             ))}
@@ -169,7 +169,7 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
             value={filters.deliveryId || 'all'}
             onChange={(e) => onFilterChange({ deliveryId: e.target.value === 'all' ? '' : e.target.value })}
           >
-            <option value="all">Всички доставки</option>
+            <option value="all">Всички</option>
             {deliveryOptions
               .filter(d => filters.mode === 'real' || d.isInvoiced)
               .map(d => (
@@ -189,7 +189,7 @@ export const ReportsFiltersBar: React.FC<ReportsFiltersBarProps> = ({
             value={filters.supplierName || 'all'}
             onChange={(e) => onFilterChange({ supplierName: e.target.value })}
           >
-            <option value="all">Всички доставчици</option>
+            <option value="all">Всички</option>
             {(supplierOptions || []).map(s => (
               <option key={s} value={s}>{s}</option>
             ))}

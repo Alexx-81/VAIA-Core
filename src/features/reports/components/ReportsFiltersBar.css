@@ -22,6 +22,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .reports-filters__select,
@@ -32,8 +33,21 @@
   font-size: 0.875rem;
   background: var(--surface-elevated, var(--surface-color));
   color: var(--text-color);
-  min-width: 120px;
+  width: auto;
+  min-width: 110px;
+  max-width: 200px;
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reports-filters__select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  padding-right: 2rem;
 }
 
 .reports-filters__select:hover {
@@ -53,18 +67,24 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  min-width: 220px;
+  height: auto;
 }
 
 .reports-filters__segment {
-  padding: 0.5rem 0.625rem;
+  padding: 0.5rem 1rem;
   border: none;
   background: var(--surface-elevated, var(--surface-color));
   color: var(--text-color);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: all var(--transition-fast);
   flex: 1;
   white-space: nowrap;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .reports-filters__segment:not(:last-child) {
@@ -81,6 +101,13 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .reports-filters__select,
+  .reports-filters__input {
+    max-width: 180px;
+  }
+}
+
 @media (max-width: 768px) {
   .reports-filters {
     flex-direction: column;
@@ -94,42 +121,6 @@
   .reports-filters__select,
   .reports-filters__input {
     width: 100%;
-  }
-}
-  overflow: hidden;
-}
-
-.reports-filters__export-menu button {
-  display: block;
-  width: 100%;
-  padding: 0.625rem 1rem;
-  border: none;
-  background: transparent;
-  color: var(--text-color);
-  font-size: 0.875rem;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.reports-filters__export-menu button:hover {
-  background: var(--hover-color);
-}
-
-.reports-filters__export-menu button:not(:last-child) {
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .reports-filters__row {
-    flex-wrap: wrap;
-  }
-  
-  .reports-filters__actions {
-    width: 100%;
-    margin-left: 0;
-    margin-top: 0.5rem;
-    justify-content: flex-end;
+    max-width: none;
   }
 }

@@ -72,6 +72,7 @@ export const useReports = () => {
   const [filters, setFilters] = useState<ReportFilters>(defaultFilters);
   const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [reportGenerated, setReportGenerated] = useState(false);
   
   // Raw data from Supabase
   const [saleLines, setSaleLines] = useState<SaleLineComputed[]>([]);
@@ -433,6 +434,7 @@ export const useReports = () => {
 
   const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
+    setReportGenerated(false);
   }, []);
 
   // Уникални доставчици за dropdown
@@ -446,11 +448,12 @@ export const useReports = () => {
     return Array.from(uniqueSuppliers).sort();
   }, [deliveries]);
 
-  // Генериране на отчет (симулация)
+  // Генериране на отчет
   const generateReport = useCallback(async () => {
     setIsGenerating(true);
     // Симулираме забавяне
     await new Promise(resolve => setTimeout(resolve, 300));
+    setReportGenerated(true);
     setIsGenerating(false);
     return reportData;
   }, [reportData]);
@@ -477,6 +480,7 @@ export const useReports = () => {
     supplierOptions,
     isGenerating,
     loading,
+    reportGenerated,
     updateFilters,
     updatePeriod,
     updateMode,
