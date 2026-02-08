@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useArticles } from '../hooks/useArticles';
 import { ArticleFiltersBar } from './ArticleFiltersBar';
 import { ArticleTable } from './ArticleTable';
 import { ArticleDialog } from './ArticleDialog';
-import type { Article, ArticleFormData } from '../types';
+import { Toast } from '../../../shared/components/Toast';
+import type { Article, ArticleFormData, ImportResult } from '../types';
+import { importArticlesFromExcel, generateArticleImportTemplate } from '../utils/importArticles';
 import './Articles.css';
 
 export const Articles = () => {
@@ -21,6 +23,10 @@ export const Articles = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | undefined>();
   const [dialogKey, setDialogKey] = useState(0); // Key за рестарт на формата
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Отваря диалог за нов артикул
   const handleNewArticle = useCallback(() => {
@@ -55,6 +61,81 @@ export const Articles = () => {
   // Списък с имена за валидация на уникалност
   const existingNames = allArticles.map((a) => a.name);
 
+  // Download template handler
+  const handleDownloadTemplate = useCallback(() => {
+    generateArticleImportTemplate();
+    setToast({ message: 'Шаблонът е изтеглен успешно!', variant: 'success' });
+  }, []);
+
+  // Import button click handler
+  const handleImport = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  // File selection handler
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // Провери разширението
+      if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        setToast({ 
+          message: 'Моля изберете Excel файл (.xlsx или .xls)', 
+          variant: 'error' 
+        });
+        return;
+      }
+
+      setImporting(true);
+      setToast({ message: 'Импортиране на артикули...', variant: 'info' });
+
+      try {
+        const result = await importArticlesFromExcel(file, allArticles);
+        setImportResult(result);
+
+        if (result.success && result.validRecords.length > 0) {
+          // Импортирай валидните записи
+          for (const record of result.validRecords) {
+            await createArticle({
+              name: record.name!,
+              piecesPerKg: String(1000 / record.gramsPerPiece!),
+              isActive: record.isActive!,
+            });
+          }
+
+          const successMsg = `Успешно импортирани ${result.validRecords.length} артикула`;
+          const warningMsg = result.invalidRecords.length > 0 
+            ? ` (${result.invalidRecords.length} пропуснати)` 
+            : '';
+          
+          setToast({ 
+            message: successMsg + warningMsg, 
+            variant: result.invalidRecords.length > 0 ? 'warning' : 'success' 
+          });
+        } else {
+          setToast({ 
+            message: result.error || 'Няма валидни артикули за импорт', 
+            variant: 'error' 
+          });
+        }
+      } catch (error) {
+        console.error('Грешка при импорт:', error);
+        setToast({ 
+          message: 'Грешка при импортиране на файла', 
+          variant: 'error' 
+        });
+      } finally {
+        setImporting(false);
+        // Изчисти input за да може повторен импорт на същия файл
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    },
+    [allArticles, createArticle]
+  );
+
   if (loading) {
     return (
       <div className="articles">
@@ -78,6 +159,8 @@ export const Articles = () => {
         filters={filters}
         onFilterChange={updateFilters}
         onNewArticle={handleNewArticle}
+        onImport={handleImport}
+        onDownloadTemplate={handleDownloadTemplate}
         totalCount={allArticles.length}
         filteredCount={articles.length}
       />
@@ -96,6 +179,74 @@ export const Articles = () => {
         onSubmit={handleSubmit}
         onClose={handleCloseDialog}
       />
+
+      {/* Hidden file input за импорт */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx,.xls"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+        disabled={importing}
+      />
+
+      {/* Toast notifications */}
+      {toast && (
+        <Toast
+          isOpen={true}
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Import result dialog */}
+      {importResult && importResult.invalidRecords.length > 0 && (
+        <div className="import-result-dialog" onClick={() => setImportResult(null)}>
+          <div className="import-result-dialog__content" onClick={(e) => e.stopPropagation()}>
+            <div className="import-result-dialog__header">
+              <h3>Резултати от импорта</h3>
+              <button 
+                className="import-result-dialog__close" 
+                onClick={() => setImportResult(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="import-result-dialog__body">
+              <p className="import-result-dialog__summary">
+                <strong>Успешни:</strong> {importResult.validRecords.length} | 
+                <strong> Пропуснати:</strong> {importResult.invalidRecords.length}
+              </p>
+              
+              {importResult.invalidRecords.length > 0 && (
+                <div className="import-result-dialog__errors">
+                  <h4>Пропуснати записи:</h4>
+                  <ul>
+                    {importResult.invalidRecords.map((record, idx) => {
+                      const articleName = record.data['Артикул'] || record.data['Name'] || record.data['Article'];
+                      const displayName = articleName ? ` (${String(articleName)})` : '';
+                      return (
+                        <li key={idx}>
+                          <strong>Ред {record.row}:</strong> {record.error}{displayName}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div className="import-result-dialog__footer">
+              <button 
+                className="btn-primary" 
+                onClick={() => setImportResult(null)}
+              >
+                Затвори
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

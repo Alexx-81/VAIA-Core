@@ -29,3 +29,20 @@ export interface ArticleFilters {
   status: ArticleStatus;
   sortBy: ArticleSortBy;
 }
+
+// Import types
+export interface ArticleImportRow {
+  name: string;
+  piecesPerKg: number;
+}
+
+export interface ImportResult {
+  success: boolean;
+  error?: string;
+  validRecords: Partial<Article>[];
+  invalidRecords: Array<{
+    row: number;
+    error: string;
+    data: Record<string, unknown>;
+  }>;
+}
