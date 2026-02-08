@@ -54,7 +54,11 @@ const downloadFile = (content: string, filename: string, mimeType: string) => {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  
+  // Освобождаваме URL-а след 1 секунда, за да даде време на браузъра да стартира изтеглянето
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 };
 
 // ============ CSV EXPORT ============
@@ -65,11 +69,20 @@ const arrayToCSV = (headers: string[], rows: string[][]): string => {
   return [headerLine, ...dataLines].join('\n');
 };
 
-export const exportToCSV = (data: ReportData) => {
+const sectionToCSV = (title: string, headers: string[], rows: string[][]): string => {
+  const titleLine = `"${title}"`;
+  const emptyLine = '';
+  const csvData = arrayToCSV(headers, rows);
+  return [titleLine, emptyLine, csvData, emptyLine].join('\n');
+};
+
+export const exportToCSV = async (data: ReportData) => {
   const mode = data.filters.mode;
+  const sections: string[] = [];
   
-  // 1. Summary CSV
-  const summaryCSV = arrayToCSV(
+  // 1. Summary Section
+  sections.push(sectionToCSV(
+    '═══════════ РЕЗЮМЕ ═══════════',
     ['Показател', 'Стойност'],
     [
       ['Период', data.periodLabel],
@@ -83,63 +96,39 @@ export const exportToCSV = (data: ReportData) => {
       ['Брой продажби', String(data.summary.salesCount)],
       ['Генерирано на', formatDateTime(data.generatedAt)],
     ]
-  );
-  downloadFile(summaryCSV, getFileName(mode, 'Summary', 'csv'), 'text/csv;charset=utf-8');
+  ));
 
-  // 2. Deliveries CSV
-  if (mode === 'real') {
-    const deliveriesCSV = arrayToCSV(
-      ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
-      data.deliveryRows.map(r => [
-        r.deliveryId || '',
-        r.deliveryDisplayId || '',
-        formatDate(r.deliveryDate),
-        r.qualityName || '',
-        r.isInvoiced ? 'Да' : 'Не',
-        r.invoiceNumber || '',
-        (r.kgIn || 0).toFixed(2),
-        (r.eurPerKgDelivery || 0).toFixed(2),
-        (r.totalDeliveryCostEur || 0).toFixed(2),
-        (r.kgSold || 0).toFixed(2),
-        String(r.piecesSold || 0),
-        (r.revenueEur || 0).toFixed(2),
-        (r.cogsEur || 0).toFixed(2),
-        (r.profitEur || 0).toFixed(2),
-        (r.marginPercent || 0).toFixed(1),
-        (r.avgPricePerKgEur || 0).toFixed(2),
-        (r.earnedFromDeliveryEur || 0).toFixed(2),
-      ])
-    );
-    downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
-  } else {
-    const deliveriesCSV = arrayToCSV(
-      ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg дост.', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
-      data.deliveryRows.map(r => [
-        r.deliveryId || '',
-        r.deliveryDisplayId || '',
-        formatDate(r.deliveryDate),
-        r.qualityName || '',
-        r.isInvoiced ? 'Да' : 'Не',
-        r.invoiceNumber || '',
-        (r.kgIn || 0).toFixed(2),
-        (r.eurPerKgDelivery || 0).toFixed(2),
-        (r.totalDeliveryCostEur || 0).toFixed(2),
-        (r.kgSold || 0).toFixed(2),
-        String(r.piecesSold || 0),
-        (r.revenueEur || 0).toFixed(2),
-        (r.cogsEur || 0).toFixed(2),
-        (r.profitEur || 0).toFixed(2),
-        (r.marginPercent || 0).toFixed(1),
-        (r.avgPricePerKgEur || 0).toFixed(2),
-        (r.earnedFromDeliveryEur || 0).toFixed(2),
-      ])
-    );
-    downloadFile(deliveriesCSV, getFileName(mode, 'ByDeliveries', 'csv'), 'text/csv;charset=utf-8');
-  }
+  // 2. Deliveries Section
+  sections.push(sectionToCSV(
+    '═══════════ ПО ДОСТАВКИ ═══════════',
+    mode === 'real' 
+      ? ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)']
+      : ['Delivery ID', 'Доставка', 'Дата', 'Качество', 'Фактурна', 'Фактура №', 'kg_in', 'EUR/kg дост.', 'Цена доставка (EUR)', 'kg продадени', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg прод.', 'Изкарани (EUR)'],
+    data.deliveryRows.map(r => [
+      r.deliveryId || '',
+      r.deliveryDisplayId || '',
+      formatDate(r.deliveryDate),
+      r.qualityName || '',
+      r.isInvoiced ? 'Да' : 'Не',
+      r.invoiceNumber || '',
+      (r.kgIn || 0).toFixed(2),
+      (r.eurPerKgDelivery || 0).toFixed(2),
+      (r.totalDeliveryCostEur || 0).toFixed(2),
+      (r.kgSold || 0).toFixed(2),
+      String(r.piecesSold || 0),
+      (r.revenueEur || 0).toFixed(2),
+      (r.cogsEur || 0).toFixed(2),
+      (r.profitEur || 0).toFixed(2),
+      (r.marginPercent || 0).toFixed(1),
+      (r.avgPricePerKgEur || 0).toFixed(2),
+      (r.earnedFromDeliveryEur || 0).toFixed(2),
+    ])
+  ));
 
-  // 3. Qualities CSV (само за Real)
+  // 3. Qualities Section (само за Real)
   if (mode === 'real') {
-    const qualitiesCSV = arrayToCSV(
+    sections.push(sectionToCSV(
+      '═══════════ ПО КАЧЕСТВА ═══════════',
       ['Quality ID', 'Качество', 'kg', 'Бройки', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/kg'],
       data.qualityRows.map(r => [
         String(r.qualityId || ''),
@@ -152,12 +141,12 @@ export const exportToCSV = (data: ReportData) => {
         (r.marginPercent || 0).toFixed(1),
         (r.avgPricePerKgEur || 0).toFixed(2),
       ])
-    );
-    downloadFile(qualitiesCSV, getFileName(mode, 'ByQualities', 'csv'), 'text/csv;charset=utf-8');
+    ));
   }
 
-  // 4. Articles CSV
-  const articlesCSV = arrayToCSV(
+  // 4. Articles Section
+  sections.push(sectionToCSV(
+    '═══════════ ПО АРТИКУЛИ ═══════════',
     ['Article ID', 'Артикул', 'Бройки', 'kg', 'Оборот (EUR)', 'Себестойност (EUR)', 'Печалба (EUR)', 'Марж %', 'EUR/бр'],
     data.articleRows.map(r => [
       r.articleId || '',
@@ -170,11 +159,11 @@ export const exportToCSV = (data: ReportData) => {
       (r.marginPercent || 0).toFixed(1),
       (r.avgPricePerPieceEur || 0).toFixed(2),
     ])
-  );
-  downloadFile(articlesCSV, getFileName(mode, 'ByArticles', 'csv'), 'text/csv;charset=utf-8');
+  ));
 
-  // 5. Transactions CSV
-  const transactionsCSV = arrayToCSV(
+  // 5. Transactions Section
+  sections.push(sectionToCSV(
+    '═══════════ ДЕТАЙЛНИ ТРАНЗАКЦИИ ═══════════',
     mode === 'real' 
       ? ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real Delivery ID', 'Real доставка', 'Acc Delivery ID', 'Accounting доставка', 'EUR/kg (R)', 'Себестойност (EUR)', 'Печалба (EUR)']
       : ['Дата/час', '№ продажба', 'Плащане', 'Артикул', 'Бройки', 'kg', 'Цена/бр (EUR)', 'Оборот (EUR)', 'Real Delivery ID', 'Real доставка', 'Acc Delivery ID', 'Accounting доставка', 'EUR/kg (A)', 'Себестойност (EUR)', 'Печалба (EUR)'],
@@ -214,8 +203,18 @@ export const exportToCSV = (data: ReportData) => {
           r.profitAccEur.toFixed(2),
         ]
     )
-  );
-  downloadFile(transactionsCSV, getFileName(mode, 'Transactions', 'csv'), 'text/csv;charset=utf-8');
+  ));
+
+  // Обединяваме всички секции в един файл
+  const fullCSV = sections.join('\n');
+  
+  // Генерираме име на файла
+  const modeLabel = mode === 'real' ? 'Real' : 'Accounting';
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const filename = `${modeLabel}_Report_Complete_${dateStr}.csv`;
+  
+  downloadFile(fullCSV, filename, 'text/csv;charset=utf-8');
 };
 
 // ============ EXCEL EXPORT ============

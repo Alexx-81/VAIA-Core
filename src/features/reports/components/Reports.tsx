@@ -51,8 +51,8 @@ export const Reports: React.FC = () => {
       
       switch (format) {
         case 'csv':
-          exportToCSV(data);
-          setExportMessage({ type: 'success', text: 'CSV файловете са експортирани успешно!' });
+          await exportToCSV(data);
+          setExportMessage({ type: 'success', text: 'CSV файлът е експортиран успешно!' });
           break;
         case 'excel':
           await exportToExcel(data);

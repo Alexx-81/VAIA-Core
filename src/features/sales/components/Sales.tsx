@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSales } from '../hooks/useSales';
 import { SalesFiltersBar } from './SalesFiltersBar';
 import { SalesTable } from './SalesTable';
@@ -38,6 +38,21 @@ export const Sales = () => {
     setCurrentView('editor');
     setSelectedSaleId(null);
   }, []);
+
+  // Ctrl+N shortcut to open new sale from list view
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        // Only trigger from list view (not when already in editor)
+        if (currentView === 'list' && !selectedSaleId) {
+          e.preventDefault();
+          handleNewSale();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentView, selectedSaleId, handleNewSale]);
 
   const handleViewDetail = useCallback((sale: SaleWithComputed) => {
     setSelectedSaleId(sale.id);
