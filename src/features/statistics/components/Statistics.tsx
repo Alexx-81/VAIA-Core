@@ -25,7 +25,13 @@ export const Statistics = () => {
       yearly: 'Годишен отчет',
     };
 
-    const title = `${tabLabels[activeTab]} - ${filters.dateFrom} до ${filters.dateTo}`;
+    // Форматираме датите във формат DD.MM.YYYY
+    const formatDate = (dateStr: string): string => {
+      const [year, month, day] = dateStr.split('-');
+      return `${day}.${month}.${year}`;
+    };
+
+    const title = `${tabLabels[activeTab]} - ${formatDate(filters.dateFrom)} до ${formatDate(filters.dateTo)}`;
 
     if (format === 'csv') {
       exportStatisticsToCSV(rows, filters.costModes, title);
@@ -93,6 +99,7 @@ export const Statistics = () => {
 
       <div className="statistics__content">
         <StatisticsFiltersBar
+          key={activeTab}
           filters={filters}
           onUpdateFilters={updateFilters}
           onToggleCostMode={toggleCostMode}

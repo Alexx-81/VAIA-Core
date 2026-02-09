@@ -229,16 +229,24 @@ export function ImportDeliveriesDialog({
                       </tr>
                     </thead>
                     <tbody>
-                      {result.deliveries.slice(0, 5).map((d, i) => (
-                        <tr key={i}>
-                          <td>{d.displayId}</td>
-                          <td>{new Date(d.date).toLocaleDateString('bg-BG')}</td>
-                          <td>{d.qualityName}</td>
-                          <td>{d.kgIn.toFixed(1)}</td>
-                          <td>{d.unitCostPerKg.toFixed(2)} €</td>
-                          <td>{(d.kgIn * d.unitCostPerKg).toFixed(2)} €</td>
-                        </tr>
-                      ))}
+                      {result.deliveries.slice(0, 5).map((d, i) => {
+                        const formatDate = (date: Date) => {
+                          const day = String(date.getDate()).padStart(2, '0');
+                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                          const year = date.getFullYear();
+                          return `${day}.${month}.${year}`;
+                        };
+                        return (
+                          <tr key={i}>
+                            <td>{d.displayId}</td>
+                            <td>{formatDate(new Date(d.date))}</td>
+                            <td>{d.qualityName}</td>
+                            <td>{d.kgIn.toFixed(1)}</td>
+                            <td>{d.unitCostPerKg.toFixed(2)} €</td>
+                            <td>{(d.kgIn * d.unitCostPerKg).toFixed(2)} €</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                   {result.deliveries.length > 5 && (

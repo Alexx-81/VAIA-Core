@@ -11,21 +11,29 @@ import type {
 
 type SalesSummaryRow = Database['public']['Views']['sales_summary']['Row'];
 
+// Форматира дата като YYYY-MM-DD без UTC конвертиране
+const toDateStr = (date: Date): string => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 const getDefaultDateRange = (tab: StatisticsTab): { from: string; to: string } => {
   const now = new Date();
-  const today = now.toISOString().split('T')[0];
+  const today = toDateStr(now);
   
   if (tab === 'daily') {
-    // Current month
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    // Current month - показва дни от текущия месец
+    const firstDay = toDateStr(new Date(now.getFullYear(), now.getMonth(), 1));
     return { from: firstDay, to: today };
   } else if (tab === 'monthly') {
-    // Current year
-    const firstDay = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+    // Current year - показва месеци от текущата година
+    const firstDay = toDateStr(new Date(now.getFullYear(), 0, 1));
     return { from: firstDay, to: today };
   } else {
-    // Last 3 years
-    const firstDay = new Date(now.getFullYear() - 2, 0, 1).toISOString().split('T')[0];
+    // Last 3 years - показва последните 3 години
+    const firstDay = toDateStr(new Date(now.getFullYear() - 2, 0, 1));
     return { from: firstDay, to: today };
   }
 };
@@ -35,23 +43,15 @@ export const useStatistics = () => {
   const [salesData, setSalesData] = useState<SalesSummaryRow[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const defaultRange = getDefaultDateRange(activeTab);
-  const [filters, setFilters] = useState<StatisticsFilters>({
-    costModes: ['real'],
-    paymentMethod: 'all',
-    dateFrom: defaultRange.from,
-    dateTo: defaultRange.to,
+  const [filters, setFilters] = useState<StatisticsFilters>(() => {
+    const defaultRange = getDefaultDateRange('daily');
+    return {
+      costModes: ['real'],
+      paymentMethod: 'all',
+      dateFrom: defaultRange.from,
+      dateTo: defaultRange.to,
+    };
   });
-
-  // Update date range when tab changes
-  useEffect(() => {
-    const newRange = getDefaultDateRange(activeTab);
-    setFilters(prev => ({
-      ...prev,
-      dateFrom: newRange.from,
-      dateTo: newRange.to,
-    }));
-  }, [activeTab]);
 
   // Fetch sales data
   useEffect(() => {
@@ -88,7 +88,7 @@ export const useStatistics = () => {
     return salesData.filter(sale => {
       if (!sale.date_time) return false;
       
-      const saleDate = new Date(sale.date_time).toISOString().split('T')[0];
+      const saleDate = toDateStr(new Date(sale.date_time));
       
       // Date filter
       if (saleDate < filters.dateFrom || saleDate > filters.dateTo) {
@@ -125,7 +125,7 @@ export const useStatistics = () => {
       let periodDate: Date;
 
       if (activeTab === 'daily') {
-        periodKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        periodKey = toDateStr(date); // YYYY-MM-DD
         periodDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       } else if (activeTab === 'monthly') {
         const year = date.getFullYear();
@@ -168,11 +168,11 @@ export const useStatistics = () => {
 
       let periodLabel: string;
       if (activeTab === 'daily') {
-        periodLabel = new Date(periodKey).toLocaleDateString('bg-BG', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        });
+        const date = new Date(periodKey);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        periodLabel = `${day}.${month}.${year}`;
       } else if (activeTab === 'monthly') {
         const [year, month] = periodKey.split('-');
         const monthNames = ['Яну', 'Фев', 'Мар', 'Апр', 'Май', 'Юни', 'Юли', 'Авг', 'Сеп', 'Окт', 'Нов', 'Дек'];
@@ -237,10 +237,21 @@ export const useStatistics = () => {
       costModes: [mode], // Only one mode can be selected at a time
     }));
   };
+  
+  const handleTabChange = (newTab: StatisticsTab) => {
+    setActiveTab(newTab);
+    // Веднага обновяваме датите при смяна на таба
+    const newRange = getDefaultDateRange(newTab);
+    setFilters(prev => ({
+      ...prev,
+      dateFrom: newRange.from,
+      dateTo: newRange.to,
+    }));
+  };
 
   return {
     activeTab,
-    setActiveTab,
+    setActiveTab: handleTabChange,
     rows,
     summary,
     loading,

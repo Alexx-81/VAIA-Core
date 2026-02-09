@@ -292,7 +292,7 @@ export const exportStatisticsToPDF = (
 
   // Create PDF document definition
   const docDefinition: any = {
-    pageOrientation: 'landscape',
+    pageOrientation: 'portrait',
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
     content: [

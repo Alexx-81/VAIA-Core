@@ -63,9 +63,14 @@ const formatPeriodLabel = (period: ReportPeriod): string => {
     return from.toLocaleDateString('bg-BG', opts);
   }
   
-  // custom - показваме от-до
-  const dateOpts: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  return `${from.toLocaleDateString('bg-BG', dateOpts)} - ${to.toLocaleDateString('bg-BG', dateOpts)}`;
+  // custom - показваме от-до в DD.MM.YYYY формат
+  const formatDate = (date: Date): string => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+  return `${formatDate(from)} - ${formatDate(to)}`;
 };
 
 export const useReports = () => {
@@ -111,6 +116,14 @@ export const useReports = () => {
     
     loadData();
   }, []);
+
+  // Автоматично генериране на отчет при първо зареждане
+  useEffect(() => {
+    if (!loading && !reportGenerated && saleLines.length > 0) {
+      // Автоматично генерираме отчета за текущия месец
+      setReportGenerated(true);
+    }
+  }, [loading, reportGenerated, saleLines.length]);
 
   // Качества за филтъра
   const qualityOptions: QualityOption[] = useMemo(() => {

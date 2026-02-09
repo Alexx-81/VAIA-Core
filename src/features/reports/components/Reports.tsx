@@ -100,16 +100,22 @@ export const Reports: React.FC = () => {
         </div>
 
         <div className="reports__header-actions">
-          <button
-            className="btn btn-primary"
-            onClick={handleGenerate}
-            disabled={isGenerating || isExporting}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span className="btn-text">{isGenerating ? 'Генериране...' : 'Генерирай отчет'}</span>
-          </button>
+          {reportGenerated && (
+            <button
+              className="btn btn-secondary"
+              onClick={handleGenerate}
+              disabled={isGenerating || isExporting}
+              title="Обновява отчета с текущите филтри"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
+              <span className="btn-text">{isGenerating ? 'Обновяване...' : 'Обнови'}</span>
+            </button>
+          )}
 
           <button
             className="btn btn-secondary"

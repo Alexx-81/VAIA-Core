@@ -182,7 +182,13 @@ function importRowToDelivery(
     kgIn: row.kilograms,
     unitCostPerKg: row.pricePerKg,
     invoiceNumber: row.invoiceNumber || undefined,
-    note: `Импортирано от Excel на ${new Date().toLocaleDateString('bg-BG')}`,
+    note: `Импортирано от Excel на ${(() => {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      return `${day}.${month}.${year}`;
+    })()}`,
     createdAt: new Date(),
   };
 

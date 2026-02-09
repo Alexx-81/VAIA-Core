@@ -274,24 +274,22 @@ export const canEditDelivery = (delivery: DeliveryWithComputed): { canEdit: bool
  * Форматира дата за показване
  */
 export const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('bg-BG', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
 };
 
 /**
  * Форматира дата и час за показване
  */
 export const formatDateTime = (date: Date): string => {
-  return date.toLocaleDateString('bg-BG', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
 };
 
 /**

@@ -74,21 +74,19 @@ const formatPercent = (value: number): string => {
 };
 
 const formatDateTime = (date: Date): string => {
-  return date.toLocaleString('bg-BG', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
 };
 
 const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('bg-BG', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
 };
 
 const getPaymentMethodLabel = (method: PaymentMethod): string => {
@@ -620,7 +618,7 @@ export const Dashboard = ({ onTabChange }: DashboardProps) => {
         <span className="range-value">
           {getDateRangeLabel(dateRangeOption)}
           {dateRangeOption === 'custom' && (
-            <> ({activeDateRange.from.toLocaleDateString('bg-BG')} - {activeDateRange.to.toLocaleDateString('bg-BG')})</>
+            <> ({formatDate(activeDateRange.from)} - {formatDate(activeDateRange.to)})</>
           )}
         </span>
         <span className="ledger-badge">{ledgerView === 'real' ? 'Реален' : 'Счетоводен'}</span>
