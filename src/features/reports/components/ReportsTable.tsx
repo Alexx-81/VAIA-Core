@@ -147,7 +147,17 @@ const DeliveriesTable: React.FC<{
               <td className="text-right"><strong>{formatCurrency(rows.reduce((s, r) => s + r.revenueEur, 0))}</strong></td>
               <td className="text-right"><strong>{formatCurrency(rows.reduce((s, r) => s + r.cogsEur, 0))}</strong></td>
               <td className="text-right"><strong>{formatCurrency(rows.reduce((s, r) => s + r.profitEur, 0))}</strong></td>
-              <td colSpan={mode === 'real' ? 6 : 3}></td>
+              <td className="text-right">
+                <strong>
+                  {(() => {
+                    const totalRevenue = rows.reduce((s, r) => s + r.revenueEur, 0);
+                    const totalProfit = rows.reduce((s, r) => s + r.profitEur, 0);
+                    const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+                    return formatNumber(avgMargin, 1) + '%';
+                  })()}
+                </strong>
+              </td>
+              <td colSpan={mode === 'real' ? 5 : 2}></td>
             </tr>
           </tfoot>
         )}
@@ -204,6 +214,17 @@ const DeliveriesTable: React.FC<{
         <div className="reports-table__mobile-total">
           <span>Общо печалба:</span>
           <strong className="text-positive">{formatCurrency(rows.reduce((s, r) => s + r.profitEur, 0))} €</strong>
+        </div>
+        <div className="reports-table__mobile-total">
+          <span>Среден марж:</span>
+          <strong>
+            {(() => {
+              const totalRevenue = rows.reduce((s, r) => s + r.revenueEur, 0);
+              const totalProfit = rows.reduce((s, r) => s + r.profitEur, 0);
+              const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+              return formatNumber(avgMargin, 1) + '%';
+            })()}
+          </strong>
         </div>
       </div>
     )}

@@ -39,67 +39,48 @@
   margin: 0;
 }
 
-.statistics__export {
-  position: relative;
+.statistics__export-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .statistics__export-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: var(--vaia-color);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, #FF7A00 0%, #ff9a3c 100%);
+  color: #ffffff;
+  border: 2px solid #FF7A00;
   border-radius: 8px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+  min-width: 100px;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .statistics__export-button:hover {
-  background: #ff8c1a;
-  box-shadow: 0 2px 8px rgba(255, 122, 0, 0.3);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #0B4F8A 0%, #0969da 100%);
+  border-color: #0B4F8A;
+  box-shadow: 0 6px 16px rgba(11, 79, 138, 0.4);
+  transform: translateY(-2px);
+}
+
+.statistics__export-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(11, 79, 138, 0.3);
 }
 
 .statistics__export-icon {
   font-size: 1rem;
-}
-
-.statistics__export-menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  z-index: 100;
-  overflow: hidden;
-}
-
-.statistics__export-menu button {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 0.875rem;
-  color: var(--text-color);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.statistics__export-menu button:hover {
-  background: var(--hover-color);
-}
-
-.statistics__export-menu button:not(:last-child) {
-  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .statistics__tabs {
@@ -205,18 +186,14 @@
     align-items: flex-start;
   }
 
-  .statistics__export {
+  .statistics__export-buttons {
     width: 100%;
+    flex-direction: column;
   }
 
   .statistics__export-button {
     width: 100%;
     justify-content: center;
-  }
-
-  .statistics__export-menu {
-    left: 0;
-    right: 0;
   }
 
   .statistics__tabs {

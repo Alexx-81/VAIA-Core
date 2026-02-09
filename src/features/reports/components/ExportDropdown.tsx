@@ -9,7 +9,9 @@ interface ExportDropdownProps {
 
 export const ExportDropdown: React.FC<ExportDropdownProps> = ({ onExport, disabled = false }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -20,6 +22,15 @@ export const ExportDropdown: React.FC<ExportDropdownProps> = ({ onExport, disabl
 
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
+      
+      // Calculate menu position based on button position
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setMenuPosition({
+          top: rect.bottom + 8,
+          left: rect.right - 180, // 180px is min-width of menu
+        });
+      }
     }
 
     return () => {
@@ -35,6 +46,7 @@ export const ExportDropdown: React.FC<ExportDropdownProps> = ({ onExport, disabl
   return (
     <div className="export-dropdown" ref={menuRef}>
       <button
+        ref={buttonRef}
         className="btn btn-secondary"
         onClick={() => setShowMenu(!showMenu)}
         disabled={disabled}
@@ -49,7 +61,10 @@ export const ExportDropdown: React.FC<ExportDropdownProps> = ({ onExport, disabl
       </button>
 
       {showMenu && (
-        <div className="export-dropdown__menu">
+        <div 
+          className="export-dropdown__menu"
+          style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
+        >
           <button className="export-dropdown__item" onClick={() => handleExportClick('csv')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />

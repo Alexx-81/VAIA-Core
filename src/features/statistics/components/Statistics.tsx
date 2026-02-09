@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useStatistics } from '../hooks/useStatistics';
 import { StatisticsFiltersBar } from './StatisticsFiltersBar';
 import { StatisticsSummary } from './StatisticsSummary';
@@ -19,8 +18,6 @@ export const Statistics = () => {
     toggleCostMode,
   } = useStatistics();
 
-  const [showExportMenu, setShowExportMenu] = useState(false);
-
   const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
     const tabLabels: Record<StatisticsTab, string> = {
       daily: 'Дневен отчет',
@@ -37,8 +34,6 @@ export const Statistics = () => {
     } else if (format === 'pdf') {
       exportStatisticsToPDF(rows, summary, filters.costModes, title);
     }
-
-    setShowExportMenu(false);
   };
 
   return (
@@ -46,21 +41,31 @@ export const Statistics = () => {
       <div className="statistics__header">
         <div className="statistics__header-content">
           <h1 className="statistics__title">Статистика</h1>
-          <div className="statistics__export">
+          <div className="statistics__export-buttons">
             <button
               className="statistics__export-button"
-              onClick={() => setShowExportMenu(!showExportMenu)}
+              onClick={() => handleExport('csv')}
+              title="Експорт като CSV"
+            >
+              <span className="statistics__export-icon">📄</span>
+              CSV
+            </button>
+            <button
+              className="statistics__export-button"
+              onClick={() => handleExport('excel')}
+              title="Експорт като Excel"
             >
               <span className="statistics__export-icon">📊</span>
-              Експорт
+              Excel
             </button>
-            {showExportMenu && (
-              <div className="statistics__export-menu">
-                <button onClick={() => handleExport('csv')}>Експорт като CSV</button>
-                <button onClick={() => handleExport('excel')}>Експорт като Excel</button>
-                <button onClick={() => handleExport('pdf')}>Експорт като PDF</button>
-              </div>
-            )}
+            <button
+              className="statistics__export-button"
+              onClick={() => handleExport('pdf')}
+              title="Експорт като PDF"
+            >
+              <span className="statistics__export-icon">📑</span>
+              PDF
+            </button>
           </div>
         </div>
       </div>

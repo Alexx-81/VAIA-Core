@@ -136,59 +136,122 @@
 .perms-dialog__item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: var(--surface-color);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
 }
 
-.perms-dialog__item:hover {
+.perms-dialog__item:hover:not(:disabled) {
   background: var(--surface-hover);
+  border-color: var(--border-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.perms-dialog__item:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .perms-dialog__item--active {
   border-color: var(--vaia-color);
-  background: rgba(11, 79, 138, 0.05);
+  background: linear-gradient(135deg, rgba(11, 79, 138, 0.08) 0%, rgba(11, 79, 138, 0.04) 100%);
 }
 
-.perms-dialog__checkbox-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
+.perms-dialog__item--active:hover:not(:disabled) {
+  border-color: var(--vaia-color);
+  background: linear-gradient(135deg, rgba(11, 79, 138, 0.12) 0%, rgba(11, 79, 138, 0.06) 100%);
 }
 
-.perms-dialog__checkbox {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+.perms-dialog__item--inactive {
+  border-color: transparent;
+  background: var(--surface-color);
 }
 
-.perms-dialog__custom-checkbox {
+.perms-dialog__item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.perms-dialog__icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  background: transparent;
-  transition: all 0.2s;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.perms-dialog__custom-checkbox--checked {
-  background: var(--vaia-color);
-  border-color: var(--vaia-color);
+.perms-dialog__item--active .perms-dialog__icon-wrapper {
+  background: linear-gradient(135deg, var(--vaia-color) 0%, #0a61a8 100%);
+  box-shadow: 0 4px 12px rgba(11, 79, 138, 0.3);
+}
+
+.perms-dialog__item--inactive .perms-dialog__icon-wrapper {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.perms-dialog__item:hover:not(:disabled) .perms-dialog__icon-wrapper {
+  transform: scale(1.05);
+}
+
+.perms-dialog__eye-icon {
+  width: 22px;
+  height: 22px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perms-dialog__eye-icon--open {
   color: white;
+  animation: eyeOpen 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perms-dialog__eye-icon--closed {
+  color: var(--text-secondary);
+  animation: eyeClose 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes eyeOpen {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(-10deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes eyeClose {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(10deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 .perms-dialog__tab-name {
   font-size: 0.95rem;
   color: var(--text-color);
   font-weight: 500;
+  flex: 1;
 }
 
 .perms-dialog__error {

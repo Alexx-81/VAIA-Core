@@ -77,6 +77,7 @@
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 @container reports (max-width: 768px) {
@@ -86,11 +87,17 @@
   
   .reports__header-actions {
     width: 100%;
+    justify-content: stretch;
   }
   
   .reports__header-actions .btn {
     flex: 1;
     justify-content: center;
+    min-width: 0;
+  }
+  
+  .reports__header-actions .btn-text {
+    display: inline;
   }
 }
 

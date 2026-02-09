@@ -156,6 +156,49 @@ export const exportStatisticsToExcel = (
   // Create worksheet
   const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
 
+  // Format percentage columns (Марж колони)
+  const percentColumnIndexes: number[] = [];
+  let currentColIndex = 2; // Start after "Период" and "Оборот"
+  
+  if (showReal) {
+    currentColIndex += 2; // Skip "Себестойност (реална)" and "Печалба (реална)"
+  }
+  
+  if (showAcc) {
+    currentColIndex += 2; // Skip "Себестойност (счет.)" and "Печалба (счет.)"
+  }
+  
+  currentColIndex += 1; // Skip "Продадени кг"
+  
+  if (showReal) {
+    percentColumnIndexes.push(currentColIndex);
+    currentColIndex += 1;
+  }
+  
+  if (showAcc) {
+    percentColumnIndexes.push(currentColIndex);
+  }
+
+  // Apply percentage formatting
+  if (ws['!ref']) {
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    
+    percentColumnIndexes.forEach(colIdx => {
+      for (let rowIdx = 1; rowIdx <= range.e.r; rowIdx++) { // Start from row 1 (skip header)
+        const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+        const cell = ws[cellAddress];
+        
+        if (cell && typeof cell.v === 'number') {
+          // Divide by 100 because Excel expects 0.10 for 10%
+          cell.v = cell.v / 100;
+          // Set percentage format with 2 decimal places
+          cell.z = '0.00%';
+          cell.t = 'n'; // Number type
+        }
+      }
+    });
+  }
+
   // Create workbook
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Статистика');

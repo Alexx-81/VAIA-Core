@@ -3,9 +3,7 @@ import { useReports } from '../hooks/useReports';
 import { ReportsFiltersBar } from './ReportsFiltersBar';
 import { ReportsSummary } from './ReportsSummary';
 import { ReportsTable } from './ReportsTable';
-import { ExportDropdown } from './ExportDropdown';
 import { exportToCSV, exportToExcel, exportToPDF } from '../utils/exportUtils';
-import type { ExportFormat } from '../types';
 import './Reports.css';
 
 export const Reports: React.FC = () => {
@@ -41,36 +39,47 @@ export const Reports: React.FC = () => {
     await generateReport();
   }, [generateReport]);
 
-  const handleExport = useCallback(async (format: ExportFormat) => {
+  const handleExportCSV = useCallback(async () => {
     setIsExporting(true);
     setExportMessage(null);
-    
     try {
-      const data = {
-        ...reportData,
-        periodLabel,
-      };
-      
-      switch (format) {
-        case 'csv':
-          await exportToCSV(data);
-          setExportMessage({ type: 'success', text: 'CSV файлът е експортиран успешно!' });
-          break;
-        case 'excel':
-          await exportToExcel(data);
-          setExportMessage({ type: 'success', text: 'Excel файлът е експортиран успешно!' });
-          break;
-        case 'pdf':
-          await exportToPDF(data);
-          setExportMessage({ type: 'success', text: 'PDF файлът е експортиран успешно!' });
-          break;
-      }
+      await exportToCSV({ ...reportData, periodLabel });
+      setExportMessage({ type: 'success', text: 'CSV файлът е експортиран успешно!' });
     } catch (error) {
       console.error('Export error:', error);
       setExportMessage({ type: 'error', text: 'Грешка при експортиране. Моля, опитайте отново.' });
     } finally {
       setIsExporting(false);
-      // Изчистваме съобщението след 5 секунди
+      setTimeout(() => setExportMessage(null), 5000);
+    }
+  }, [reportData, periodLabel]);
+
+  const handleExportExcel = useCallback(async () => {
+    setIsExporting(true);
+    setExportMessage(null);
+    try {
+      await exportToExcel({ ...reportData, periodLabel });
+      setExportMessage({ type: 'success', text: 'Excel файлът е експортиран успешно!' });
+    } catch (error) {
+      console.error('Export error:', error);
+      setExportMessage({ type: 'error', text: 'Грешка при експортиране. Моля, опитайте отново.' });
+    } finally {
+      setIsExporting(false);
+      setTimeout(() => setExportMessage(null), 5000);
+    }
+  }, [reportData, periodLabel]);
+
+  const handleExportPDF = useCallback(async () => {
+    setIsExporting(true);
+    setExportMessage(null);
+    try {
+      await exportToPDF({ ...reportData, periodLabel });
+      setExportMessage({ type: 'success', text: 'PDF файлът е експортиран успешно!' });
+    } catch (error) {
+      console.error('Export error:', error);
+      setExportMessage({ type: 'error', text: 'Грешка при експортиране. Моля, опитайте отново.' });
+    } finally {
+      setIsExporting(false);
       setTimeout(() => setExportMessage(null), 5000);
     }
   }, [reportData, periodLabel]);
@@ -102,7 +111,47 @@ export const Reports: React.FC = () => {
             <span className="btn-text">{isGenerating ? 'Генериране...' : 'Генерирай отчет'}</span>
           </button>
 
-          <ExportDropdown onExport={handleExport} disabled={isGenerating || isExporting} />
+          <button
+            className="btn btn-secondary"
+            onClick={handleExportCSV}
+            disabled={isGenerating || isExporting || !reportGenerated}
+            title="Експорт като CSV"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span className="btn-text">CSV</span>
+          </button>
+
+          <button
+            className="btn btn-secondary"
+            onClick={handleExportExcel}
+            disabled={isGenerating || isExporting || !reportGenerated}
+            title="Експорт като Excel"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+            <span className="btn-text">Excel</span>
+          </button>
+
+          <button
+            className="btn btn-secondary"
+            onClick={handleExportPDF}
+            disabled={isGenerating || isExporting || !reportGenerated}
+            title="Експорт като PDF"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <span className="btn-text">PDF</span>
+          </button>
         </div>
       </div>
 
