@@ -8,6 +8,7 @@ export const tabs: Tab[] = [
   { id: 'sales', label: 'Продажби (POS)' },
   { id: 'inventory', label: 'Наличности' },
   { id: 'reports', label: 'Отчети' },
+  { id: 'statistics', label: 'Статистика' },
   { id: 'settings', label: 'Настройки' },
   { id: 'admin', label: 'Администрация' },
 ];

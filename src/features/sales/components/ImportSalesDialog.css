@@ -190,7 +190,13 @@
   padding: 0.5rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-right: 1px solid var(--border-color, #e5e7eb);
   white-space: nowrap;
+}
+
+.import-sales-preview-table th:last-child,
+.import-sales-preview-table td:last-child {
+  border-right: none;
 }
 
 .import-sales-preview-table th {

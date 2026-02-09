@@ -155,6 +155,12 @@
   padding: 6px 10px;
   text-align: left;
   border-bottom: 1px solid var(--border-color, #ddd);
+  border-right: 1px solid var(--border-color, #ddd);
+}
+
+.import-info__table th:last-child,
+.import-info__table td:last-child {
+  border-right: none;
 }
 
 .import-info__table th {
@@ -239,6 +245,12 @@
   padding: 8px;
   text-align: left;
   border-bottom: 1px solid var(--border-color, #ddd);
+  border-right: 1px solid var(--border-color, #ddd);
+}
+
+.import-preview__table th:last-child,
+.import-preview__table td:last-child {
+  border-right: none;
 }
 
 .import-preview__table th {

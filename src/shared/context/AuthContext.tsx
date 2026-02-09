@@ -23,7 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Define allTabs outside component to avoid re-creating on each render
-const ALL_TABS: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'settings'];
+const ALL_TABS: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'statistics', 'settings'];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

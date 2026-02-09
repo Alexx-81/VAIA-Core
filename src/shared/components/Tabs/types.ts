@@ -6,6 +6,7 @@ export type TabId =
   | 'sales'
   | 'inventory'
   | 'reports'
+  | 'statistics'
   | 'settings'
   | 'admin';
 

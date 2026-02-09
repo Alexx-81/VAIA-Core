@@ -615,14 +615,24 @@
   color: var(--text-muted);
   background: var(--surface-hover);
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   white-space: nowrap;
+}
+
+.data-table th:last-child {
+  border-right: none;
 }
 
 .data-table td {
   padding: 0.875rem var(--space-md);
   border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
   color: var(--text-color);
   vertical-align: middle;
+}
+
+.data-table td:last-child {
+  border-right: none;
 }
 
 .data-table tbody tr {

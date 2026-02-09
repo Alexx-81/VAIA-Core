@@ -43,7 +43,12 @@
   text-transform: uppercase;
   letter-spacing: 0.75px;
   border-block-end: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-subtle);
   white-space: nowrap;
+}
+
+.article-table th:last-child {
+  border-right: none;
 }
 
 .article-table__th-name {
@@ -87,7 +92,12 @@
   padding-block: clamp(0.75rem, 1.5vw, 1rem);
   padding-inline: clamp(0.75rem, 2vw, 1.25rem);
   border-block-end: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
   color: var(--text-color);
+}
+
+.article-table td:last-child {
+  border-right: none;
 }
 
 .article-table__td-name {

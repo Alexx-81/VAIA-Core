@@ -7,6 +7,7 @@ import { Deliveries } from './features/deliveries';
 import { Sales } from './features/sales';
 import { Inventory } from './features/inventory';
 import { Reports } from './features/reports';
+import { Statistics } from './features/statistics';
 import { Settings } from './features/settings';
 import { Admin } from './features/admin';
 import { LoginPage } from './features/auth';
@@ -14,7 +15,7 @@ import { AuthProvider, useAuth } from './shared/context/AuthContext';
 import type { TabId } from './shared/components/Tabs';
 import './App.css';
 
-const allTabs: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'settings', 'admin'];
+const allTabs: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'statistics', 'settings', 'admin'];
 
 function getTabFromUrl(): TabId {
   const path = window.location.pathname.replace(/^\//, '').toLowerCase();
@@ -105,6 +106,8 @@ function AppContent() {
         return <Inventory />;
       case 'reports':
         return <Reports />;
+      case 'statistics':
+        return <Statistics />;
       case 'settings':
         return <Settings />;
       case 'admin':

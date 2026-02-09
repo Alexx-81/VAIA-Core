@@ -288,14 +288,24 @@
   color: var(--text-secondary);
   background: var(--surface-hover);
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   white-space: nowrap;
+}
+
+.data-table th:last-child {
+  border-right: none;
 }
 
 .data-table td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   color: var(--text-color);
   vertical-align: middle;
+}
+
+.data-table td:last-child {
+  border-right: none;
 }
 
 .data-table tbody tr:hover {

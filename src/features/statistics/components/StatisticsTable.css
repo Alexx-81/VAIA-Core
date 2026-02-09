@@ -1,0 +1,126 @@
+.statistics-table-container {
+  overflow-x: auto;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.statistics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.statistics-table thead {
+  background: linear-gradient(135deg, rgba(11, 79, 138, 0.08) 0%, rgba(255, 122, 0, 0.08) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.statistics-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.statistics-table th:last-child {
+  border-right: none;
+}
+
+.statistics-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.statistics-table td:last-child {
+  border-right: none;
+}
+
+.statistics-table tbody tr {
+  transition: background-color 0.15s;
+}
+
+.statistics-table tbody tr:hover {
+  background-color: var(--hover-color);
+}
+
+.statistics-table__period {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.statistics-table__number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.statistics-table__revenue {
+  color: var(--core-color);
+  font-weight: 500;
+}
+
+.statistics-table__kg {
+  color: var(--vaia-color);
+  font-weight: 500;
+}
+
+.statistics-table__profit--positive {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.statistics-table__profit--negative {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.statistics-table__margin--positive {
+  color: #10b981;
+}
+
+.statistics-table__margin--negative {
+  color: #ef4444;
+}
+
+.statistics-table__totals {
+  background: linear-gradient(135deg, rgba(11, 79, 138, 0.05) 0%, rgba(255, 122, 0, 0.05) 100%);
+  font-size: 0.9rem;
+}
+
+.statistics-table__totals td {
+  border-bottom: none;
+  border-top: 2px solid var(--border-color);
+}
+
+.statistics-table-empty {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .statistics-table {
+    font-size: 0.75rem;
+  }
+
+  .statistics-table th,
+  .statistics-table td {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .statistics-table th {
+    font-size: 0.7rem;
+  }
+}

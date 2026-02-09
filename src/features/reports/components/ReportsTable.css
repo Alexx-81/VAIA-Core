@@ -30,7 +30,13 @@
   padding: 0.625rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   white-space: nowrap;
+}
+
+.reports-table th:last-child,
+.reports-table td:last-child {
+  border-right: none;
 }
 
 .reports-table th {

@@ -447,18 +447,28 @@
   color: var(--text-secondary);
   background: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
+.sale-editor__table thead th:last-child {
+  border-right: none;
+}
+
 .sale-editor__table tbody td {
   padding: 0.55rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   color: var(--text-color);
   vertical-align: middle;
   font-variant-numeric: tabular-nums;
+}
+
+.sale-editor__table tbody td:last-child {
+  border-right: none;
 }
 
 .sale-editor__table .col-num {
