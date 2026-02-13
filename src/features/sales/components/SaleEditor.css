@@ -200,6 +200,15 @@
 }
 
 /* ═══════════════════════════════════════════════════════
+   Customer selector — ensuring visibility
+   ═══════════════════════════════════════════════════════ */
+.sale-editor .customer-selector {
+  margin: 1rem 1.25rem 0;
+  z-index: 50;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════
    Add-line card — the main POS input area
    ═══════════════════════════════════════════════════════ */
 .sale-editor__add-card {
@@ -209,7 +218,7 @@
   border-left: 4px solid #0B4F8A;
   border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  overflow: visible;
   transition: box-shadow 0.3s ease;
 }
 

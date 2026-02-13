@@ -6,6 +6,8 @@
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: 4px;
+  position: relative;
+  z-index: 10;
 }
 
 .customer-selector__label {
@@ -23,17 +25,18 @@
 .customer-selector__search {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  border: 2px solid #FF7A00;
+  border-radius: 6px;
   font-size: 0.95rem;
   background-color: var(--background);
   color: var(--text-primary);
+  box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.15);
 }
 
 .customer-selector__search:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(11, 79, 138, 0.1);
+  border-color: #FF7A00;
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.25);
 }
 
 .customer-selector__clear {
@@ -61,7 +64,8 @@
   background-color: var(--background);
   color: var(--text-primary);
   cursor: pointer;
-  max-height: 300px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .customer-selector__select:focus {
