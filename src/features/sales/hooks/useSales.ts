@@ -42,6 +42,12 @@ interface DbSale {
   status: 'draft' | 'finalized';
   finalized_at: string | null;
   created_at: string;
+  customer_id: string | null;
+  customers?: {
+    id: string;
+    name: string;
+    company_name: string | null;
+  } | null;
   sale_lines?: DbSaleLine[] | any;
 }
 
@@ -70,6 +76,9 @@ const mapDbSale = (s: DbSale): Sale => ({
   paymentMethod: s.payment_method,
   note: s.note || undefined,
   status: s.status,
+  customerId: s.customer_id || undefined,
+  customerName: s.customers?.name || undefined,
+  customerCompanyName: s.customers?.company_name || undefined,
   lines: (s.sale_lines || []).map((l: DbSaleLine): SaleLine => ({
     id: l.id,
     articleId: l.article_id,
@@ -104,6 +113,7 @@ export const useSales = () => {
           .from('sales')
           .select(`
             *,
+            customers(id, name, company_name),
             sale_lines(
               *,
               articles(name)
@@ -297,7 +307,7 @@ export const useSales = () => {
 
   // Създаване на нова продажба
   const createSale = useCallback(async (
-    formData: { dateTime: Date; paymentMethod: PaymentMethod; note?: string },
+    formData: { dateTime: Date; paymentMethod: PaymentMethod; note?: string; customerId?: string | null },
     lines: SaleLineFormData[]
   ): Promise<{ success: boolean; error?: string; sale?: SaleWithComputed }> => {
     // Валидация
@@ -383,6 +393,7 @@ export const useSales = () => {
           date_time: formData.dateTime.toISOString(),
           payment_method: formData.paymentMethod,
           note: formData.note || null,
+          customer_id: formData.customerId || null,
           status: 'finalized',
           finalized_at: new Date().toISOString(),
         })
@@ -408,6 +419,7 @@ export const useSales = () => {
         .from('sales')
         .select(`
           *,
+          customers(id, name, company_name),
           sale_lines(
             *,
             articles(name)
@@ -490,6 +502,7 @@ export const useSales = () => {
         .from('sales')
         .select(`
           *,
+          customers(id, name, company_name),
           sale_lines(
             *,
             articles(name)
@@ -548,6 +561,7 @@ export const useSales = () => {
         .from('sales')
         .select(`
           *,
+          customers(id, name, company_name),
           sale_lines(
             *,
             articles(name)

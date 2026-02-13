@@ -7,6 +7,8 @@ import type {
   SaleWithComputed 
 } from '../types';
 import { formatDateTimeForInput, formatEur, formatKg, formatPercent, generateId, getMarginClass, getProfitClass } from '../utils/salesUtils';
+import { useCustomers } from '../../customers/hooks/useCustomers';
+import { CustomerSelector } from './CustomerSelector';
 import './SaleEditor.css';
 
 interface SaleEditorProps {
@@ -14,7 +16,7 @@ interface SaleEditorProps {
   getDeliveryOptionsReal: (excludeKgForLines?: { deliveryId: string; kg: number }[]) => DeliveryOption[];
   getDeliveryOptionsAccounting: (excludeKgForLines?: { deliveryId: string; kg: number }[]) => DeliveryOption[];
   onSave: (
-    formData: { dateTime: Date; paymentMethod: PaymentMethod; note?: string },
+    formData: { dateTime: Date; paymentMethod: PaymentMethod; note?: string; customerId?: string | null },
     lines: SaleLineFormData[]
   ) => Promise<{ success: boolean; error?: string; sale?: SaleWithComputed }>;
   onCancel: () => void;
@@ -49,6 +51,10 @@ export const SaleEditor = ({
   const [dateTime, setDateTime] = useState(formatDateTimeForInput(new Date()));
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [note, setNote] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+
+  // Fetch customers
+  const { customers } = useCustomers();
 
   // Committed lines
   const [lines, setLines] = useState<LineFormState[]>([]);
@@ -310,6 +316,7 @@ export const SaleEditor = ({
         dateTime: new Date(dateTime),
         paymentMethod,
         note: note.trim() || undefined,
+        customerId: selectedCustomerId,
       },
       lines
     );
@@ -321,7 +328,7 @@ export const SaleEditor = ({
     } else {
       setError(result.error || 'Възникна грешка при записа.');
     }
-  }, [dateTime, paymentMethod, note, lines, onSave, onSaleCreated]);
+  }, [dateTime, paymentMethod, note, selectedCustomerId, lines, onSave, onSaleCreated]);
 
   // Cancel with confirmation if lines exist
   const handleCancel = useCallback(() => {
@@ -375,18 +382,6 @@ export const SaleEditor = ({
             />
           </div>
         </div>
-        <div className="sale-editor__header-actions">
-          <button
-            className="sale-editor__btn sale-editor__btn--save"
-            onClick={handleSubmit}
-            disabled={isSubmitting || lines.length === 0}
-          >
-            {isSubmitting ? 'Записване...' : 'Запази продажбата'}
-          </button>
-          <button className="sale-editor__btn sale-editor__btn--cancel" onClick={handleCancel}>
-            Откажи
-          </button>
-        </div>
       </div>
 
       {/* ─── Error banner ─── */}
@@ -397,6 +392,13 @@ export const SaleEditor = ({
           <button className="sale-editor__error-close" onClick={() => setError(null)}>×</button>
         </div>
       )}
+
+      {/* ─── Customer selection ─── */}
+      <CustomerSelector
+        selectedCustomerId={selectedCustomerId}
+        onSelect={setSelectedCustomerId}
+        customers={customers}
+      />
 
       {/* ─── Add-line card ─── */}
       <div className="sale-editor__add-card">
@@ -762,6 +764,22 @@ export const SaleEditor = ({
           </div>
         </div>
       )}
+
+      {/* ─── Footer Actions ─── */}
+      <div className="sale-editor__footer">
+        <div className="sale-editor__footer-content">
+          <button className="sale-editor__btn sale-editor__btn--cancel" onClick={handleCancel}>
+            Откажи
+          </button>
+          <button
+            className="sale-editor__btn sale-editor__btn--save"
+            onClick={handleSubmit}
+            disabled={isSubmitting || lines.length === 0}
+          >
+            {isSubmitting ? 'Записване...' : 'Запази продажбата'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

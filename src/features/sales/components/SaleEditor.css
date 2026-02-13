@@ -9,7 +9,7 @@
   background-color: var(--surface-color);
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ─── Header ─── */
@@ -88,13 +88,6 @@
   box-shadow: 0 0 0 2px rgba(11, 79, 138, 0.15);
 }
 
-.sale-editor__header-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-left: auto;
-}
-
 /* ─── Buttons ─── */
 .sale-editor__btn {
   display: inline-flex;
@@ -140,6 +133,29 @@
   background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ─── Footer Actions ─── */
+.sale-editor__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  background: var(--bg-color);
+  border-top: 2px solid var(--border-color);
+  padding: 1rem 1.5rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.sale-editor__footer-content {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 100%;
+}
+
+.sale-editor__footer .sale-editor__btn {
+  min-width: 160px;
 }
 
 /* ─── Error banner ─── */
@@ -791,13 +807,14 @@
     align-items: stretch;
   }
 
-  .sale-editor__header-actions {
-    margin-left: 0;
-    justify-content: stretch;
+  .sale-editor__footer-content {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
   }
 
-  .sale-editor__header-actions .sale-editor__btn {
-    flex: 1;
+  .sale-editor__footer .sale-editor__btn {
+    width: 100%;
+    min-width: unset;
   }
 
   .sale-editor__add-row {

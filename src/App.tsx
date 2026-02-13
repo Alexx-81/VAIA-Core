@@ -5,6 +5,7 @@ import { Qualities } from './features/qualities';
 import { Articles } from './features/articles';
 import { Deliveries } from './features/deliveries';
 import { Sales } from './features/sales';
+import { Customers } from './features/customers';
 import { Inventory } from './features/inventory';
 import { Reports } from './features/reports';
 import { Statistics } from './features/statistics';
@@ -15,7 +16,7 @@ import { AuthProvider, useAuth } from './shared/context/AuthContext';
 import type { TabId } from './shared/components/Tabs';
 import './App.css';
 
-const allTabs: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'inventory', 'reports', 'statistics', 'settings', 'admin'];
+const allTabs: TabId[] = ['dashboard', 'qualities', 'articles', 'deliveries', 'sales', 'customers', 'inventory', 'reports', 'statistics', 'settings', 'admin'];
 
 function getTabFromUrl(): TabId {
   const path = window.location.pathname.replace(/^\//, '').toLowerCase();
@@ -102,6 +103,8 @@ function AppContent() {
         return <Deliveries />;
       case 'sales':
         return <Sales />;
+      case 'customers':
+        return <Customers />;
       case 'inventory':
         return <Inventory />;
       case 'reports':

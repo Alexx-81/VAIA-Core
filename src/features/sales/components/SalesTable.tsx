@@ -67,6 +67,7 @@ export const SalesTable = ({
             <tr>
               <th>Дата/час</th>
               <th>№ продажба</th>
+              <th>Клиент</th>
               <th>Плащане</th>
               <th className="text-right">Редове</th>
               <th className="text-right">Бройки</th>
@@ -90,6 +91,18 @@ export const SalesTable = ({
                   >
                     {sale.saleNumber}
                   </button>
+                </td>
+                <td className="text-muted">
+                  {sale.customerName ? (
+                    <span title={sale.customerCompanyName || undefined}>
+                      {sale.customerName}
+                      {sale.customerCompanyName && (
+                        <span className="text-xs"> ({sale.customerCompanyName})</span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-muted" style={{ fontStyle: 'italic' }}>-</span>
+                  )}
                 </td>
                 <td>
                   <span className={`sales-table__payment-badge ${sale.paymentMethod}`}>
@@ -142,6 +155,13 @@ export const SalesTable = ({
         keyExtractor={(s) => s.id}
         onItemClick={(s) => onViewDetail(s)}
         fields={[
+          {
+            key: 'customer',
+            label: 'Клиент',
+            render: (s) => s.customerName 
+              ? `${s.customerName}${s.customerCompanyName ? ` (${s.customerCompanyName})` : ''}`
+              : '-',
+          },
           {
             key: 'quantity',
             label: 'Количество',

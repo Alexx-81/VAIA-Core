@@ -4,6 +4,7 @@ export type TabId =
   | 'articles'
   | 'deliveries'
   | 'sales'
+  | 'customers'
   | 'inventory'
   | 'reports'
   | 'statistics'

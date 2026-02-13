@@ -286,6 +286,69 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          address: string | null
+          barcode: string | null
+          bulstat: string | null
+          company_address: string | null
+          company_name: string | null
+          created_at: string
+          email: string | null
+          gdpr_consent: boolean
+          id: string
+          mol_name: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          recipient_egn: string | null
+          recipient_name: string | null
+          tax_number: string | null
+          updated_at: string
+          vat_number: string | null
+        }
+        Insert: {
+          address?: string | null
+          barcode?: string | null
+          bulstat?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          gdpr_consent?: boolean
+          id?: string
+          mol_name?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          recipient_egn?: string | null
+          recipient_name?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          vat_number?: string | null
+        }
+        Update: {
+          address?: string | null
+          barcode?: string | null
+          bulstat?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          gdpr_consent?: boolean
+          id?: string
+          mol_name?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          recipient_egn?: string | null
+          recipient_name?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          vat_number?: string | null
+        }
+        Relationships: []
+      }
       qualities: {
         Row: {
           created_at: string
@@ -361,6 +424,7 @@ export type Database = {
       sales: {
         Row: {
           created_at: string
+          customer_id: string | null
           date_time: string
           finalized_at: string | null
           id: string
@@ -372,6 +436,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_id?: string | null
           date_time?: string
           finalized_at?: string | null
           id?: string
@@ -383,6 +448,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_id?: string | null
           date_time?: string
           finalized_at?: string | null
           id?: string
@@ -392,7 +458,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["sale_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -518,6 +592,10 @@ export type AppSettingsUpdate = TablesUpdate<'app_settings'>
 
 export type Employee = Tables<'employees'>
 export type EmployeePermission = Tables<'employee_permissions'>
+
+export type Customer = Tables<'customers'>
+export type CustomerInsert = TablesInsert<'customers'>
+export type CustomerUpdate = TablesUpdate<'customers'>
 
 export type DeliveryInventory = Database['public']['Views']['delivery_inventory']['Row']
 export type SaleSummary = Database['public']['Views']['sales_summary']['Row']

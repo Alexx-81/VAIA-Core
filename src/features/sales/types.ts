@@ -42,6 +42,9 @@ export interface Sale {
   paymentMethod: PaymentMethod;
   note?: string;
   status: SaleStatus;
+  customerId?: string | null; // Optional link to customer
+  customerName?: string; // Customer name from join
+  customerCompanyName?: string | null; // Customer company from join
   lines: SaleLine[];
   createdAt: Date;
   finalizedAt?: Date;
@@ -77,6 +80,7 @@ export interface SaleFormData {
   dateTime: string; // ISO string
   paymentMethod: PaymentMethod;
   note: string;
+  customerId?: string | null; // Optional customer selection
 }
 
 // Филтри за период
