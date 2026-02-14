@@ -30,7 +30,7 @@ export interface CustomerFilters {
   hasCompanyData: CompanyDataFilter;
 }
 
-export type DialogTab = 'personal' | 'company';
+export type DialogTab = 'personal' | 'company' | 'loyalty';
 
 export interface CustomerFormErrors {
   name?: string;

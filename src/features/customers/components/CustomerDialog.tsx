@@ -84,6 +84,14 @@ export const CustomerDialog = ({
           >
             Фактуриране
           </button>
+          <button
+            className={`customer-dialog__tab ${
+              activeDialogTab === 'loyalty' ? 'customer-dialog__tab--active' : ''
+            }`}
+            onClick={() => setActiveDialogTab('loyalty')}
+          >
+            🏆 Програма за лоялност
+          </button>
         </div>
 
         <div className="customer-dialog__content">
@@ -343,10 +351,22 @@ export const CustomerDialog = ({
               </div>
             </div>
           )}
-        </div>
 
-        {/* Loyalty Section - only show for existing customers */}
-        {isEdit && customer && <CustomerLoyaltySection customerId={customer.id} />}
+          {/* Таб 3: Програма за лоялност */}
+          {activeDialogTab === 'loyalty' && (
+            <div className="customer-dialog__tab-content">
+              {isEdit && customer ? (
+                <CustomerLoyaltySection customerId={customer.id} />
+              ) : (
+                <div className="customer-dialog__loyalty-info">
+                  <p className="customer-dialog__info-text">
+                    💡 Програмата за лоялност ще бъде достъпна след създаване на клиента.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="customer-dialog__footer">
           {isEdit && isAdmin && onDelete && customer && (

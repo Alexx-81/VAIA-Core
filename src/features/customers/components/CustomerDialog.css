@@ -292,6 +292,20 @@
   transform: translateY(-1px);
 }
 
+/* Loyalty info */
+.customer-dialog__loyalty-info {
+  padding-block: clamp(2rem, 4vh, 3rem);
+  padding-inline: clamp(1.5rem, 3vw, 2rem);
+  text-align: center;
+}
+
+.customer-dialog__info-text {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
 /* Responsive */
 @container dialog (max-width: 500px) {
   .customer-dialog__footer {
