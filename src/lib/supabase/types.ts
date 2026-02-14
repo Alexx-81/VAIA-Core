@@ -286,6 +286,123 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_loyalty_status: {
+        Row: {
+          id: string
+          customer_id: string
+          current_tier_id: number
+          tier_reached_at: string
+          tier_locked_until: string
+          turnover_12m_eur: number
+          last_recalc_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          customer_id: string
+          current_tier_id?: number
+          tier_reached_at?: string
+          tier_locked_until?: string
+          turnover_12m_eur?: number
+          last_recalc_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          customer_id?: string
+          current_tier_id?: number
+          tier_reached_at?: string
+          tier_locked_until?: string
+          turnover_12m_eur?: number
+          last_recalc_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_loyalty_status_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_loyalty_status_current_tier_id_fkey"
+            columns: ["current_tier_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_vouchers: {
+        Row: {
+          id: string
+          customer_id: string
+          rule_id: number | null
+          amount_eur: number
+          min_purchase_eur: number
+          status: Database["public"]["Enums"]["voucher_status"]
+          issued_at: string
+          expires_at: string
+          redeemed_at: string | null
+          redeemed_sale_id: string | null
+          created_from_sale_id: string | null
+          cycle_key: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          customer_id: string
+          rule_id?: number | null
+          amount_eur: number
+          min_purchase_eur?: number
+          status?: Database["public"]["Enums"]["voucher_status"]
+          issued_at?: string
+          expires_at: string
+          redeemed_at?: string | null
+          redeemed_sale_id?: string | null
+          created_from_sale_id?: string | null
+          cycle_key: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          customer_id?: string
+          rule_id?: number | null
+          amount_eur?: number
+          min_purchase_eur?: number
+          status?: Database["public"]["Enums"]["voucher_status"]
+          issued_at?: string
+          expires_at?: string
+          redeemed_at?: string | null
+          redeemed_sale_id?: string | null
+          created_from_sale_id?: string | null
+          cycle_key?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_vouchers_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_vouchers_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "voucher_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -349,6 +466,80 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_ledger: {
+        Row: {
+          id: string
+          customer_id: string
+          sale_id: string | null
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          amount_eur: number
+          posted_at: string
+          note: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          customer_id: string
+          sale_id?: string | null
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          amount_eur: number
+          posted_at?: string
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          customer_id?: string
+          sale_id?: string | null
+          entry_type?: Database["public"]["Enums"]["ledger_entry_type"]
+          amount_eur?: number
+          posted_at?: string
+          note?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_tiers: {
+        Row: {
+          id: number
+          name: string
+          sort_order: number
+          min_turnover_12m_eur: number
+          discount_percent: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          sort_order?: number
+          min_turnover_12m_eur?: number
+          discount_percent?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          sort_order?: number
+          min_turnover_12m_eur?: number
+          discount_percent?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       qualities: {
         Row: {
           created_at: string
@@ -382,6 +573,7 @@ export type Database = {
           article_id: string
           created_at: string
           id: string
+          is_regular_price: boolean
           kg_per_piece_snapshot: number | null
           quantity: number
           real_delivery_id: string
@@ -396,6 +588,7 @@ export type Database = {
           article_id: string
           created_at?: string
           id?: string
+          is_regular_price?: boolean
           kg_per_piece_snapshot?: number | null
           quantity: number
           real_delivery_id: string
@@ -410,6 +603,7 @@ export type Database = {
           article_id?: string
           created_at?: string
           id?: string
+          is_regular_price?: boolean
           kg_per_piece_snapshot?: number | null
           quantity?: number
           real_delivery_id?: string
@@ -428,6 +622,14 @@ export type Database = {
           date_time: string
           finalized_at: string | null
           id: string
+          loyalty_mode: string
+          regular_subtotal_eur: number | null
+          promo_subtotal_eur: number | null
+          tier_discount_percent: number | null
+          tier_discount_amount_eur: number | null
+          voucher_id: string | null
+          voucher_amount_applied_eur: number | null
+          total_paid_eur: number | null
           note: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
           sale_number: string
@@ -440,6 +642,14 @@ export type Database = {
           date_time?: string
           finalized_at?: string | null
           id?: string
+          loyalty_mode?: string
+          regular_subtotal_eur?: number | null
+          promo_subtotal_eur?: number | null
+          tier_discount_percent?: number | null
+          tier_discount_amount_eur?: number | null
+          voucher_id?: string | null
+          voucher_amount_applied_eur?: number | null
+          total_paid_eur?: number | null
           note?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
           sale_number: string
@@ -452,6 +662,14 @@ export type Database = {
           date_time?: string
           finalized_at?: string | null
           id?: string
+          loyalty_mode?: string
+          regular_subtotal_eur?: number | null
+          promo_subtotal_eur?: number | null
+          tier_discount_percent?: number | null
+          tier_discount_amount_eur?: number | null
+          voucher_id?: string | null
+          voucher_amount_applied_eur?: number | null
+          total_paid_eur?: number | null
           note?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
           sale_number?: string
@@ -467,6 +685,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      voucher_rules: {
+        Row: {
+          id: number
+          trigger_turnover_12m_eur: number
+          voucher_amount_eur: number
+          valid_days: number
+          min_purchase_eur: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          trigger_turnover_12m_eur: number
+          voucher_amount_eur: number
+          valid_days?: number
+          min_purchase_eur?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          trigger_turnover_12m_eur?: number
+          voucher_amount_eur?: number
+          valid_days?: number
+          min_purchase_eur?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -510,6 +761,7 @@ export type Database = {
           kg_per_piece_snapshot: number | null
           unit_cost_per_kg_real_snapshot: number | null
           unit_cost_per_kg_acc_snapshot: number | null
+          is_regular_price: boolean | null
           revenue_eur: number | null
           kg_line: number | null
           cogs_real_eur: number | null
@@ -522,9 +774,18 @@ export type Database = {
       sales_summary: {
         Row: {
           created_at: string | null
+          customer_id: string | null
           date_time: string | null
           finalized_at: string | null
           id: string | null
+          loyalty_mode: string | null
+          regular_subtotal_eur: number | null
+          promo_subtotal_eur: number | null
+          tier_discount_percent: number | null
+          tier_discount_amount_eur: number | null
+          voucher_id: string | null
+          voucher_amount_applied_eur: number | null
+          total_paid_eur: number | null
           lines_count: number | null
           note: string | null
           payment_method: Database["public"]["Enums"]["payment_method"] | null
@@ -545,15 +806,22 @@ export type Database = {
       }
     }
     Functions: {
+      ensure_customer_loyalty_status: { Args: { p_customer_id: string }; Returns: string }
+      expire_vouchers: { Args: Record<string, never>; Returns: number }
       finalize_sale: { Args: { p_sale_id: string }; Returns: undefined }
       generate_sale_number: { Args: Record<string, never>; Returns: string }
+      get_customer_loyalty_info: { Args: { p_customer_id: string }; Returns: Json }
       get_my_role: { Args: Record<string, never>; Returns: string }
       is_admin: { Args: Record<string, never>; Returns: boolean }
       is_demo: { Args: Record<string, never>; Returns: boolean }
+      process_loyalty_after_sale: { Args: { p_sale_id: string }; Returns: Json }
+      redeem_voucher: { Args: { p_voucher_id: string; p_sale_id: string }; Returns: boolean }
     }
     Enums: {
+      ledger_entry_type: "sale" | "refund" | "adjustment"
       payment_method: "cash" | "card" | "other" | "no-cash"
       sale_status: "draft" | "finalized"
+      voucher_status: "issued" | "redeemed" | "expired" | "void"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -604,4 +872,20 @@ export type SaleLineComputed = Database['public']['Views']['sale_lines_computed'
 
 export type PaymentMethod = Database['public']['Enums']['payment_method']
 export type SaleStatus = Database['public']['Enums']['sale_status']
+export type VoucherStatus = Database['public']['Enums']['voucher_status']
+export type LedgerEntryType = Database['public']['Enums']['ledger_entry_type']
+
+export type LoyaltyTier = Tables<'loyalty_tiers'>
+export type LoyaltyTierInsert = TablesInsert<'loyalty_tiers'>
+export type LoyaltyTierUpdate = TablesUpdate<'loyalty_tiers'>
+
+export type VoucherRule = Tables<'voucher_rules'>
+export type VoucherRuleInsert = TablesInsert<'voucher_rules'>
+export type VoucherRuleUpdate = TablesUpdate<'voucher_rules'>
+
+export type CustomerLoyaltyStatus = Tables<'customer_loyalty_status'>
+export type CustomerVoucher = Tables<'customer_vouchers'>
+export type CustomerVoucherInsert = TablesInsert<'customer_vouchers'>
+
+export type LoyaltyLedger = Tables<'loyalty_ledger'>
 

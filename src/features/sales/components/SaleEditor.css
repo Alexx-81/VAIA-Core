@@ -285,6 +285,34 @@
   min-width: 90px;
 }
 
+.sale-editor__add-field--checkbox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding-top: 1.25rem; /* Align with other fields */
+}
+
+.sale-editor__add-label-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.sale-editor__add-label-checkbox input[type='checkbox'] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--vaia-blue);
+}
+
+.sale-editor__add-checkbox-text {
+  user-select: none;
+}
+
 .sale-editor__add-field.has-error .sale-editor__add-input {
   border-color: #ef4444;
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);

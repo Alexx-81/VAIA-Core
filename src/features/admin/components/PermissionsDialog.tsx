@@ -11,6 +11,7 @@ const TAB_LABELS: Record<string, string> = {
   inventory: 'Наличности',
   reports: 'Отчети',
   statistics: 'Статистика',
+  loyalty: 'Лоялност',
   settings: 'Настройки',
 };
 

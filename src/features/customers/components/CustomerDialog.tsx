@@ -2,6 +2,7 @@ import type { Customer } from '../../../lib/supabase/types';
 import type { CustomerFormData } from '../types';
 import { useCustomerForm } from '../hooks/useCustomerForm';
 import { useAuth } from '../../../shared/context/AuthContext';
+import { CustomerLoyaltySection } from './CustomerLoyaltyBadge';
 import './CustomerDialog.css';
 
 interface CustomerDialogProps {
@@ -343,6 +344,9 @@ export const CustomerDialog = ({
             </div>
           )}
         </div>
+
+        {/* Loyalty Section - only show for existing customers */}
+        {isEdit && customer && <CustomerLoyaltySection customerId={customer.id} />}
 
         <div className="customer-dialog__footer">
           {isEdit && isAdmin && onDelete && customer && (

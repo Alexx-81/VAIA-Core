@@ -1,0 +1,182 @@
+.sale-loyalty-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.sale-loyalty-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sale-loyalty-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sale-loyalty-loading {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Radio бутони за режими */
+.sale-loyalty-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sale-loyalty-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-primary);
+}
+
+.sale-loyalty-radio:hover:not(.disabled) {
+  border-color: var(--vaia-blue);
+  background: var(--bg-secondary);
+}
+
+.sale-loyalty-radio input[type='radio'] {
+  cursor: pointer;
+}
+
+.sale-loyalty-radio input[type='radio']:checked {
+  accent-color: var(--vaia-blue);
+}
+
+.sale-loyalty-radio.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
+}
+
+.sale-loyalty-radio.disabled input[type='radio'] {
+  cursor: not-allowed;
+}
+
+.sale-loyalty-radio span {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.tier-discount-percent {
+  color: var(--vaia-blue);
+  font-weight: 600;
+}
+
+/* Dropdown за ваучер */
+.sale-loyalty-voucher-select {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.sale-loyalty-voucher-select label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.sale-loyalty-voucher-select select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sale-loyalty-voucher-select select:focus {
+  outline: none;
+  border-color: var(--vaia-blue);
+  box-shadow: 0 0 0 3px rgba(11, 79, 138, 0.1);
+}
+
+/* Обобщение */
+.sale-loyalty-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.sale-loyalty-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.sale-loyalty-summary-row.secondary {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.sale-loyalty-summary-row.discount {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.sale-loyalty-summary-row.total {
+  font-size: 16px;
+  font-weight: 700;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 2px solid var(--border);
+  color: var(--vaia-blue);
+}
+
+.sale-loyalty-amount {
+  font-weight: 600;
+}
+
+.sale-loyalty-amount.total {
+  font-size: 18px;
+  color: var(--vaia-blue);
+}
+
+/* Dark theme */
+.theme-dark .sale-loyalty-panel {
+  background: var(--bg-tertiary);
+}
+
+.theme-dark .sale-loyalty-radio {
+  background: var(--bg-secondary);
+}
+
+.theme-dark .sale-loyalty-radio:hover:not(.disabled) {
+  background: var(--bg-primary);
+}
+
+.theme-dark .sale-loyalty-voucher-select {
+  background: var(--bg-secondary);
+}
+
+.theme-dark .sale-loyalty-voucher-select select {
+  background: var(--bg-primary);
+}

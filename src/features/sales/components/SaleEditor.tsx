@@ -4,11 +4,13 @@ import type {
   SaleLineFormData, 
   ArticleOption, 
   DeliveryOption,
-  SaleWithComputed 
+  SaleWithComputed,
+  LoyaltyMode,
 } from '../types';
 import { formatDateTimeForInput, formatEur, formatKg, formatPercent, generateId, getMarginClass, getProfitClass } from '../utils/salesUtils';
 import { useCustomers } from '../../customers/hooks/useCustomers';
 import { CustomerSelector } from './CustomerSelector';
+import { SaleLoyaltyPanel } from './SaleLoyaltyPanel';
 import './SaleEditor.css';
 
 interface SaleEditorProps {
@@ -16,7 +18,14 @@ interface SaleEditorProps {
   getDeliveryOptionsReal: (excludeKgForLines?: { deliveryId: string; kg: number }[]) => DeliveryOption[];
   getDeliveryOptionsAccounting: (excludeKgForLines?: { deliveryId: string; kg: number }[]) => DeliveryOption[];
   onSave: (
-    formData: { dateTime: Date; paymentMethod: PaymentMethod; note?: string; customerId?: string | null },
+    formData: {
+      dateTime: Date;
+      paymentMethod: PaymentMethod;
+      note?: string;
+      customerId?: string | null;
+      loyaltyMode: LoyaltyMode;
+      selectedVoucherId?: string | null;
+    },
     lines: SaleLineFormData[]
   ) => Promise<{ success: boolean; error?: string; sale?: SaleWithComputed }>;
   onCancel: () => void;
@@ -28,6 +37,7 @@ interface LineFormState extends SaleLineFormData {
   unitCostPerKgReal?: number;
   unitCostPerKgAcc?: number;
   isRealInvoiced?: boolean;
+  isRegularPrice: boolean; // Добавено за лоялност
 }
 
 // Inline field errors for the add-line form
@@ -51,6 +61,8 @@ export const SaleEditor = ({
   const [dateTime, setDateTime] = useState(formatDateTimeForInput(new Date()));
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [note, setNote] = useState('');
+  const [loyaltyMode, setLoyaltyMode] = useState<LoyaltyMode>('none');
+  const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
   // Fetch customers
@@ -62,6 +74,7 @@ export const SaleEditor = ({
   // Add-line form state
   const [addArticleId, setAddArticleId] = useState('');
   const [addRealDeliveryId, setAddRealDeliveryId] = useState('');
+  const [addIsRegularPrice, setAddIsRegularPrice] = useState(true); // По подразбиране редовна цена
   const [addAccDeliveryId, setAddAccDeliveryId] = useState('');
   const [addQuantity, setAddQuantity] = useState('');
   const [addUnitPrice, setAddUnitPrice] = useState('');
@@ -170,6 +183,8 @@ export const SaleEditor = ({
     let totalRevenue = 0;
     let totalCogsReal = 0;
     let totalCogsAcc = 0;
+    let regularSubtotalEur = 0;
+    let promoSubtotalEur = 0;
 
     for (const line of lines) {
       const values = calculateLineValues(line);
@@ -179,6 +194,13 @@ export const SaleEditor = ({
       totalRevenue += values.revenueEur;
       totalCogsReal += values.cogsReal;
       totalCogsAcc += values.cogsAcc;
+      
+      // Разделяне на редовна/промо цена
+      if (line.isRegularPrice) {
+        regularSubtotalEur += values.revenueEur;
+      } else {
+        promoSubtotalEur += values.revenueEur;
+      }
     }
 
     const totalProfitReal = totalRevenue - totalCogsReal;
@@ -191,6 +213,8 @@ export const SaleEditor = ({
       totalCogsReal, totalCogsAcc,
       totalProfitReal, totalProfitAcc,
       totalMarginReal, totalMarginAcc,
+      regularSubtotalEur,
+      promoSubtotalEur,
     };
   }, [lines, calculateLineValues]);
 
@@ -201,6 +225,7 @@ export const SaleEditor = ({
     setAddAccDeliveryId('');
     setAddQuantity('');
     setAddUnitPrice('');
+    setAddIsRegularPrice(true); // Връщане на редовна цена по подразбиране
     setAddErrors({});
     // Re-focus article select after React re-renders
     setTimeout(() => articleSelectRef.current?.focus(), 50);
@@ -243,6 +268,7 @@ export const SaleEditor = ({
       unitPriceEur: addUnitPrice,
       realDeliveryId: addRealDeliveryId,
       accountingDeliveryId: addNeedsAccounting ? addAccDeliveryId : '',
+      isRegularPrice: addIsRegularPrice,
     };
 
     setLines(prev => [...prev, newLine]);
@@ -296,6 +322,22 @@ export const SaleEditor = ({
     setEditValues({});
   }, []);
 
+  // Loyalty mode change handler
+  const handleLoyaltyChange = useCallback((mode: LoyaltyMode, voucherId?: string | null) => {
+    setLoyaltyMode(mode);
+    setSelectedVoucherId(mode === 'voucher' ? voucherId || null : null);
+  }, []);
+
+  // Reset loyalty when customer changes
+  const handleCustomerChange = useCallback((customerId: string | null) => {
+    setSelectedCustomerId(customerId);
+    // Reset loyalty mode when customer changes
+    if (!customerId) {
+      setLoyaltyMode('none');
+      setSelectedVoucherId(null);
+    }
+  }, []);
+
   // Delete line
   const deleteLine = useCallback((lineId: string) => {
     setLines(prev => prev.filter(line => line.id !== lineId));
@@ -317,6 +359,8 @@ export const SaleEditor = ({
         paymentMethod,
         note: note.trim() || undefined,
         customerId: selectedCustomerId,
+        loyaltyMode,
+        selectedVoucherId: loyaltyMode === 'voucher' ? selectedVoucherId : null,
       },
       lines
     );
@@ -328,7 +372,7 @@ export const SaleEditor = ({
     } else {
       setError(result.error || 'Възникна грешка при записа.');
     }
-  }, [dateTime, paymentMethod, note, selectedCustomerId, lines, onSave, onSaleCreated]);
+  }, [dateTime, paymentMethod, note, selectedCustomerId, loyaltyMode, selectedVoucherId, lines, onSave, onSaleCreated]);
 
   // Cancel with confirmation if lines exist
   const handleCancel = useCallback(() => {
@@ -396,9 +440,21 @@ export const SaleEditor = ({
       {/* ─── Customer selection ─── */}
       <CustomerSelector
         selectedCustomerId={selectedCustomerId}
-        onSelect={setSelectedCustomerId}
+        onSelect={handleCustomerChange}
         customers={customers}
       />
+
+      {/* ─── Loyalty panel ─── */}
+      {selectedCustomerId && (
+        <SaleLoyaltyPanel
+          customerId={selectedCustomerId}
+          regularSubtotalEur={totals.regularSubtotalEur}
+          promoSubtotalEur={totals.promoSubtotalEur}
+          loyaltyMode={loyaltyMode}
+          selectedVoucherId={selectedVoucherId}
+          onLoyaltyChange={handleLoyaltyChange}
+        />
+      )}
 
       {/* ─── Add-line card ─── */}
       <div className="sale-editor__add-card">
@@ -487,6 +543,19 @@ export const SaleEditor = ({
                 onChange={(e) => { setAddUnitPrice(e.target.value); setAddErrors(prev => ({ ...prev, unitPriceEur: undefined })); }}
               />
               {addErrors.unitPriceEur && <span className="sale-editor__add-hint sale-editor__add-hint--error">{addErrors.unitPriceEur}</span>}
+            </div>
+
+            {/* Checkbox за редовна цена */}
+            <div className="sale-editor__add-field sale-editor__add-field--checkbox">
+              <label className="sale-editor__add-label-checkbox">
+                <input
+                  type="checkbox"
+                  checked={addIsRegularPrice}
+                  onChange={(e) => setAddIsRegularPrice(e.target.checked)}
+                />
+                <span className="sale-editor__add-checkbox-text">Редовна цена</span>
+              </label>
+              <span className="sale-editor__add-hint">За отстъпка от лоялност</span>
             </div>
 
             {/* Live preview */}

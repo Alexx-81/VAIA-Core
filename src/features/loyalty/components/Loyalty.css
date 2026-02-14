@@ -1,0 +1,455 @@
+/* Loyalty page layout */
+.loyalty {
+  padding: 0;
+}
+
+.loyalty__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.loyalty__title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f0f0);
+}
+
+/* Section tabs (internal) */
+.loyalty__tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--surface-secondary, #1a2332);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 1.25rem;
+}
+
+.loyalty__tab {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary, #8a9bb5);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.loyalty__tab:hover {
+  color: var(--text-primary, #f0f0f0);
+  background: var(--surface-hover, #243044);
+}
+
+.loyalty__tab--active {
+  background: var(--brand-blue, #0B4F8A);
+  color: #fff;
+}
+
+.loyalty__tab--active:hover {
+  background: var(--brand-blue, #0B4F8A);
+  color: #fff;
+}
+
+/* Section content */
+.loyalty__section {
+  animation: loyalty-fade-in 0.2s ease;
+}
+
+@keyframes loyalty-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Config table */
+.loyalty-config {
+  background: var(--surface-primary, #1e2d3d);
+  border-radius: 10px;
+  border: 1px solid var(--border-primary, #2a3a4a);
+  overflow: hidden;
+}
+
+.loyalty-config__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-primary, #2a3a4a);
+}
+
+.loyalty-config__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f0);
+}
+
+.loyalty-config__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-tertiary, #6a7b8d);
+}
+
+.loyalty-config__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Table */
+.loyalty-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.loyalty-table th {
+  text-align: left;
+  padding: 0.65rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary, #6a7b8d);
+  background: var(--surface-secondary, #1a2332);
+  border-bottom: 1px solid var(--border-primary, #2a3a4a);
+}
+
+.loyalty-table td {
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #f0f0f0);
+  border-bottom: 1px solid var(--border-subtle, #222f3e);
+}
+
+.loyalty-table tr:last-child td {
+  border-bottom: none;
+}
+
+.loyalty-table tr:hover td {
+  background: var(--surface-hover, #243044);
+}
+
+/* Inline input */
+.loyalty-table__input {
+  background: var(--surface-secondary, #1a2332);
+  border: 1px solid var(--border-primary, #2a3a4a);
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #f0f0f0);
+  width: 100%;
+  max-width: 120px;
+}
+
+.loyalty-table__input:focus {
+  outline: none;
+  border-color: var(--brand-blue, #0B4F8A);
+}
+
+.loyalty-table__input--name {
+  max-width: 140px;
+}
+
+.loyalty-table__input--wide {
+  max-width: 180px;
+}
+
+/* Badges */
+.loyalty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.loyalty-badge--start {
+  background: #2a3a4a;
+  color: #8a9bb5;
+}
+
+.loyalty-badge--silver {
+  background: rgba(192, 192, 192, 0.15);
+  color: #c0c0c0;
+}
+
+.loyalty-badge--gold {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.loyalty-badge--vip {
+  background: rgba(255, 122, 0, 0.15);
+  color: #FF7A00;
+}
+
+.loyalty-badge--elite {
+  background: rgba(156, 39, 176, 0.15);
+  color: #ce93d8;
+}
+
+/* Active/Inactive badges */
+.loyalty-badge--active {
+  background: rgba(76, 175, 80, 0.15);
+  color: #66bb6a;
+}
+
+.loyalty-badge--inactive {
+  background: rgba(239, 83, 80, 0.15);
+  color: #ef5350;
+}
+
+/* Voucher status badges */
+.voucher-badge--issued {
+  background: rgba(33, 150, 243, 0.15);
+  color: #42a5f5;
+}
+
+.voucher-badge--redeemed {
+  background: rgba(76, 175, 80, 0.15);
+  color: #66bb6a;
+}
+
+.voucher-badge--expired {
+  background: rgba(158, 158, 158, 0.15);
+  color: #9e9e9e;
+}
+
+.voucher-badge--void {
+  background: rgba(239, 83, 80, 0.15);
+  color: #ef5350;
+}
+
+/* Action buttons in table */
+.loyalty-table__btn {
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border-primary, #2a3a4a);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary, #8a9bb5);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.loyalty-table__btn:hover {
+  background: var(--surface-hover, #243044);
+  color: var(--text-primary, #f0f0f0);
+}
+
+.loyalty-table__btn--save {
+  border-color: var(--brand-blue, #0B4F8A);
+  color: var(--brand-blue, #0B4F8A);
+}
+
+.loyalty-table__btn--save:hover {
+  background: var(--brand-blue, #0B4F8A);
+  color: #fff;
+}
+
+.loyalty-table__btn--danger {
+  border-color: #ef5350;
+  color: #ef5350;
+}
+
+.loyalty-table__btn--danger:hover {
+  background: #ef5350;
+  color: #fff;
+}
+
+.loyalty-table__btn-group {
+  display: flex;
+  gap: 0.35rem;
+}
+
+/* Add button */
+.loyalty__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--brand-blue, #0B4F8A);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.loyalty__add-btn:hover {
+  background: #0a4070;
+}
+
+.loyalty__add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Toggle switch */
+.loyalty-toggle {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.loyalty-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.loyalty-toggle__slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #2a3a4a;
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+
+.loyalty-toggle__slider::before {
+  content: '';
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.loyalty-toggle input:checked + .loyalty-toggle__slider {
+  background: var(--brand-blue, #0B4F8A);
+}
+
+.loyalty-toggle input:checked + .loyalty-toggle__slider::before {
+  transform: translateX(16px);
+}
+
+/* Vouchers filters */
+.vouchers-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.vouchers-filters__search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-primary, #2a3a4a);
+  border-radius: 6px;
+  background: var(--surface-secondary, #1a2332);
+  color: var(--text-primary, #f0f0f0);
+  font-size: 0.875rem;
+}
+
+.vouchers-filters__search::placeholder {
+  color: var(--text-tertiary, #6a7b8d);
+}
+
+.vouchers-filters__select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-primary, #2a3a4a);
+  border-radius: 6px;
+  background: var(--surface-secondary, #1a2332);
+  color: var(--text-primary, #f0f0f0);
+  font-size: 0.875rem;
+}
+
+/* Stats */
+.vouchers-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.vouchers-stats__item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--surface-secondary, #1a2332);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8a9bb5);
+}
+
+.vouchers-stats__count {
+  font-weight: 700;
+  color: var(--text-primary, #f0f0f0);
+}
+
+/* Empty state */
+.loyalty__empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-tertiary, #6a7b8d);
+  font-size: 0.9rem;
+}
+
+/* Loading */
+.loyalty__loading {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-tertiary, #6a7b8d);
+}
+
+/* Error in field */
+.loyalty-field-error {
+  font-size: 0.7rem;
+  color: #ef5350;
+  margin-top: 0.15rem;
+}
+
+/* Currency display */
+.loyalty-eur {
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .loyalty__tabs {
+    flex-wrap: wrap;
+  }
+
+  .loyalty-config__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .loyalty-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .loyalty-table__input {
+    max-width: 80px;
+  }
+
+  .vouchers-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vouchers-filters__search {
+    max-width: 100%;
+  }
+}

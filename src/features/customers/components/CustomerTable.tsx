@@ -1,6 +1,7 @@
 import type { Customer } from '../../../lib/supabase/types';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { DataCards } from '../../../shared/components/DataCards';
+import { CustomerLoyaltyBadge } from './CustomerLoyaltyBadge';
 import './CustomerTable.css';
 
 interface CustomerTableProps {
@@ -41,6 +42,7 @@ export const CustomerTable = ({
               <th className="customer-table__th-email">Имейл</th>
               <th className="customer-table__th-company">Фирма</th>
               <th className="customer-table__th-gdpr">GDPR</th>
+              <th className="customer-table__th-loyalty">Лоялност</th>
               <th className="customer-table__th-actions">Действия</th>
             </tr>
           </thead>
@@ -79,6 +81,9 @@ export const CustomerTable = ({
                   >
                     {customer.gdpr_consent ? '✓ Да' : '✗ Не'}
                   </span>
+                </td>
+                <td className="customer-table__td-loyalty">
+                  <CustomerLoyaltyBadge customerId={customer.id} compact={true} />
                 </td>
                 <td className="customer-table__td-actions" onClick={(e) => e.stopPropagation()}>
                   <div className="customer-table__actions">
@@ -146,6 +151,11 @@ export const CustomerTable = ({
             key: 'company_name',
             label: 'Фирма',
             render: (c) => c.company_name || '—',
+          },
+          {
+            key: 'loyalty',
+            label: 'Лоялност',
+            render: (c) => <CustomerLoyaltyBadge customerId={c.id} compact={true} />,
           },
         ]}
         renderCardTitle={(c) => c.name}

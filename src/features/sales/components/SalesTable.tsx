@@ -113,7 +113,26 @@ export const SalesTable = ({
                 <td className="text-right">{sale.linesCount}</td>
                 <td className="text-right">{sale.totalPieces}</td>
                 <td className="text-right">{formatKg(sale.totalKg)}</td>
-                <td className="text-right font-semibold">{formatEur(sale.totalRevenueEur)}</td>
+                <td className="text-right font-semibold">
+                  {sale.totalPaidEur !== undefined && sale.totalPaidEur !== sale.totalRevenueEur ? (
+                    <div>
+                      <div style={{ textDecoration: 'line-through', fontSize: '0.85em', color: 'var(--text-secondary)' }}>
+                        {formatEur(sale.totalRevenueEur)}
+                      </div>
+                      <div style={{ color: 'var(--success)', fontWeight: 'bold' }}>
+                        {formatEur(sale.totalPaidEur)}
+                        {sale.loyaltyMode === 'tier' && sale.tierDiscountPercent && (
+                          <span style={{ fontSize: '0.75em', marginLeft: '4px' }}>(-{sale.tierDiscountPercent.toFixed(0)}%)</span>
+                        )}
+                        {sale.loyaltyMode === 'voucher' && sale.voucherAmountAppliedEur && (
+                          <span style={{ fontSize: '0.75em', marginLeft: '4px' }}>(-€{sale.voucherAmountAppliedEur.toFixed(2)})</span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    formatEur(sale.totalRevenueEur)
+                  )}
+                </td>
                 <td className="text-right text-muted">{formatEur(sale.totalCogsRealEur)}</td>
                 <td className="text-right">
                   <span className={`sales-table__profit ${getProfitClass(sale.totalProfitRealEur)}`}>
@@ -170,7 +189,23 @@ export const SalesTable = ({
           {
             key: 'totalRevenueEur',
             label: 'Оборот',
-            render: (s) => <strong>{formatEur(s.totalRevenueEur)} €</strong>,
+            render: (s) => (
+              <strong>
+                {s.totalPaidEur !== undefined && s.totalPaidEur !== s.totalRevenueEur ? (
+                  <span>
+                    <span style={{ textDecoration: 'line-through', fontSize: '0.9em', color: 'var(--text-secondary)' }}>
+                      {formatEur(s.totalRevenueEur)}
+                    </span>
+                    <br />
+                    <span style={{ color: 'var(--success)' }}>
+                      {formatEur(s.totalPaidEur)} €
+                    </span>
+                  </span>
+                ) : (
+                  `${formatEur(s.totalRevenueEur)} €`
+                )}
+              </strong>
+            ),
           },
           {
             key: 'totalProfitRealEur',

@@ -6,6 +6,9 @@ export type PaymentMethod = 'cash' | 'card' | 'other' | 'no-cash';
 // Статус на продажба
 export type SaleStatus = 'draft' | 'finalized';
 
+// Режим на лоялност
+export type LoyaltyMode = 'none' | 'tier' | 'voucher';
+
 // Ред от продажба
 export interface SaleLine {
   id: string;
@@ -15,6 +18,7 @@ export interface SaleLine {
   unitPriceEur: number; // Цена/бр (EUR)
   realDeliveryId: string;
   accountingDeliveryId?: string; // Само ако Real доставка е без фактура (A)
+  isRegularPrice?: boolean; // Дали е на редовна цена (за отстъпки от лоялност)
   
   // Snapshots (записват се при финализиране)
   kgPerPieceSnapshot: number;
@@ -47,6 +51,16 @@ export interface Sale {
   customerCompanyName?: string | null; // Customer company from join
   lines: SaleLine[];
   createdAt: Date;
+  
+  // Полета за лоялност
+  loyaltyMode?: LoyaltyMode; // 'none' | 'tier' | 'voucher'
+  regularSubtotalEur?: number; // Сума само от редове с isRegularPrice=true
+  promoSubtotalEur?: number; // Сума само от редове с isRegularPrice=false
+  tierDiscountPercent?: number; // % отстъпка от ниво (ако loyaltyMode='tier')
+  tierDiscountAmountEur?: number; // EUR отстъпка от ниво
+  voucherId?: string | null; // ID на приложен ваучер (ако loyaltyMode='voucher')
+  voucherAmountAppliedEur?: number; // EUR отстъпка от ваучер
+  totalPaidEur?: number; // Крайна сума след отстъпка
   finalizedAt?: Date;
 }
 
@@ -73,6 +87,7 @@ export interface SaleLineFormData {
   unitPriceEur: string;
   realDeliveryId: string;
   accountingDeliveryId: string;
+  isRegularPrice: boolean; // Отметка за редовна цена
 }
 
 // Форма за продажба
@@ -81,6 +96,8 @@ export interface SaleFormData {
   paymentMethod: PaymentMethod;
   note: string;
   customerId?: string | null; // Optional customer selection
+  loyaltyMode: LoyaltyMode; // Избран режим на лоялност
+  selectedVoucherId?: string | null; // Избран ваучер (ако loyaltyMode='voucher')
 }
 
 // Филтри за период

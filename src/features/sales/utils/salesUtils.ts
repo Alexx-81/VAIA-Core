@@ -42,10 +42,14 @@ export const computeSale = (sale: Sale): SaleWithComputed => {
   const totalRevenueEur = computedLines.reduce((sum, l) => sum + l.revenueEur, 0);
   const totalCogsRealEur = computedLines.reduce((sum, l) => sum + l.cogsRealEur, 0);
   const totalCogsAccEur = computedLines.reduce((sum, l) => sum + l.cogsAccEur, 0);
-  const totalProfitRealEur = totalRevenueEur - totalCogsRealEur;
-  const totalProfitAccEur = totalRevenueEur - totalCogsAccEur;
-  const totalMarginRealPercent = totalRevenueEur > 0 ? (totalProfitRealEur / totalRevenueEur) * 100 : 0;
-  const totalMarginAccPercent = totalRevenueEur > 0 ? (totalProfitAccEur / totalRevenueEur) * 100 : 0;
+  
+  // Използваме totalPaidEur (след отстъпка) ако има лоялност, иначе totalRevenueEur
+  const actualRevenueEur = sale.totalPaidEur ?? totalRevenueEur;
+  
+  const totalProfitRealEur = actualRevenueEur - totalCogsRealEur;
+  const totalProfitAccEur = actualRevenueEur - totalCogsAccEur;
+  const totalMarginRealPercent = actualRevenueEur > 0 ? (totalProfitRealEur / actualRevenueEur) * 100 : 0;
+  const totalMarginAccPercent = actualRevenueEur > 0 ? (totalProfitAccEur / actualRevenueEur) * 100 : 0;
 
   // Ensure dateTime is a Date object (might be string from localStorage)
   const dateTime = sale.dateTime instanceof Date ? sale.dateTime : new Date(sale.dateTime);
