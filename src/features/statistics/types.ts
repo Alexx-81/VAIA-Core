@@ -1,4 +1,4 @@
-export type StatisticsTab = 'daily' | 'monthly' | 'yearly';
+export type StatisticsTab = 'daily' | 'monthly' | 'yearly' | 'loyalty';
 
 export type CostMode = 'real' | 'accounting';
 

@@ -1,0 +1,172 @@
+.loyalty-statistics {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.loyalty-statistics__loading {
+  padding: 4rem 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* Section */
+.loyalty-statistics__section {
+  margin-bottom: 2.5rem;
+}
+
+.loyalty-statistics__section-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+/* KPI Grid */
+.loyalty-statistics__kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.loyalty-statistics__kpi-card {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.loyalty-statistics__kpi-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.loyalty-statistics__kpi-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.loyalty-statistics__kpi-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.loyalty-statistics__kpi-detail {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Table */
+.loyalty-statistics__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background-primary);
+}
+
+.loyalty-statistics__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.loyalty-statistics__table thead {
+  background: var(--background-secondary);
+}
+
+.loyalty-statistics__table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+}
+
+.loyalty-statistics__table th.text-right {
+  text-align: right;
+}
+
+.loyalty-statistics__table tbody tr {
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.15s;
+}
+
+.loyalty-statistics__table tbody tr:hover {
+  background: var(--background-hover);
+}
+
+.loyalty-statistics__table td {
+  padding: 0.9rem 1rem;
+  color: var(--text-primary);
+}
+
+.loyalty-statistics__table td.text-right {
+  text-align: right;
+}
+
+.loyalty-statistics__table td.text-center {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Tier Badge */
+.loyalty-statistics__tier-badge {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.loyalty-statistics__tier-badge-small {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .loyalty-statistics {
+    padding: 0.5rem;
+  }
+
+  .loyalty-statistics__kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .loyalty-statistics__section-title {
+    font-size: 1.2rem;
+  }
+
+  .loyalty-statistics__kpi-value {
+    font-size: 1.8rem;
+  }
+
+  .loyalty-statistics__table {
+    font-size: 0.85rem;
+  }
+
+  .loyalty-statistics__table th,
+  .loyalty-statistics__table td {
+    padding: 0.6rem 0.7rem;
+  }
+}

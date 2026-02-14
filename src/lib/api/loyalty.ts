@@ -222,3 +222,115 @@ export async function getAllVouchersWithCustomer(): Promise<(CustomerVoucher & {
     customer_name: (v.customers as Record<string, string>)?.name || 'Неизвестен',
   })) as (CustomerVoucher & { customer_name: string })[];
 }
+
+// ============================================
+// Loyalty Statistics
+// ============================================
+
+export interface LoyaltyTierDistribution {
+  tier_id: number | null;
+  tier_name: string;
+  tier_color: string;
+  customer_count: number;
+  avg_turnover_12m_eur: number;
+  total_turnover_12m_eur: number;
+}
+
+export interface LoyaltyVoucherMonthlyStats {
+  month: string; // YYYY-MM format
+  issued_count: number;
+  issued_amount_eur: number;
+  redeemed_count: number;
+  redeemed_amount_eur: number;
+}
+
+export interface LoyaltyROIStats {
+  total_tier_discounts_eur: number;
+  total_voucher_discounts_eur: number;
+  total_discounts_eur: number;
+  customers_with_loyalty: number;
+  total_customers: number;
+  loyalty_participation_rate: number;
+  avg_discount_per_sale_eur: number;
+  sales_with_loyalty_count: number;
+  total_sales_count: number;
+}
+
+export interface LoyaltyTopCustomer {
+  customer_id: string;
+  customer_name: string;
+  current_tier_id: number | null;
+  current_tier_name: string;
+  turnover_12m_eur: number;
+  tier_discount_total_eur: number;
+  voucher_discount_total_eur: number;
+  total_vouchers_issued: number;
+  total_vouchers_redeemed: number;
+}
+
+/**
+ * Разпределение на клиенти по лоялност нива
+ */
+export async function getLoyaltyStatsDistribution(): Promise<LoyaltyTierDistribution[]> {
+  const { data, error } = await supabase.rpc('get_loyalty_tier_distribution');
+  
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Статистика за ваучери по месец
+ */
+export async function getLoyaltyStatsVouchers(
+  dateFrom: string,
+  dateTo: string
+): Promise<LoyaltyVoucherMonthlyStats[]> {
+  const { data, error } = await supabase.rpc('get_loyalty_vouchers_by_month', {
+    date_from: dateFrom,
+    date_to: dateTo,
+  });
+  
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * ROI метрики на лоялност програмата
+ */
+export async function getLoyaltyStatsROI(
+  dateFrom: string,
+  dateTo: string
+): Promise<LoyaltyROIStats> {
+  const { data, error } = await supabase.rpc('get_loyalty_roi_stats', {
+    date_from: dateFrom,
+    date_to: dateTo,
+  });
+  
+  if (error) throw error;
+  
+  // RPC връща масив с един елемент, вземаме първия
+  const result = (data as unknown as LoyaltyROIStats[]) || [];
+  return result[0] || {
+    total_tier_discounts_eur: 0,
+    total_voucher_discounts_eur: 0,
+    total_discounts_eur: 0,
+    customers_with_loyalty: 0,
+    total_customers: 0,
+    loyalty_participation_rate: 0,
+    avg_discount_per_sale_eur: 0,
+    sales_with_loyalty_count: 0,
+    total_sales_count: 0,
+  };
+}
+
+/**
+ * Топ клиенти по лоялност активност
+ */
+export async function getLoyaltyStatsTopCustomers(limit = 20): Promise<LoyaltyTopCustomer[]> {
+  const { data, error } = await supabase.rpc('get_loyalty_top_customers', {
+    result_limit: limit,
+  });
+  
+  if (error) throw error;
+  return data || [];
+}

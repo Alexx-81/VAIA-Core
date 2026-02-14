@@ -2,6 +2,7 @@ import { useStatistics } from '../hooks/useStatistics';
 import { StatisticsFiltersBar } from './StatisticsFiltersBar';
 import { StatisticsSummary } from './StatisticsSummary';
 import { StatisticsTable } from './StatisticsTable';
+import { LoyaltyStatistics } from './LoyaltyStatistics';
 import { exportStatisticsToCSV, exportStatisticsToExcel, exportStatisticsToPDF } from '../utils/exportStatistics';
 import type { StatisticsTab } from '../types';
 import './Statistics.css';
@@ -23,6 +24,7 @@ export const Statistics = () => {
       daily: 'Дневен отчет',
       monthly: 'Месечен отчет',
       yearly: 'Годишен отчет',
+      loyalty: 'Лоялност',
     };
 
     // Форматираме датите във формат DD.MM.YYYY
@@ -95,25 +97,37 @@ export const Statistics = () => {
         >
           Годишен отчет
         </button>
+        <button
+          className={`statistics__tab ${activeTab === 'loyalty' ? 'statistics__tab--active' : ''}`}
+          onClick={() => setActiveTab('loyalty')}
+        >
+          🏆 Лоялност
+        </button>
       </div>
 
       <div className="statistics__content">
-        <StatisticsFiltersBar
-          key={activeTab}
-          filters={filters}
-          onUpdateFilters={updateFilters}
-          onToggleCostMode={toggleCostMode}
-        />
-
-        {loading ? (
-          <div className="statistics__loading">
-            <div className="statistics__spinner"></div>
-            <p>Зареждане на данни...</p>
-          </div>
+        {activeTab === 'loyalty' ? (
+          <LoyaltyStatistics dateFrom={filters.dateFrom} dateTo={filters.dateTo} />
         ) : (
           <>
-            <StatisticsSummary summary={summary} costModes={filters.costModes} />
-            <StatisticsTable rows={rows} costModes={filters.costModes} />
+            <StatisticsFiltersBar
+              key={activeTab}
+              filters={filters}
+              onUpdateFilters={updateFilters}
+              onToggleCostMode={toggleCostMode}
+            />
+
+            {loading ? (
+              <div className="statistics__loading">
+                <div className="statistics__spinner"></div>
+                <p>Зареждане на данни...</p>
+              </div>
+            ) : (
+              <>
+                <StatisticsSummary summary={summary} costModes={filters.costModes} />
+                <StatisticsTable rows={rows} costModes={filters.costModes} />
+              </>
+            )}
           </>
         )}
       </div>
