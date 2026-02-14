@@ -331,11 +331,9 @@ export const SaleEditor = ({
   // Reset loyalty when customer changes
   const handleCustomerChange = useCallback((customerId: string | null) => {
     setSelectedCustomerId(customerId);
-    // Reset loyalty mode when customer changes
-    if (!customerId) {
-      setLoyaltyMode('none');
-      setSelectedVoucherId(null);
-    }
+    // Always reset loyalty — the panel will auto-apply tier if applicable
+    setLoyaltyMode('none');
+    setSelectedVoucherId(null);
   }, []);
 
   // Delete line

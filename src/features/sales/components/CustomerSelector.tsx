@@ -46,6 +46,11 @@ export function CustomerSelector({ selectedCustomerId, onSelect, customers }: Cu
     onSelect(null);
   };
 
+  const handleSelectCustomer = (customerId: string | null) => {
+    onSelect(customerId);
+    setSearchTerm(''); // Close the filter after selection
+  };
+
   return (
     <div className="customer-selector">
       <label className="customer-selector__label">
@@ -77,7 +82,7 @@ export function CustomerSelector({ selectedCustomerId, onSelect, customers }: Cu
         <select
           className="customer-selector__select"
           value={selectedCustomerId || ''}
-          onChange={(e) => onSelect(e.target.value || null)}
+          onChange={(e) => handleSelectCustomer(e.target.value || null)}
           size={Math.min(filteredCustomers.length + 1, 8)}
         >
           <option value="">Без клиент</option>

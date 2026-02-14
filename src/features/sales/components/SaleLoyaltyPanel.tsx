@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { LoyaltyMode } from '../types';
-import { CustomerLoyaltyBadge } from '../../customers/components/CustomerLoyaltyBadge';
 import { useCustomerLoyalty } from '../../customers/hooks/useCustomerLoyalty';
 import './SaleLoyaltyPanel.css';
 
@@ -14,11 +13,20 @@ interface EligibleVoucher {
 
 interface SaleLoyaltyPanelProps {
   customerId?: string | null;
-  regularSubtotalEur: number; // Сума само от редове с isRegularPrice=true
-  promoSubtotalEur: number; // Сума от редове с isRegularPrice=false
+  regularSubtotalEur: number;
+  promoSubtotalEur: number;
   loyaltyMode: LoyaltyMode;
   selectedVoucherId?: string | null;
   onLoyaltyChange: (mode: LoyaltyMode, voucherId?: string | null) => void;
+}
+
+function getTierBadgeClass(tierName: string): string {
+  const name = tierName.toUpperCase();
+  if (name === 'SILVER') return 'slp-tier--silver';
+  if (name === 'GOLD') return 'slp-tier--gold';
+  if (name === 'VIP') return 'slp-tier--vip';
+  if (name === 'ELITE') return 'slp-tier--elite';
+  return 'slp-tier--start';
 }
 
 export function SaleLoyaltyPanel({
@@ -31,6 +39,27 @@ export function SaleLoyaltyPanel({
 }: SaleLoyaltyPanelProps) {
   const { loyaltyInfo, loading } = useCustomerLoyalty(customerId || null);
   const [eligibleVouchers, setEligibleVouchers] = useState<EligibleVoucher[]>([]);
+  const autoAppliedRef = useRef<string | null>(null);
+
+  // Автоматично прилагане на tier отстъпка при зареждане на loyalty info
+  useEffect(() => {
+    if (!loyaltyInfo || loading) return;
+    const tierPercent = loyaltyInfo.discount_percent || 0;
+    // Auto-apply tier when loyalty loads (and not already in voucher mode)
+    if (tierPercent > 0 && loyaltyMode === 'none' && autoAppliedRef.current !== customerId) {
+      autoAppliedRef.current = customerId || null;
+      onLoyaltyChange('tier');
+    }
+    // If customer has no discount, ensure mode stays 'none'
+    if (tierPercent === 0 && loyaltyMode === 'tier') {
+      onLoyaltyChange('none');
+    }
+  }, [loyaltyInfo, loading, loyaltyMode, customerId, onLoyaltyChange]);
+
+  // Reset auto-apply ref when customer changes
+  useEffect(() => {
+    autoAppliedRef.current = null;
+  }, [customerId]);
 
   // Филтър на валидни ваучери
   useEffect(() => {
@@ -40,33 +69,27 @@ export function SaleLoyaltyPanel({
     }
 
     const eligible = loyaltyInfo.active_vouchers.filter((v) => {
-      // Само active (issued) ваучери
       if (v.status !== 'issued') return false;
-      
-      // Провери дали покрива минималната сума (ако имаме редовни редове)
       const minPurchase = v.min_purchase_eur || 0;
       if (regularSubtotalEur < minPurchase) return false;
-
       return true;
     });
 
     setEligibleVouchers(eligible);
 
-    // Ако текущо избрания ваучер вече не е валиден → само 'none'
+    // Ако текущо избрания ваучер вече не е валиден → tier (или none)
     if (loyaltyMode === 'voucher' && selectedVoucherId) {
       const isStillEligible = eligible.some((v) => v.id === selectedVoucherId);
       if (!isStillEligible) {
-        onLoyaltyChange('none');
+        const tierPercent = loyaltyInfo?.discount_percent || 0;
+        onLoyaltyChange(tierPercent > 0 ? 'tier' : 'none');
       }
     }
   }, [loyaltyInfo, regularSubtotalEur, loyaltyMode, selectedVoucherId, onLoyaltyChange]);
 
-  // Ако няма клиент → скрий панела
-  if (!customerId) {
-    return null;
-  }
+  if (!customerId) return null;
 
-  // Изчисли отстъпки и крайна сума
+  // Изчисления
   const tierDiscountPercent = loyaltyInfo?.discount_percent || 0;
   const tierDiscountAmountEur =
     loyaltyMode === 'tier' ? (regularSubtotalEur * tierDiscountPercent) / 100 : 0;
@@ -79,145 +102,106 @@ export function SaleLoyaltyPanel({
   const totalDiscountEur = tierDiscountAmountEur + voucherAmountEur;
   const totalPaidEur = Math.max(0, totalBeforeDiscountEur - totalDiscountEur);
 
-  const canUseTier = tierDiscountPercent > 0 && regularSubtotalEur > 0;
-  const canUseVoucher = eligibleVouchers.length > 0 && regularSubtotalEur > 0;
+  const hasVouchers = eligibleVouchers.length > 0;
+  const hasRegularLines = regularSubtotalEur > 0;
+  const tierName = loyaltyInfo?.tier_name || '';
+  const hasDiscount = totalDiscountEur > 0;
+
+  // Ако няма лоялност (няма баркод) → не показвай панела
+  if (!loading && !loyaltyInfo) return null;
+
+  const handleToggleVoucher = () => {
+    if (loyaltyMode === 'voucher') {
+      // Откажи ваучер → върни се на tier (или none)
+      onLoyaltyChange(tierDiscountPercent > 0 ? 'tier' : 'none');
+    } else {
+      // Активирай ваучер → избери първия
+      const first = eligibleVouchers[0];
+      onLoyaltyChange('voucher', first?.id || null);
+    }
+  };
 
   return (
-    <div className="sale-loyalty-panel">
-      <div className="sale-loyalty-header">
-        <h3>Лоялност</h3>
-        {loading ? (
-          <span className="sale-loyalty-loading">Зареждане...</span>
-        ) : (
-          customerId && <CustomerLoyaltyBadge customerId={customerId} />
+    <div className="slp">
+      {/* Ред 1: Tier инфо + ваучер бутон */}
+      <div className="slp-bar">
+        <div className="slp-tier-info">
+          {loading ? (
+            <span className="slp-loading">Зареждане...</span>
+          ) : (
+            <>
+              <span className={`slp-tier-badge ${getTierBadgeClass(tierName)}`}>
+                🏆 {tierName}
+              </span>
+              {tierDiscountPercent > 0 ? (
+                <span className="slp-tier-discount">
+                  {tierDiscountPercent.toFixed(0)}% отстъпка
+                </span>
+              ) : (
+                <span className="slp-tier-no-discount">без отстъпка</span>
+              )}
+            </>
+          )}
+        </div>
+
+        {hasVouchers && (
+          <button
+            type="button"
+            className={`slp-voucher-btn ${loyaltyMode === 'voucher' ? 'active' : ''}`}
+            onClick={handleToggleVoucher}
+            disabled={!hasRegularLines}
+            title={
+              !hasRegularLines
+                ? 'Добавете артикули на редовна цена за да използвате ваучер'
+                : `${eligibleVouchers.length} налични ваучера`
+            }
+          >
+            {loyaltyMode === 'voucher' ? '✕ Откажи ваучер' : '🎟️ Ваучер'}
+          </button>
         )}
       </div>
 
-      {/* Radio бутони за избор на режим */}
-      <div className="sale-loyalty-modes">
-        <label className="sale-loyalty-radio">
-          <input
-            type="radio"
-            name="loyaltyMode"
-            value="none"
-            checked={loyaltyMode === 'none'}
-            onChange={() => onLoyaltyChange('none')}
-          />
-          <span>Без отстъпка</span>
-        </label>
-
-        <label
-          className={`sale-loyalty-radio ${!canUseTier ? 'disabled' : ''}`}
-          title={
-            !canUseTier
-              ? regularSubtotalEur === 0
-                ? 'Няма редове на редовна цена'
-                : 'Клиентът няма ниво с отстъпка'
-              : undefined
-          }
-        >
-          <input
-            type="radio"
-            name="loyaltyMode"
-            value="tier"
-            checked={loyaltyMode === 'tier'}
-            onChange={() => onLoyaltyChange('tier')}
-            disabled={!canUseTier}
-          />
-          <span>
-            Ниво отстъпка{' '}
-            <strong className="tier-discount-percent">
-              {tierDiscountPercent.toFixed(0)}%
-            </strong>
-          </span>
-        </label>
-
-        <label
-          className={`sale-loyalty-radio ${!canUseVoucher ? 'disabled' : ''}`}
-          title={
-            !canUseVoucher
-              ? regularSubtotalEur === 0
-                ? 'Няма редове на редовна цена'
-                : 'Няма налични ваучери'
-              : undefined
-          }
-        >
-          <input
-            type="radio"
-            name="loyaltyMode"
-            value="voucher"
-            checked={loyaltyMode === 'voucher'}
-            onChange={() => {
-              // Автоматично избери първия валичен ваучер ако има
-              const firstVoucher = eligibleVouchers[0];
-              onLoyaltyChange('voucher', firstVoucher?.id || null);
-            }}
-            disabled={!canUseVoucher}
-          />
-          <span>Ваучер</span>
-        </label>
-      </div>
-
-      {/* Dropdown за избор на ваучер (само ако режим = 'voucher') */}
+      {/* Ред 2: Voucher dropdown (conditional) */}
       {loyaltyMode === 'voucher' && eligibleVouchers.length > 0 && (
-        <div className="sale-loyalty-voucher-select">
-          <label>
-            Избери ваучер:
-            <select
-              value={selectedVoucherId || ''}
-              onChange={(e) => onLoyaltyChange('voucher', e.target.value || null)}
-            >
-              <option value="">-- Избери --</option>
-              {eligibleVouchers.map((v) => (
-                <option key={v.id} value={v.id}>
-                  €{v.amount_eur.toFixed(2)}
-                  {v.min_purchase_eur && v.min_purchase_eur > 0
-                    ? ` (мин €${v.min_purchase_eur.toFixed(2)})`
-                    : ''}
-                  {v.expires_at && ` - валиден до ${new Date(v.expires_at).toLocaleDateString('bg-BG')}`}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="slp-voucher-row">
+          <select
+            className="slp-voucher-select"
+            value={selectedVoucherId || ''}
+            onChange={(e) => onLoyaltyChange('voucher', e.target.value || null)}
+          >
+            <option value="">-- Избери ваучер --</option>
+            {eligibleVouchers.map((v) => (
+              <option key={v.id} value={v.id}>
+                €{v.amount_eur.toFixed(2)}
+                {v.min_purchase_eur && v.min_purchase_eur > 0
+                  ? ` (мин €${v.min_purchase_eur.toFixed(2)})`
+                  : ''}
+                {v.expires_at &&
+                  ` · до ${new Date(v.expires_at).toLocaleDateString('bg-BG')}`}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
-      {/* Обобщение на сумите */}
-      <div className="sale-loyalty-summary">
-        <div className="sale-loyalty-summary-row">
-          <span>Редовна цена:</span>
-          <span className="sale-loyalty-amount">€{regularSubtotalEur.toFixed(2)}</span>
+      {/* Ред 3: Компактен summary — само когато има отстъпка */}
+      {hasDiscount && totalBeforeDiscountEur > 0 && (
+        <div className="slp-summary">
+          {loyaltyMode === 'tier' && tierDiscountAmountEur > 0 && (
+            <span className="slp-summary-discount">
+              −€{tierDiscountAmountEur.toFixed(2)} ({tierDiscountPercent.toFixed(0)}%)
+            </span>
+          )}
+          {loyaltyMode === 'voucher' && voucherAmountEur > 0 && (
+            <span className="slp-summary-discount">
+              −€{voucherAmountEur.toFixed(2)} ваучер
+            </span>
+          )}
+          <span className="slp-summary-total">
+            ОБЩО: €{totalPaidEur.toFixed(2)}
+          </span>
         </div>
-        {promoSubtotalEur > 0 && (
-          <div className="sale-loyalty-summary-row secondary">
-            <span>Промоция:</span>
-            <span className="sale-loyalty-amount">€{promoSubtotalEur.toFixed(2)}</span>
-          </div>
-        )}
-        <div className="sale-loyalty-summary-row secondary">
-          <span>Междинна сума:</span>
-          <span className="sale-loyalty-amount">€{totalBeforeDiscountEur.toFixed(2)}</span>
-        </div>
-
-        {loyaltyMode === 'tier' && tierDiscountAmountEur > 0 && (
-          <div className="sale-loyalty-summary-row discount">
-            <span>Отстъпка от ниво ({tierDiscountPercent.toFixed(0)}%):</span>
-            <span className="sale-loyalty-amount">-€{tierDiscountAmountEur.toFixed(2)}</span>
-          </div>
-        )}
-
-        {loyaltyMode === 'voucher' && voucherAmountEur > 0 && (
-          <div className="sale-loyalty-summary-row discount">
-            <span>Отстъпка от ваучер:</span>
-            <span className="sale-loyalty-amount">-€{voucherAmountEur.toFixed(2)}</span>
-          </div>
-        )}
-
-        <div className="sale-loyalty-summary-row total">
-          <span>ОБЩО ЗА ПЛАЩАНЕ:</span>
-          <span className="sale-loyalty-amount total">€{totalPaidEur.toFixed(2)}</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,182 +1,199 @@
-.sale-loyalty-panel {
+/* ─── Compact Loyalty Panel ─── */
+.slp {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 16px;
-  margin-top: 16px;
+  padding: 10px 16px;
+  margin-top: 12px;
 }
 
-.sale-loyalty-header {
+/* Row 1: Tier info + voucher button */
+.slp-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
 }
 
-.sale-loyalty-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
+.slp-tier-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
-.sale-loyalty-loading {
+.slp-loading {
   font-size: 12px;
   color: var(--text-secondary);
   font-style: italic;
 }
 
-/* Radio бутони за режими */
-.sale-loyalty-modes {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.sale-loyalty-radio {
-  display: flex;
+/* Tier badge */
+.slp-tier-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--bg-primary);
-}
-
-.sale-loyalty-radio:hover:not(.disabled) {
-  border-color: var(--vaia-blue);
-  background: var(--bg-secondary);
-}
-
-.sale-loyalty-radio input[type='radio'] {
-  cursor: pointer;
-}
-
-.sale-loyalty-radio input[type='radio']:checked {
-  accent-color: var(--vaia-blue);
-}
-
-.sale-loyalty-radio.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: var(--bg-secondary);
-}
-
-.sale-loyalty-radio.disabled input[type='radio'] {
-  cursor: not-allowed;
-}
-
-.sale-loyalty-radio span {
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.tier-discount-percent {
-  color: var(--vaia-blue);
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
-/* Dropdown за ваучер */
-.sale-loyalty-voucher-select {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: var(--bg-primary);
+.slp-tier--start {
+  background: #e8eaed;
+  color: #5f6368;
+}
+.slp-tier--silver {
+  background: linear-gradient(135deg, #e8eaed, #d4d7dc);
+  color: #4a4f57;
+}
+.slp-tier--gold {
+  background: linear-gradient(135deg, #fff3cd, #ffe69c);
+  color: #856404;
+}
+.slp-tier--vip {
+  background: linear-gradient(135deg, #d4edda, #b8dfc4);
+  color: #155724;
+}
+.slp-tier--elite {
+  background: linear-gradient(135deg, #cce5ff, #99caff);
+  color: #004085;
+}
+
+.slp-tier-discount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--vaia-blue);
+  white-space: nowrap;
+}
+
+.slp-tier-no-discount {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Voucher toggle button */
+.slp-voucher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
-}
-
-.sale-loyalty-voucher-select label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
-.sale-loyalty-voucher-select select {
-  padding: 8px 12px;
+.slp-voucher-btn:hover:not(:disabled) {
+  border-color: var(--vaia-blue);
+  color: var(--vaia-blue);
+  background: rgba(11, 79, 138, 0.04);
+}
+
+.slp-voucher-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slp-voucher-btn.active {
+  border-color: var(--danger, #dc3545);
+  color: var(--danger, #dc3545);
+  background: rgba(220, 53, 69, 0.05);
+}
+
+.slp-voucher-btn.active:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+/* Row 2: Voucher select (conditional) */
+.slp-voucher-row {
+  margin-top: 8px;
+}
+
+.slp-voucher-select {
+  width: 100%;
+  padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 
-.sale-loyalty-voucher-select select:focus {
+.slp-voucher-select:focus {
   outline: none;
   border-color: var(--vaia-blue);
-  box-shadow: 0 0 0 3px rgba(11, 79, 138, 0.1);
+  box-shadow: 0 0 0 2px rgba(11, 79, 138, 0.1);
 }
 
-/* Обобщение */
-.sale-loyalty-summary {
+/* Row 3: Compact summary */
+.slp-summary {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--border);
 }
 
-.sale-loyalty-summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.sale-loyalty-summary-row.secondary {
+.slp-summary-discount {
   font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.sale-loyalty-summary-row.discount {
-  color: var(--success);
   font-weight: 500;
+  color: var(--success, #28a745);
 }
 
-.sale-loyalty-summary-row.total {
-  font-size: 16px;
+.slp-summary-total {
+  font-size: 15px;
   font-weight: 700;
-  padding-top: 8px;
-  margin-top: 8px;
-  border-top: 2px solid var(--border);
-  color: var(--vaia-blue);
-}
-
-.sale-loyalty-amount {
-  font-weight: 600;
-}
-
-.sale-loyalty-amount.total {
-  font-size: 18px;
   color: var(--vaia-blue);
 }
 
 /* Dark theme */
-.theme-dark .sale-loyalty-panel {
+.theme-dark .slp {
   background: var(--bg-tertiary);
 }
 
-.theme-dark .sale-loyalty-radio {
+.theme-dark .slp-tier--start {
+  background: #3c4043;
+  color: #bdc1c6;
+}
+.theme-dark .slp-tier--silver {
+  background: linear-gradient(135deg, #3c4043, #4a4f57);
+  color: #c4c7cc;
+}
+.theme-dark .slp-tier--gold {
+  background: linear-gradient(135deg, #5c4813, #6d5619);
+  color: #ffe69c;
+}
+.theme-dark .slp-tier--vip {
+  background: linear-gradient(135deg, #1a4025, #20522e);
+  color: #90d4a3;
+}
+.theme-dark .slp-tier--elite {
+  background: linear-gradient(135deg, #0d3163, #114387);
+  color: #99caff;
+}
+
+.theme-dark .slp-voucher-btn {
   background: var(--bg-secondary);
 }
 
-.theme-dark .sale-loyalty-radio:hover:not(.disabled) {
+.theme-dark .slp-voucher-btn:hover {
   background: var(--bg-primary);
 }
 
-.theme-dark .sale-loyalty-voucher-select {
+.theme-dark .slp-voucher-select {
   background: var(--bg-secondary);
 }
 
-.theme-dark .sale-loyalty-voucher-select select {
-  background: var(--bg-primary);
-}
