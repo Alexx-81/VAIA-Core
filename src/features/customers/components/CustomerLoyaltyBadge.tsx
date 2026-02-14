@@ -33,8 +33,20 @@ function formatDate(dateStr: string): string {
 export const CustomerLoyaltyBadge = ({ customerId, compact = true }: CustomerLoyaltyBadgeProps) => {
   const { loyaltyInfo, loading } = useCustomerLoyalty(customerId);
 
-  if (loading || !loyaltyInfo) {
-    return <span className="customer-loyalty-badge customer-loyalty-badge--compact">—</span>;
+  if (loading) {
+    return <span className="customer-loyalty-badge customer-loyalty-badge--compact customer-loyalty-badge--loading">⏳</span>;
+  }
+
+  // If no loyalty info, customer doesn't participate (no barcode)
+  if (!loyaltyInfo) {
+    return (
+      <span 
+        className="customer-loyalty-badge customer-loyalty-badge--compact customer-loyalty-badge--inactive"
+        title="Клиентът не участва в програмата за лоялност (няма баркод)"
+      >
+        —
+      </span>
+    );
   }
 
   const tierClass = getTierBadgeClass(loyaltyInfo.tier_name);
@@ -59,10 +71,32 @@ export const CustomerLoyaltySection = ({ customerId }: CustomerLoyaltySectionPro
     );
   }
 
-  if (error || !loyaltyInfo) {
+  if (error) {
     return (
       <div className="customer-loyalty-section">
-        <div className="customer-loyalty-section__error">{error || 'Грешка при зареждане.'}</div>
+        <div className="customer-loyalty-section__error">{error}</div>
+      </div>
+    );
+  }
+
+  // If no loyalty info, customer doesn't participate (no barcode)
+  if (!loyaltyInfo) {
+    return (
+      <div className="customer-loyalty-section">
+        <div className="customer-loyalty-section__no-barcode">
+          <div className="customer-loyalty-section__no-barcode-icon">ℹ️</div>
+          <h4 className="customer-loyalty-section__no-barcode-title">
+            Клиентът не участва в програмата за лоялност
+          </h4>
+          <p className="customer-loyalty-section__no-barcode-text">
+            За да участва в програмата за лоялност, клиентът трябва да има баркод.
+            Моля, добавете баркод в основните данни на клиента.
+          </p>
+          <p className="customer-loyalty-section__no-barcode-hint">
+            💡 След добавяне на баркод, клиентът автоматично ще бъде включен в програмата
+            за лоялност с начално ниво.
+          </p>
+        </div>
       </div>
     );
   }

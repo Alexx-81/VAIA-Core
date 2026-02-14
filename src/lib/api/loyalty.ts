@@ -124,22 +124,22 @@ export interface CustomerLoyaltyInfo {
   }[];
 }
 
-export async function getCustomerLoyaltyInfo(customerId: string): Promise<CustomerLoyaltyInfo> {
+export async function getCustomerLoyaltyInfo(customerId: string): Promise<CustomerLoyaltyInfo | null> {
   const { data, error } = await supabase.rpc('get_customer_loyalty_info', {
     p_customer_id: customerId,
   });
 
   if (error) throw error;
-  return data as unknown as CustomerLoyaltyInfo;
+  return data as unknown as (CustomerLoyaltyInfo | null);
 }
 
-export async function ensureCustomerLoyaltyStatus(customerId: string): Promise<string> {
+export async function ensureCustomerLoyaltyStatus(customerId: string): Promise<string | null> {
   const { data, error } = await supabase.rpc('ensure_customer_loyalty_status', {
     p_customer_id: customerId,
   });
 
   if (error) throw error;
-  return data as string;
+  return data as string | null;
 }
 
 // ============================================

@@ -25,11 +25,27 @@ export function useCustomerLoyalty(customerId: string | null) {
       setLoading(true);
       setError(null);
 
-      // Ensure loyalty status exists
-      await ensureCustomerLoyaltyStatus(customerId);
+      // Ensure loyalty status exists (returns null if customer has no barcode)
+      const statusId = await ensureCustomerLoyaltyStatus(customerId);
+      
+      // If customer has no barcode, they don't participate in loyalty program
+      if (!statusId) {
+        setLoyaltyInfo(null);
+        setVouchers([]);
+        setLoading(false);
+        return;
+      }
 
       // Fetch loyalty info (tier, turnover, progress)
       const info = await getCustomerLoyaltyInfo(customerId);
+      
+      // Double-check if info is null (customer has no barcode)
+      if (!info) {
+        setLoyaltyInfo(null);
+        setVouchers([]);
+        setLoading(false);
+        return;
+      }
 
       // Fetch all tiers to calculate next tier
       const allTiers = await getLoyaltyTiers();
