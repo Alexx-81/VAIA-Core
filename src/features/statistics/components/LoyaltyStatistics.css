@@ -366,30 +366,21 @@
   border-radius: 12px;
 }
 
-/* Top Customers Table */
-.loyalty-statistics__section {
-  margin-top: 2rem;
+/* Full Width Card */
+.loyalty-statistics__card--full-width {
+  grid-column: 1 / -1;
+  margin-top: 1.5rem;
+  animation-delay: 0.4s;
 }
 
-.loyalty-statistics__section-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1.2rem;
-  background: linear-gradient(135deg, #ffffff, #e0e0e0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
+/* Table in Card Body */
+.loyalty-statistics__card-body--table {
+  padding: 0;
 }
 
 .loyalty-statistics__table-wrapper {
   overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.7), rgba(20, 20, 30, 0.9));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-radius: 0 0 20px 20px;
 }
 
 .loyalty-statistics__table {
@@ -399,11 +390,14 @@
 }
 
 .loyalty-statistics__table thead {
-  background: linear-gradient(135deg, rgba(255, 122, 0, 0.12), rgba(11, 79, 138, 0.12));
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.08), rgba(11, 79, 138, 0.08));
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .loyalty-statistics__table th {
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   text-align: left;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
@@ -426,8 +420,12 @@
   background: linear-gradient(135deg, rgba(255, 122, 0, 0.08), rgba(11, 79, 138, 0.08));
 }
 
+.loyalty-statistics__table tbody tr:last-child {
+  border-bottom: none;
+}
+
 .loyalty-statistics__table td {
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.5rem;
   color: rgba(255, 255, 255, 0.85);
 }
 
@@ -450,6 +448,12 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+}
+
+.loyalty-statistics__table tbody tr:hover .loyalty-statistics__tier-badge-small {
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.2), rgba(11, 79, 138, 0.2));
+  border-color: rgba(255, 122, 0, 0.4);
 }
 
 /* Responsive Design */
@@ -494,131 +498,8 @@
   .loyalty-statistics__table td {
     padding: 0.75rem 1rem;
   }
-}
 
-
-/* Table (for top customers) */
-.loyalty-statistics__table-wrapper {
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--background-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.loyalty-statistics__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-}
-
-.loyalty-statistics__table thead {
-  background: var(--background-secondary);
-}
-
-.loyalty-statistics__table th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--border);
-}
-
-.loyalty-statistics__table th.text-right {
-  text-align: right;
-}
-
-.loyalty-statistics__table tbody tr {
-  border-bottom: 1px solid var(--border-light);
-  transition: background-color 0.15s;
-}
-
-.loyalty-statistics__table tbody tr:hover {
-  background: var(--background-hover);
-}
-
-.loyalty-statistics__table td {
-  padding: 0.9rem 1rem;
-  color: var(--text-primary);
-}
-
-.loyalty-statistics__table td.text-right {
-  text-align: right;
-}
-
-.loyalty-statistics__table td.text-center {
-  text-align: center;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* Tier Badge */
-.loyalty-statistics__tier-badge {
-  display: inline-block;
-  padding: 0.4rem 0.9rem;
-  border-radius: 16px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.loyalty-statistics__tier-badge-small {
-  display: inline-block;
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
-  background: var(--background-secondary);
-  border: 1px solid var(--border);
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .loyalty-statistics__metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
-
-  .loyalty-statistics__tiers-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .loyalty-statistics__vouchers-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .loyalty-statistics {
-    padding: 0.5rem;
-  }
-
-  .loyalty-statistics__metrics-grid,
-  .loyalty-statistics__tiers-grid,
-  .loyalty-statistics__vouchers-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .loyalty-statistics__section-title {
-    font-size: 1.1rem;
-  }
-
-  .loyalty-statistics__metric-value {
-    font-size: 1.6rem;
-  }
-
-  .loyalty-statistics__metric-icon {
-    font-size: 2rem;
-  }
-
-  .loyalty-statistics__table {
-    font-size: 0.85rem;
-  }
-
-  .loyalty-statistics__table th,
-  .loyalty-statistics__table td {
-    padding: 0.6rem 0.7rem;
+  .loyalty-statistics__card--full-width {
+    margin-top: 1rem;
   }
 }

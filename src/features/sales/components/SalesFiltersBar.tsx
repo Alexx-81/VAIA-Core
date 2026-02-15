@@ -23,6 +23,13 @@ export const SalesFiltersBar = ({
 }: SalesFiltersBarProps) => {
   const { isReadOnly } = useAuth();
 
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handlePresetChange = (preset: SalesDateRange['preset']) => {
     onDateRangeChange({ preset });
   };
@@ -58,7 +65,7 @@ export const SalesFiltersBar = ({
           <input
             type="date"
             className="sales-filters__date-input"
-            value={filters.dateRange.from?.toISOString().split('T')[0] || ''}
+            value={filters.dateRange.from ? formatDate(filters.dateRange.from) : ''}
             onChange={(e) => onDateRangeChange({
               ...filters.dateRange,
               from: e.target.value ? new Date(e.target.value) : undefined,
@@ -68,7 +75,7 @@ export const SalesFiltersBar = ({
           <input
             type="date"
             className="sales-filters__date-input"
-            value={filters.dateRange.to?.toISOString().split('T')[0] || ''}
+            value={filters.dateRange.to ? formatDate(filters.dateRange.to) : ''}
             onChange={(e) => onDateRangeChange({
               ...filters.dateRange,
               to: e.target.value ? new Date(e.target.value + 'T23:59:59') : undefined,

@@ -126,12 +126,14 @@ export const useSettings = () => {
 
   // Експорт на настройки (backup)
   const exportSettings = useCallback(() => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const data = JSON.stringify(settings, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `vaia-settings-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `vaia-settings-${dateStr}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

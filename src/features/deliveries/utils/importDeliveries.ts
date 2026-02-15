@@ -2,10 +2,20 @@ import type { Delivery, DeliveryImportRow, ImportResult, Quality } from '../type
 import { generateId } from './deliveryUtils';
 
 /**
+ * Форматира дата в локално време
+ */
+const formatLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * Парсва дата от различни формати
  */
 async function parseDate(value: unknown): Promise<string> {
-  if (!value) return new Date().toISOString().split('T')[0];
+  if (!value) return formatLocalDate(new Date());
   
   // Ако е число (Excel serial date)
   if (typeof value === 'number') {
@@ -16,7 +26,7 @@ async function parseDate(value: unknown): Promise<string> {
   
   // Ако е Date обект
   if (value instanceof Date) {
-    return value.toISOString().split('T')[0];
+    return formatLocalDate(value);
   }
   
   // Ако е стринг във формат DD.MM.YYYY
@@ -28,11 +38,11 @@ async function parseDate(value: unknown): Promise<string> {
     // Опитай директно парсване
     const parsed = new Date(value);
     if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString().split('T')[0];
+      return formatLocalDate(parsed);
     }
   }
   
-  return new Date().toISOString().split('T')[0];
+  return formatLocalDate(new Date());
 }
 
 /**

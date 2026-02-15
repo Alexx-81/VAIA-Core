@@ -36,14 +36,10 @@ git commit -m "feat: add loyalty program tables"
 # 1. Initialize Supabase project (creates supabase/ directory)
 npx supabase init
 
-# 2. Set access token (Option A: Login)
-npx supabase login --no-browser
-# Follow link and enter verification code
-
-# OR (Option B: Environment variable)
+# 2. Add access token to .env file
 # Get token from https://supabase.com/dashboard/account/tokens
-$env:SUPABASE_ACCESS_TOKEN="sbp_your_token_here"  # PowerShell
-export SUPABASE_ACCESS_TOKEN="sbp_your_token_here"  # Bash
+# Add to .env file:
+SUPABASE_ACCESS_TOKEN=sbp_your_token_here
 
 # 3. Link to remote project
 npx supabase link --project-ref ptigdekgzraimaepgczt
@@ -51,6 +47,8 @@ npx supabase link --project-ref ptigdekgzraimaepgczt
 # 4. Verify sync
 npx supabase migration list
 ```
+
+**Note:** The SUPABASE_ACCESS_TOKEN in `.env` is automatically loaded by the migration sync script, so you don't need to set it manually in each terminal session.
 
 ### Migration File Structure
 ```sql

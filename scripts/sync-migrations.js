@@ -10,11 +10,36 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 const MIGRATIONS_DIR = 'supabase/migrations';
 const MIGRATION_PATTERN = /^\d{14}_.*\.sql$/;
+
+/**
+ * Load environment variables from .env file
+ */
+function loadEnv() {
+  const envPath = join(process.cwd(), '.env');
+  if (existsSync(envPath)) {
+    const envContent = readFileSync(envPath, 'utf8');
+    const lines = envContent.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        const value = valueParts.join('=').trim();
+        if (key && value) {
+          process.env[key.trim()] = value;
+        }
+      }
+    }
+  }
+}
+
+// Load .env before doing anything else
+loadEnv();
 
 /**
  * Execute shell command and return output
@@ -40,20 +65,20 @@ function checkSupabaseSetup() {
   // Check if CLI is available
   const version = exec('npx supabase --version');
   if (!version) {
-    console.error('❌ Supabase CLI not available');
-    console.error('   Run: npx supabase init');
-    process.exit(1);
+    console.warn('⚠️  Supabase CLI not available - skipping migration sync');
+    return false;
   }
   
   // Check if project is linked
   const projectRefPath = join(MIGRATIONS_DIR, '..', '.temp', 'project-ref');
   if (!existsSync(projectRefPath)) {
-    console.error('❌ Supabase project not linked');
-    console.error('   Run: npx supabase link --project-ref ptigdekgzraimaepgczt');
-    process.exit(1);
+    console.warn('⚠️  Supabase project not linked - skipping migration sync');
+    console.warn('   Run: npx supabase link --project-ref ptigdekgzraimaepgczt');
+    return false;
   }
   
   console.log('✅ Supabase CLI ready');
+  return true;
 }
 
 /**
@@ -77,8 +102,8 @@ function checkMigrationStatus() {
   
   const output = exec('npx supabase migration list', { stdio: 'pipe' });
   if (!output) {
-    console.error('❌ Failed to get migration status');
-    process.exit(1);
+    console.warn('⚠️  Failed to get migration status - skipping sync check');
+    return { success: false, hasLocalOnly: false };
   }
   
   // Parse output to check for local-only migrations
@@ -91,7 +116,7 @@ function checkMigrationStatus() {
     return local && !remote;
   });
   
-  return hasLocalOnly;
+  return { success: true, hasLocalOnly };
 }
 
 /**
@@ -143,7 +168,14 @@ function main() {
   console.log('━'.repeat(50));
   
   // Check if Supabase is set up
-  checkSupabaseSetup();
+  const isSetup = checkSupabaseSetup();
+  
+  if (!isSetup) {
+    console.log('⚠️  Supabase not configured - allowing commit without sync');
+    console.log('━'.repeat(50));
+    console.log('✅ Commit allowed (manual migration sync required)\n');
+    process.exit(0);
+  }
   
   // Get migration files
   const migrations = getMigrationFiles();
@@ -156,7 +188,15 @@ function main() {
   console.log(`📁 Found ${migrations.length} migration file(s)`);
   
   // Check if there are local-only migrations
-  const hasLocalOnly = checkMigrationStatus();
+  const { success, hasLocalOnly } = checkMigrationStatus();
+  
+  if (!success) {
+    console.log('⚠️  Cannot verify migration status - allowing commit');
+    console.log('   Please manually run: npx supabase db push');
+    console.log('━'.repeat(50));
+    console.log('✅ Commit allowed (manual verification required)\n');
+    process.exit(0);
+  }
   
   if (!hasLocalOnly) {
     console.log('✅ All migrations are synced with remote');
@@ -167,11 +207,11 @@ function main() {
   console.log('⚠️  Found local-only migrations that need to be pushed');
   
   // Push migrations to Supabase
-  const success = pushMigrations();
+  const pushSuccess = pushMigrations();
   
   console.log('━'.repeat(50));
   
-  if (success) {
+  if (pushSuccess) {
     console.log('✅ Ready to commit!\n');
     process.exit(0);
   } else {

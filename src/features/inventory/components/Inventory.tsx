@@ -41,6 +41,13 @@ export const Inventory = () => {
     });
   }, []);
 
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleViewSales = useCallback((deliveryId: string, type: InventoryTab) => {
     // TODO: Navigate to sales tab with filter
     console.log('View sales for delivery:', deliveryId, 'type:', type);
@@ -52,7 +59,7 @@ export const Inventory = () => {
   }, []);
 
   const handleExport = useCallback(() => {
-    const now = new Date().toISOString().split('T')[0];
+    const now = formatLocalDate(new Date());
     
     if (activeTab === 'real') {
       exportToCSV(realInventory, 'real', `nalichnosti-real-${now}`);
@@ -64,7 +71,7 @@ export const Inventory = () => {
   }, [activeTab, realInventory, accInventory, comparisonInventory]);
 
   const handleExportExcel = useCallback(async () => {
-    const now = new Date().toISOString().split('T')[0];
+    const now = formatLocalDate(new Date());
     
     try {
       if (activeTab === 'real') {

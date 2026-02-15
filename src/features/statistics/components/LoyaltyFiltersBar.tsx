@@ -26,6 +26,14 @@ export const LoyaltyFiltersBar = ({ filters, onUpdateFilters }: LoyaltyFiltersBa
     fetchTiers();
   }, []);
 
+  // Format date to YYYY-MM-DD in local timezone
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Get current month range
   const getCurrentMonthRange = () => {
     const now = new Date();
@@ -33,8 +41,8 @@ export const LoyaltyFiltersBar = ({ filters, onUpdateFilters }: LoyaltyFiltersBa
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     
     return {
-      start: firstDay.toISOString().split('T')[0],
-      end: lastDay.toISOString().split('T')[0],
+      start: formatLocalDate(firstDay),
+      end: formatLocalDate(lastDay),
     };
   };
 
@@ -45,8 +53,8 @@ export const LoyaltyFiltersBar = ({ filters, onUpdateFilters }: LoyaltyFiltersBa
     const lastDay = new Date(now.getFullYear(), 11, 31);
     
     return {
-      start: firstDay.toISOString().split('T')[0],
-      end: lastDay.toISOString().split('T')[0],
+      start: formatLocalDate(firstDay),
+      end: formatLocalDate(lastDay),
     };
   };
 
@@ -67,8 +75,8 @@ export const LoyaltyFiltersBar = ({ filters, onUpdateFilters }: LoyaltyFiltersBa
     const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
     
     onUpdateFilters({
-      dateFrom: firstDay.toISOString().split('T')[0],
-      dateTo: lastDay.toISOString().split('T')[0],
+      dateFrom: formatLocalDate(firstDay),
+      dateTo: formatLocalDate(lastDay),
     });
   };
 
@@ -78,9 +86,31 @@ export const LoyaltyFiltersBar = ({ filters, onUpdateFilters }: LoyaltyFiltersBa
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     
     onUpdateFilters({
-      dateFrom: firstDay.toISOString().split('T')[0],
-      dateTo: lastDay.toISOString().split('T')[0],
+      dateFrom: formatLocalDate(firstDay),
+      dateTo: formatLocalDate(lastDay),
     });
+  };
+
+  // Check if a specific date range is active
+  const isDateRangeActive = (rangeGetter: () => { start: string; end: string }) => {
+    const range = rangeGetter();
+    return filters.dateFrom === range.start && filters.dateTo === range.end;
+  };
+
+  const isLastMonthActive = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    return filters.dateFrom === formatLocalDate(firstDay) && 
+           filters.dateTo === formatLocalDate(lastDay);
+  };
+
+  const isLast3MonthsActive = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return filters.dateFrom === formatLocalDate(firstDay) && 
+           filters.dateTo === formatLocalDate(lastDay);
   };
 
   // Only show customers with barcodes (loyalty customers)
@@ -92,28 +122,36 @@ export const LoyaltyFiltersBar = ({ filters, onUpdateFilters }: LoyaltyFiltersBa
         {/* Quick Date Filters */}
         <div className="loyalty-filters-bar__quick-dates">
           <button
-            className="loyalty-filters-bar__quick-btn"
+            className={`loyalty-filters-bar__quick-btn ${
+              isDateRangeActive(getCurrentMonthRange) ? 'loyalty-filters-bar__quick-btn--active' : ''
+            }`}
             onClick={setCurrentMonth}
             title="Текущ месец"
           >
             Текущ месец
           </button>
           <button
-            className="loyalty-filters-bar__quick-btn"
+            className={`loyalty-filters-bar__quick-btn ${
+              isLastMonthActive() ? 'loyalty-filters-bar__quick-btn--active' : ''
+            }`}
             onClick={setLastMonth}
             title="Миналия месец"
           >
             Миналия месец
           </button>
           <button
-            className="loyalty-filters-bar__quick-btn"
+            className={`loyalty-filters-bar__quick-btn ${
+              isLast3MonthsActive() ? 'loyalty-filters-bar__quick-btn--active' : ''
+            }`}
             onClick={setLast3Months}
             title="Последни 3 месеца"
           >
             Последни 3м
           </button>
           <button
-            className="loyalty-filters-bar__quick-btn"
+            className={`loyalty-filters-bar__quick-btn ${
+              isDateRangeActive(getCurrentYearRange) ? 'loyalty-filters-bar__quick-btn--active' : ''
+            }`}
             onClick={setCurrentYear}
             title="Текуща година"
           >

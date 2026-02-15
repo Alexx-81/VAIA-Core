@@ -25,6 +25,14 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
   const [roi, setROI] = useState<LoyaltyROIStats | null>(null);
   const [topCustomers, setTopCustomers] = useState<LoyaltyTopCustomer[]>([]);
 
+  // Format date to YYYY-MM-DD in local timezone
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Initialize filters with current month by default
   const getCurrentMonthRange = () => {
     const now = new Date();
@@ -32,8 +40,8 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     
     return {
-      start: firstDay.toISOString().split('T')[0],
-      end: lastDay.toISOString().split('T')[0],
+      start: formatLocalDate(firstDay),
+      end: formatLocalDate(lastDay),
     };
   };
 
@@ -232,45 +240,48 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
       </div>
 
       {/* Top Customers */}
-      <div className="loyalty-statistics__section">
-        <h2 className="loyalty-statistics__section-title">⭐ Топ клиенти</h2>
-        <div className="loyalty-statistics__table-wrapper">
-          <table className="loyalty-statistics__table">
-            <thead>
-              <tr>
-                <th>Клиент</th>
-                <th>Ниво</th>
-                <th className="text-right">Оборот 12м</th>
-                <th className="text-right">Отстъпки ниво</th>
-                <th className="text-right">Отстъпки ваучери</th>
-                <th className="text-right">Ваучери</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTopCustomers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center">Няма клиенти с loyalty активност</td>
-                </tr>
-              ) : (
-                filteredTopCustomers.map((customer) => (
-                  <tr key={customer.customer_id}>
-                    <td>{customer.customer_name}</td>
-                    <td>
-                      <span className="loyalty-statistics__tier-badge-small">
-                        {customer.current_tier_name}
-                      </span>
-                    </td>
-                    <td className="text-right">€{formatEur(customer.turnover_12m_eur)}</td>
-                    <td className="text-right">€{formatEur(customer.tier_discount_total_eur)}</td>
-                    <td className="text-right">€{formatEur(customer.voucher_discount_total_eur)}</td>
-                    <td className="text-right">
-                      {customer.total_vouchers_redeemed}/{customer.total_vouchers_issued}
-                    </td>
+      <div className="loyalty-statistics__card loyalty-statistics__card--full-width">
+        <div className="loyalty-statistics__card-header">
+          <div className="loyalty-statistics__card-icon">⭐</div>
+          <h2 className="loyalty-statistics__card-title">Топ клиенти</h2>
+        </div>
+        <div className="loyalty-statistics__card-body loyalty-statistics__card-body--table">
+          {filteredTopCustomers.length === 0 ? (
+            <div className="loyalty-statistics__empty">Няма клиенти с loyalty активност</div>
+          ) : (
+            <div className="loyalty-statistics__table-wrapper">
+              <table className="loyalty-statistics__table">
+                <thead>
+                  <tr>
+                    <th>Клиент</th>
+                    <th>Ниво</th>
+                    <th className="text-right">Оборот 12м</th>
+                    <th className="text-right">Отстъпки ниво</th>
+                    <th className="text-right">Отстъпки ваучери</th>
+                    <th className="text-right">Ваучери</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filteredTopCustomers.map((customer) => (
+                    <tr key={customer.customer_id}>
+                      <td>{customer.customer_name}</td>
+                      <td>
+                        <span className="loyalty-statistics__tier-badge-small">
+                          {customer.current_tier_name}
+                        </span>
+                      </td>
+                      <td className="text-right">€{formatEur(customer.turnover_12m_eur)}</td>
+                      <td className="text-right">€{formatEur(customer.tier_discount_total_eur)}</td>
+                      <td className="text-right">€{formatEur(customer.voucher_discount_total_eur)}</td>
+                      <td className="text-right">
+                        {customer.total_vouchers_redeemed}/{customer.total_vouchers_issued}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

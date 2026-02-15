@@ -113,6 +113,26 @@
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
+.loyalty-filters-bar__quick-btn--active {
+  background: linear-gradient(135deg, #0B4F8A, #1565C0);
+  box-shadow: 
+    0 4px 16px rgba(11, 79, 138, 0.5),
+    0 0 0 2px rgba(21, 101, 192, 0.3) inset,
+    0 0 20px rgba(11, 79, 138, 0.3);
+}
+
+.loyalty-filters-bar__quick-btn--active::before {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.loyalty-filters-bar__quick-btn--active:hover {
+  background: linear-gradient(135deg, #1565C0, #1976D2);
+  box-shadow: 
+    0 8px 24px rgba(11, 79, 138, 0.6),
+    0 0 0 2px rgba(21, 101, 192, 0.4) inset,
+    0 0 30px rgba(11, 79, 138, 0.4);
+}
+
 /* Date Range */
 .loyalty-filters-bar__date-range {
   display: flex;
