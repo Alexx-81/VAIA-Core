@@ -644,7 +644,7 @@ export const Settings: React.FC = () => {
           disabled={isReadOnly}
         >
           <div className="settings__backup-info">
-            <p>Създайте пълно архивно копие на всички данни: <strong>Качества</strong>, <strong>Артикули</strong>, <strong>Доставки</strong>, <strong>Продажби</strong> и <strong>Редове от продажби</strong>.</p>
+            <p>Създайте пълно архивно копие на всички данни: <strong>Качества</strong>, <strong>Артикули</strong>, <strong>Доставки</strong>, <strong>Продажби</strong>, <strong>Редове от продажби</strong>, <strong>Клиенти</strong>, <strong>Програма лоялност</strong> (нива, ваучери, статуси, дневник) и <strong>Настройки</strong>.</p>
             <p>При нужда от възстановяване, импортирайте архивен файл — всички текущи данни ще бъдат заменени.</p>
           </div>
 
@@ -691,7 +691,7 @@ export const Settings: React.FC = () => {
 
           <div className="settings__backup-warning">
             ⚠️ <strong>Внимание:</strong> Възстановяването от архив ще замени <strong>ВСИЧКИ</strong> текущи данни
-            (качества, артикули, доставки, продажби) с данните от файла. Това действие е необратимо!
+            (качества, артикули, доставки, продажби, клиенти, лоялност, настройки) с данните от файла. Това действие е необратимо!
           </div>
         </SettingsSectionCard>
 

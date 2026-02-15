@@ -1,4 +1,4 @@
-// Валидация на backup файл
+// Валидация на backup файл (версия 2.0)
 import type { BackupData, BackupCounts } from '../../../lib/api/backup';
 
 interface ValidationResult {
@@ -7,7 +7,7 @@ interface ValidationResult {
   counts?: BackupCounts;
 }
 
-/** Проверява дали подаденият обект е валиден backup файл */
+/** Проверява дали подаденият обект е валиден backup файл (версия 2.x) */
 export function validateBackupFile(data: unknown): ValidationResult {
   if (!data || typeof data !== 'object') {
     return { isValid: false, error: 'Файлът не съдържа валиден JSON обект.' };
@@ -20,12 +20,16 @@ export function validateBackupFile(data: unknown): ValidationResult {
     return { isValid: false, error: 'Файлът не съдържа информация за версия. Вероятно не е VAIA backup файл.' };
   }
 
-  if (!obj.version.startsWith('1.')) {
-    return { isValid: false, error: `Неподдържана версия на архива: ${obj.version}. Поддържа се версия 1.x.` };
+  if (!obj.version.startsWith('2.')) {
+    return { isValid: false, error: `Неподдържана версия на архива: ${obj.version}. Поддържа се версия 2.x.` };
   }
 
   // Проверяваме наличието на всички масиви
-  const requiredArrays = ['qualities', 'articles', 'deliveries', 'sales', 'saleLines'] as const;
+  const requiredArrays = [
+    'qualities', 'articles', 'deliveries', 'sales', 'saleLines',
+    'customers', 'loyaltyTiers', 'voucherRules', 'customerVouchers',
+    'customerLoyaltyStatus', 'loyaltyLedger', 'appSettings',
+  ] as const;
   for (const key of requiredArrays) {
     if (!Array.isArray(obj[key])) {
       return { isValid: false, error: `Файлът не съдържа поле "${key}" или не е масив.` };
@@ -96,6 +100,66 @@ export function validateBackupFile(data: unknown): ValidationResult {
     }
   }
 
+  // Валидираме customer записи
+  for (const c of backup.customers) {
+    if (!c.id) {
+      return { isValid: false, error: `Невалиден запис в клиенти: липсва поле "id".` };
+    }
+    if (!c.name || typeof c.name !== 'string') {
+      return { isValid: false, error: `Невалиден запис в клиенти: липсва поле "name".` };
+    }
+  }
+
+  // Валидираме loyalty_tier записи
+  for (const lt of backup.loyaltyTiers) {
+    if (lt.id === undefined || lt.id === null) {
+      return { isValid: false, error: `Невалиден запис в нива на лоялност: липсва поле "id".` };
+    }
+    if (!lt.name || typeof lt.name !== 'string') {
+      return { isValid: false, error: `Невалиден запис в нива на лоялност: липсва поле "name".` };
+    }
+  }
+
+  // Валидираме voucher_rule записи
+  for (const vr of backup.voucherRules) {
+    if (vr.id === undefined || vr.id === null) {
+      return { isValid: false, error: `Невалиден запис в правила за ваучери: липсва поле "id".` };
+    }
+    if (typeof vr.trigger_turnover_12m_eur !== 'number') {
+      return { isValid: false, error: `Невалиден запис в правила за ваучери: липсва поле "trigger_turnover_12m_eur".` };
+    }
+  }
+
+  // Валидираме customer_voucher записи
+  for (const cv of backup.customerVouchers) {
+    if (!cv.id) {
+      return { isValid: false, error: `Невалиден запис в ваучери: липсва поле "id".` };
+    }
+    if (!cv.customer_id) {
+      return { isValid: false, error: `Невалиден запис в ваучери: липсва поле "customer_id".` };
+    }
+  }
+
+  // Валидираме customer_loyalty_status записи
+  for (const cls of backup.customerLoyaltyStatus) {
+    if (!cls.id) {
+      return { isValid: false, error: `Невалиден запис в статуси лоялност: липсва поле "id".` };
+    }
+    if (!cls.customer_id) {
+      return { isValid: false, error: `Невалиден запис в статуси лоялност: липсва поле "customer_id".` };
+    }
+  }
+
+  // Валидираме loyalty_ledger записи
+  for (const ll of backup.loyaltyLedger) {
+    if (!ll.id) {
+      return { isValid: false, error: `Невалиден запис в дневник лоялност: липсва поле "id".` };
+    }
+    if (!ll.customer_id) {
+      return { isValid: false, error: `Невалиден запис в дневник лоялност: липсва поле "customer_id".` };
+    }
+  }
+
   return {
     isValid: true,
     counts: {
@@ -104,6 +168,13 @@ export function validateBackupFile(data: unknown): ValidationResult {
       deliveries: backup.deliveries.length,
       sales: backup.sales.length,
       saleLines: backup.saleLines.length,
+      customers: backup.customers.length,
+      loyaltyTiers: backup.loyaltyTiers.length,
+      voucherRules: backup.voucherRules.length,
+      customerVouchers: backup.customerVouchers.length,
+      customerLoyaltyStatus: backup.customerLoyaltyStatus.length,
+      loyaltyLedger: backup.loyaltyLedger.length,
+      appSettings: backup.appSettings.length,
     },
   };
 }
@@ -116,6 +187,13 @@ export function getBackupSummary(counts: BackupCounts): string {
   parts.push(`${counts.deliveries} доставк${counts.deliveries === 1 ? 'а' : 'и'}`);
   parts.push(`${counts.sales} продажб${counts.sales === 1 ? 'а' : 'и'}`);
   parts.push(`${counts.saleLines} ред${counts.saleLines === 1 ? '' : 'а'} от продажби`);
+  parts.push(`${counts.customers} клиент${counts.customers === 1 ? '' : 'а'}`);
+  if (counts.loyaltyTiers > 0) parts.push(`${counts.loyaltyTiers} нив${counts.loyaltyTiers === 1 ? 'о' : 'а'} лоялност`);
+  if (counts.voucherRules > 0) parts.push(`${counts.voucherRules} правил${counts.voucherRules === 1 ? 'о' : 'а'} за ваучери`);
+  if (counts.customerVouchers > 0) parts.push(`${counts.customerVouchers} ваучер${counts.customerVouchers === 1 ? '' : 'а'}`);
+  if (counts.customerLoyaltyStatus > 0) parts.push(`${counts.customerLoyaltyStatus} статус${counts.customerLoyaltyStatus === 1 ? '' : 'а'} лоялност`);
+  if (counts.loyaltyLedger > 0) parts.push(`${counts.loyaltyLedger} запис${counts.loyaltyLedger === 1 ? '' : 'а'} в дневника`);
+  if (counts.appSettings > 0) parts.push('настройки');
   return parts.join(', ');
 }
 
