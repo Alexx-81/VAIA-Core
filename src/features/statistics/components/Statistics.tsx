@@ -1,9 +1,18 @@
+import { useState } from 'react';
 import { useStatistics } from '../hooks/useStatistics';
 import { StatisticsFiltersBar } from './StatisticsFiltersBar';
 import { StatisticsSummary } from './StatisticsSummary';
 import { StatisticsTable } from './StatisticsTable';
 import { LoyaltyStatistics } from './LoyaltyStatistics';
-import { exportStatisticsToCSV, exportStatisticsToExcel, exportStatisticsToPDF } from '../utils/exportStatistics';
+import { 
+  exportStatisticsToCSV, 
+  exportStatisticsToExcel, 
+  exportStatisticsToPDF,
+  exportLoyaltyToCSV,
+  exportLoyaltyToExcel,
+  exportLoyaltyToPDF,
+  type LoyaltyExportData,
+} from '../utils/exportStatistics';
 import type { StatisticsTab } from '../types';
 import './Statistics.css';
 
@@ -18,6 +27,9 @@ export const Statistics = () => {
     updateFilters,
     toggleCostMode,
   } = useStatistics();
+
+  // State for loyalty export data
+  const [loyaltyExportData, setLoyaltyExportData] = useState<LoyaltyExportData | null>(null);
 
   const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
     const tabLabels: Record<StatisticsTab, string> = {
@@ -35,6 +47,24 @@ export const Statistics = () => {
 
     const title = `${tabLabels[activeTab]} - ${formatDate(filters.dateFrom)} до ${formatDate(filters.dateTo)}`;
 
+    // Handle loyalty tab export
+    if (activeTab === 'loyalty') {
+      if (!loyaltyExportData) {
+        console.warn('Loyalty export data not available yet');
+        return;
+      }
+      
+      if (format === 'csv') {
+        exportLoyaltyToCSV(loyaltyExportData, title);
+      } else if (format === 'excel') {
+        exportLoyaltyToExcel(loyaltyExportData, title);
+      } else if (format === 'pdf') {
+        exportLoyaltyToPDF(loyaltyExportData, title);
+      }
+      return;
+    }
+
+    // Handle statistics tabs export (daily, monthly, yearly)
     if (format === 'csv') {
       exportStatisticsToCSV(rows, filters.costModes, title);
     } else if (format === 'excel') {
@@ -107,7 +137,11 @@ export const Statistics = () => {
 
       <div className="statistics__content">
         {activeTab === 'loyalty' ? (
-          <LoyaltyStatistics dateFrom={filters.dateFrom} dateTo={filters.dateTo} />
+          <LoyaltyStatistics 
+            dateFrom={filters.dateFrom} 
+            dateTo={filters.dateTo}
+            onExportData={setLoyaltyExportData}
+          />
         ) : (
           <>
             <StatisticsFiltersBar

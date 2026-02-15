@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   getLoyaltyStatsDistribution,
   getLoyaltyStatsVouchers,
@@ -11,14 +11,16 @@ import {
 } from '../../../lib/api/loyalty';
 import { LoyaltyFiltersBar } from './LoyaltyFiltersBar';
 import type { LoyaltyFilters } from '../types';
+import type { LoyaltyExportData } from '../utils/exportStatistics';
 import './LoyaltyStatistics.css';
 
 interface LoyaltyStatisticsProps {
   dateFrom: string;
   dateTo: string;
+  onExportData?: (data: LoyaltyExportData) => void;
 }
 
-export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) => {
+export const LoyaltyStatistics = ({ dateFrom, dateTo, onExportData }: LoyaltyStatisticsProps) => {
   const [loading, setLoading] = useState(true);
   const [tierDistribution, setTierDistribution] = useState<LoyaltyTierDistribution[]>([]);
   const [vouchersMonthly, setVouchersMonthly] = useState<LoyaltyVoucherMonthlyStats[]>([]);
@@ -84,23 +86,39 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
   }, [filters.dateFrom, filters.dateTo]);
 
   // Apply filters to tier distribution
-  const filteredTierDistribution = tierDistribution.filter((tier) => {
-    if (filters.tierId !== null && tier.tier_id !== filters.tierId) {
-      return false;
-    }
-    return true;
-  });
+  const filteredTierDistribution = useMemo(() => {
+    return tierDistribution.filter((tier) => {
+      if (filters.tierId !== null && tier.tier_id !== filters.tierId) {
+        return false;
+      }
+      return true;
+    });
+  }, [tierDistribution, filters.tierId]);
 
   // Apply filters to top customers
-  const filteredTopCustomers = topCustomers.filter((customer) => {
-    if (filters.customerId && customer.customer_id !== filters.customerId) {
-      return false;
+  const filteredTopCustomers = useMemo(() => {
+    return topCustomers.filter((customer) => {
+      if (filters.customerId && customer.customer_id !== filters.customerId) {
+        return false;
+      }
+      if (filters.tierId !== null && customer.current_tier_id !== filters.tierId) {
+        return false;
+      }
+      return true;
+    });
+  }, [topCustomers, filters.customerId, filters.tierId]);
+
+  // Export filtered data to parent component
+  useEffect(() => {
+    if (!loading && onExportData) {
+      onExportData({
+        tierDistribution: filteredTierDistribution,
+        vouchersMonthly,
+        roi,
+        topCustomers: filteredTopCustomers,
+      });
     }
-    if (filters.tierId !== null && customer.current_tier_id !== filters.tierId) {
-      return false;
-    }
-    return true;
-  });
+  }, [loading, onExportData, filteredTierDistribution, vouchersMonthly, roi, filteredTopCustomers]);
 
   if (loading) {
     return (

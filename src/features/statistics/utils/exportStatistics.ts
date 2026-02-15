@@ -2,6 +2,12 @@ import * as pdfMakeLib from 'pdfmake/build/pdfmake';
 import * as pdfFontsLib from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx';
 import type { StatisticsRow, StatisticsSummaryData, CostMode } from '../types';
+import type { 
+  LoyaltyTierDistribution, 
+  LoyaltyVoucherMonthlyStats, 
+  LoyaltyROIStats, 
+  LoyaltyTopCustomer 
+} from '../../../lib/api/loyalty';
 
 // Setup pdfMake
 const pdfMake: any = (pdfMakeLib as any).default || pdfMakeLib;
@@ -354,3 +360,322 @@ export const exportStatisticsToPDF = (
   pdfMake.createPdf(docDefinition).download(`${title}.pdf`);
 };
 
+// =============================================================================
+// LOYALTY EXPORTS
+// =============================================================================
+
+export interface LoyaltyExportData {
+  tierDistribution: LoyaltyTierDistribution[];
+  vouchersMonthly: LoyaltyVoucherMonthlyStats[];
+  roi: LoyaltyROIStats | null;
+  topCustomers: LoyaltyTopCustomer[];
+}
+
+export const exportLoyaltyToCSV = (data: LoyaltyExportData, title: string) => {
+  const sections: string[] = [];
+
+  // ROI Metrics Section
+  if (data.roi) {
+    sections.push('=== ROI МЕТРИКИ ===');
+    sections.push(`Обща отстъпка (нива),${data.roi.total_tier_discounts_eur.toFixed(2)}`);
+    sections.push(`Обща отстъпка (ваучери),${data.roi.total_voucher_discounts_eur.toFixed(2)}`);
+    sections.push(`Обща отстъпка,${data.roi.total_discounts_eur.toFixed(2)}`);
+    sections.push(`Клиенти с лоялност,${data.roi.customers_with_loyalty}`);
+    sections.push(`Общо клиенти,${data.roi.total_customers}`);
+    sections.push(`Процент участие,${data.roi.loyalty_participation_rate.toFixed(1)}%`);
+    sections.push(`Средна отстъпка на продажба,${data.roi.avg_discount_per_sale_eur.toFixed(2)}`);
+    sections.push(`Продажби с лоялност,${data.roi.sales_with_loyalty_count}`);
+    sections.push(`Общо продажби,${data.roi.total_sales_count}`);
+    sections.push('');
+  }
+
+  // Tier Distribution Section
+  sections.push('=== РАЗПРЕДЕЛЕНИЕ ПО НИВА ===');
+  sections.push('Ниво,Клиенти,Среден оборот (€),Общ оборот (€)');
+  data.tierDistribution.forEach(tier => {
+    sections.push(
+      `${tier.tier_name},${tier.customer_count},${tier.avg_turnover_12m_eur.toFixed(2)},${tier.total_turnover_12m_eur.toFixed(2)}`
+    );
+  });
+  sections.push('');
+
+  // Vouchers Section
+  sections.push('=== ВАУЧЕРИ ПО МЕСЕЦИ ===');
+  sections.push('Месец,Издадени (бр),Издадени (€),Изплатени (бр),Изплатени (€)');
+  data.vouchersMonthly.forEach(vm => {
+    sections.push(
+      `${vm.month},${vm.issued_count},${vm.issued_amount_eur.toFixed(2)},${vm.redeemed_count},${vm.redeemed_amount_eur.toFixed(2)}`
+    );
+  });
+  sections.push('');
+
+  // Top Customers Section
+  sections.push('=== ТОП КЛИЕНТИ ===');
+  sections.push('Клиент,Ниво,Оборот 12м (€),Отстъпка ниво (€),Отстъпка ваучери (€),Издадени ваучери,Изплатени ваучери');
+  data.topCustomers.forEach(customer => {
+    sections.push(
+      `${customer.customer_name},${customer.current_tier_name},${customer.turnover_12m_eur.toFixed(2)},${customer.tier_discount_total_eur.toFixed(2)},${customer.voucher_discount_total_eur.toFixed(2)},${customer.total_vouchers_issued},${customer.total_vouchers_redeemed}`
+    );
+  });
+
+  const csvContent = sections.join('\n');
+  
+  // Download
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `${title}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+export const exportLoyaltyToExcel = (data: LoyaltyExportData, title: string) => {
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: ROI Metrics
+  if (data.roi) {
+    const roiData = [
+      ['Метрика', 'Стойност'],
+      ['Обща отстъпка (нива)', data.roi.total_tier_discounts_eur],
+      ['Обща отстъпка (ваучери)', data.roi.total_voucher_discounts_eur],
+      ['Обща отстъпка', data.roi.total_discounts_eur],
+      ['Клиенти с лоялност', data.roi.customers_with_loyalty],
+      ['Общо клиенти', data.roi.total_customers],
+      ['Процент участие (%)', data.roi.loyalty_participation_rate],
+      ['Средна отстъпка на продажба (€)', data.roi.avg_discount_per_sale_eur],
+      ['Продажби с лоялност', data.roi.sales_with_loyalty_count],
+      ['Общо продажби', data.roi.total_sales_count],
+    ];
+    const wsROI = XLSX.utils.aoa_to_sheet(roiData);
+    XLSX.utils.book_append_sheet(wb, wsROI, 'ROI Метрики');
+  }
+
+  // Sheet 2: Tier Distribution
+  const tierData = [
+    ['Ниво', 'Клиенти', 'Среден оборот (€)', 'Общ оборот (€)'],
+    ...data.tierDistribution.map(tier => [
+      tier.tier_name,
+      tier.customer_count,
+      tier.avg_turnover_12m_eur,
+      tier.total_turnover_12m_eur,
+    ]),
+  ];
+  const wsTiers = XLSX.utils.aoa_to_sheet(tierData);
+  XLSX.utils.book_append_sheet(wb, wsTiers, 'Нива');
+
+  // Sheet 3: Vouchers
+  const voucherData = [
+    ['Месец', 'Издадени (бр)', 'Издадени (€)', 'Изплатени (бр)', 'Изплатени (€)'],
+    ...data.vouchersMonthly.map(vm => [
+      vm.month,
+      vm.issued_count,
+      vm.issued_amount_eur,
+      vm.redeemed_count,
+      vm.redeemed_amount_eur,
+    ]),
+  ];
+  const wsVouchers = XLSX.utils.aoa_to_sheet(voucherData);
+  XLSX.utils.book_append_sheet(wb, wsVouchers, 'Ваучери');
+
+  // Sheet 4: Top Customers
+  const customerData = [
+    ['Клиент', 'Ниво', 'Оборот 12м (€)', 'Отстъпка ниво (€)', 'Отстъпка ваучери (€)', 'Издадени ваучери', 'Изплатени ваучери'],
+    ...data.topCustomers.map(customer => [
+      customer.customer_name,
+      customer.current_tier_name,
+      customer.turnover_12m_eur,
+      customer.tier_discount_total_eur,
+      customer.voucher_discount_total_eur,
+      customer.total_vouchers_issued,
+      customer.total_vouchers_redeemed,
+    ]),
+  ];
+  const wsCustomers = XLSX.utils.aoa_to_sheet(customerData);
+  XLSX.utils.book_append_sheet(wb, wsCustomers, 'Топ клиенти');
+
+  // Download
+  XLSX.writeFile(wb, `${title}.xlsx`);
+};
+
+export const exportLoyaltyToPDF = (data: LoyaltyExportData, title: string) => {
+  const content: any[] = [
+    {
+      text: title,
+      style: 'header',
+      margin: [0, 0, 0, 20],
+    },
+  ];
+
+  // ROI Metrics Section
+  if (data.roi) {
+    content.push(
+      { text: 'ROI Метрики', style: 'sectionHeader', margin: [0, 10, 0, 10] },
+      {
+        table: {
+          headerRows: 0,
+          widths: ['*', 'auto'],
+          body: [
+            ['Обща отстъпка (нива):', `€${data.roi.total_tier_discounts_eur.toFixed(2)}`],
+            ['Обща отстъпка (ваучери):', `€${data.roi.total_voucher_discounts_eur.toFixed(2)}`],
+            ['Обща отстъпка:', `€${data.roi.total_discounts_eur.toFixed(2)}`],
+            ['Клиенти с лоялност:', `${data.roi.customers_with_loyalty} от ${data.roi.total_customers}`],
+            ['Процент участие:', `${data.roi.loyalty_participation_rate.toFixed(1)}%`],
+            ['Средна отстъпка на продажба:', `€${data.roi.avg_discount_per_sale_eur.toFixed(2)}`],
+            ['Продажби с лоялност:', `${data.roi.sales_with_loyalty_count} от ${data.roi.total_sales_count}`],
+          ],
+        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 15],
+      }
+    );
+  }
+
+  // Tier Distribution Section
+  if (data.tierDistribution.length > 0) {
+    content.push(
+      { text: 'Разпределение по нива', style: 'sectionHeader', margin: [0, 10, 0, 10] },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['*', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Ниво', style: 'tableHeader' },
+              { text: 'Клиенти', style: 'tableHeader' },
+              { text: 'Среден оборот (€)', style: 'tableHeader' },
+              { text: 'Общ оборот (€)', style: 'tableHeader' },
+            ],
+            ...data.tierDistribution.map(tier => [
+              tier.tier_name,
+              tier.customer_count.toString(),
+              tier.avg_turnover_12m_eur.toFixed(2),
+              tier.total_turnover_12m_eur.toFixed(2),
+            ]),
+          ],
+        },
+        layout: {
+          fillColor: (rowIndex: number) => (rowIndex === 0 ? '#0B4F8A' : null),
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#cccccc',
+          vLineColor: () => '#cccccc',
+        },
+        margin: [0, 0, 0, 15],
+      }
+    );
+  }
+
+  // Vouchers Section
+  if (data.vouchersMonthly.length > 0) {
+    content.push(
+      { text: 'Ваучери по месеци', style: 'sectionHeader', margin: [0, 10, 0, 10] },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Месец', style: 'tableHeader' },
+              { text: 'Издадени (бр)', style: 'tableHeader' },
+              { text: 'Издадени (€)', style: 'tableHeader' },
+              { text: 'Изплатени (бр)', style: 'tableHeader' },
+              { text: 'Изплатени (€)', style: 'tableHeader' },
+            ],
+            ...data.vouchersMonthly.map(vm => [
+              vm.month,
+              vm.issued_count.toString(),
+              vm.issued_amount_eur.toFixed(2),
+              vm.redeemed_count.toString(),
+              vm.redeemed_amount_eur.toFixed(2),
+            ]),
+          ],
+        },
+        layout: {
+          fillColor: (rowIndex: number) => (rowIndex === 0 ? '#0B4F8A' : null),
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#cccccc',
+          vLineColor: () => '#cccccc',
+        },
+        margin: [0, 0, 0, 15],
+      }
+    );
+  }
+
+  // Top Customers Section
+  if (data.topCustomers.length > 0) {
+    content.push(
+      { text: 'Топ клиенти', style: 'sectionHeader', margin: [0, 10, 0, 10], pageBreak: 'before' },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['*', 'auto', 'auto', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Клиент', style: 'tableHeader' },
+              { text: 'Ниво', style: 'tableHeader' },
+              { text: 'Оборот 12м (€)', style: 'tableHeader' },
+              { text: 'От. ниво (€)', style: 'tableHeader' },
+              { text: 'От. ваучери (€)', style: 'tableHeader' },
+              { text: 'Ваучери', style: 'tableHeader' },
+            ],
+            ...data.topCustomers.map(customer => [
+              customer.customer_name,
+              customer.current_tier_name,
+              customer.turnover_12m_eur.toFixed(2),
+              customer.tier_discount_total_eur.toFixed(2),
+              customer.voucher_discount_total_eur.toFixed(2),
+              `${customer.total_vouchers_redeemed}/${customer.total_vouchers_issued}`,
+            ]),
+          ],
+        },
+        layout: {
+          fillColor: (rowIndex: number) => (rowIndex === 0 ? '#0B4F8A' : null),
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#cccccc',
+          vLineColor: () => '#cccccc',
+        },
+      }
+    );
+  }
+
+  const docDefinition: any = {
+    pageOrientation: 'landscape',
+    pageSize: 'A4',
+    pageMargins: [40, 60, 40, 60],
+    content,
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        alignment: 'center',
+      },
+      sectionHeader: {
+        fontSize: 14,
+        bold: true,
+        color: '#0B4F8A',
+      },
+      tableHeader: {
+        bold: true,
+        fontSize: 9,
+        color: 'white',
+        alignment: 'center',
+      },
+      tableCell: {
+        fontSize: 8,
+        alignment: 'right',
+      },
+    },
+    defaultStyle: {
+      font: 'Roboto',
+      fontSize: 9,
+    },
+  };
+
+  // Download
+  pdfMake.createPdf(docDefinition).download(`${title}.pdf`);
+};
