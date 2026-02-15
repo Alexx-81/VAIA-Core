@@ -32,6 +32,16 @@ function getTierBadgeClass(name: string): string {
   return 'loyalty-badge--start';
 }
 
+function getTierIcon(name: string): string {
+  const n = name.toUpperCase();
+  if (n === 'START') return '🌱';
+  if (n === 'SILVER') return '🥈';
+  if (n === 'GOLD') return '🥇';
+  if (n === 'VIP') return '⭐';
+  if (n === 'ELITE') return '👑';
+  return '🏅';
+}
+
 export const TiersConfig = ({
   tiers, loading, isReadOnly, isAdmin,
   onCreateTier, onUpdateTier, onDeleteTier,
@@ -115,190 +125,104 @@ export const TiersConfig = ({
     setDeleteConfirm({ isOpen: false, tierId: null });
   }, [deleteConfirm.tierId, onDeleteTier]);
 
-  if (loading) return <div className="loyalty__loading">Зареждане на нивата...</div>;
+  if (loading) {
+    return (
+      <div className="tier-cards__loading">
+        <div className="tier-cards__spinner"></div>
+        <p>Зареждане на нивата...</p>
+      </div>
+    );
+  }
+
+  // Sort tiers by sort_order
+  const sortedTiers = [...tiers].sort((a, b) => a.sort_order - b.sort_order);
 
   return (
     <>
-      <div className="loyalty-config">
-        <div className="loyalty-config__header">
-          <div>
-            <h3 className="loyalty-config__title">Нива на лоялност</h3>
-            <p className="loyalty-config__subtitle">
+      <div className="tier-cards">
+        <div className="tier-cards__header">
+          <div className="tier-cards__title-section">
+            <h3 className="tier-cards__title">Нива на лоялност</h3>
+            <p className="tier-cards__subtitle">
               Определете нивата и процентите отстъпка. Подредбата (0, 1, 2...) определя йерархията.
             </p>
           </div>
           {isAdmin && !isReadOnly && (
             <button
               type="button"
-              className="loyalty__add-btn"
+              className="tier-cards__add-btn"
               onClick={handleStartAdd}
               disabled={isAdding}
             >
-              + Ново ниво
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Ново ниво
             </button>
           )}
         </div>
 
-        <table className="loyalty-table">
-          <thead>
-            <tr>
-              <th>Ред</th>
-              <th>Име</th>
-              <th>Мин. оборот 12м (€)</th>
-              <th>Отстъпка %</th>
-              <th>Статус</th>
-              {isAdmin && !isReadOnly && <th>Действия</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {tiers.map(tier => (
-              <tr key={tier.id}>
-                {editingId === tier.id ? (
-                  <>
-                    <td>
-                      <input
-                        type="number"
-                        className="loyalty-table__input"
-                        value={editForm.sort_order}
-                        onChange={e => setEditForm(f => ({ ...f, sort_order: Number(e.target.value) }))}
-                        min={0}
-                        style={{ maxWidth: '60px' }}
-                      />
-                      {editErrors.sort_order && <div className="loyalty-field-error">{editErrors.sort_order}</div>}
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        className="loyalty-table__input loyalty-table__input--name"
-                        value={editForm.name}
-                        onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                      />
-                      {editErrors.name && <div className="loyalty-field-error">{editErrors.name}</div>}
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        className="loyalty-table__input"
-                        value={editForm.min_turnover_12m_eur}
-                        onChange={e => setEditForm(f => ({ ...f, min_turnover_12m_eur: Number(e.target.value) }))}
-                        min={0}
-                        step={10}
-                      />
-                      {editErrors.min_turnover_12m_eur && <div className="loyalty-field-error">{editErrors.min_turnover_12m_eur}</div>}
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        className="loyalty-table__input"
-                        value={editForm.discount_percent}
-                        onChange={e => setEditForm(f => ({ ...f, discount_percent: Number(e.target.value) }))}
-                        min={0}
-                        max={100}
-                        step={0.5}
-                      />
-                      {editErrors.discount_percent && <div className="loyalty-field-error">{editErrors.discount_percent}</div>}
-                    </td>
-                    <td>
-                      <label className="loyalty-toggle">
-                        <input
-                          type="checkbox"
-                          checked={editForm.is_active}
-                          onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
-                        />
-                        <span className="loyalty-toggle__slider" />
-                      </label>
-                    </td>
-                    <td>
-                      <div className="loyalty-table__btn-group">
-                        <button type="button" className="loyalty-table__btn loyalty-table__btn--save" onClick={handleSaveEdit} disabled={saving}>
-                          {saving ? '...' : 'Запази'}
-                        </button>
-                        <button type="button" className="loyalty-table__btn" onClick={handleCancelEdit}>Откажи</button>
-                      </div>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{tier.sort_order}</td>
-                    <td>
-                      <span className={`loyalty-badge ${getTierBadgeClass(tier.name)}`}>{tier.name}</span>
-                    </td>
-                    <td><span className="loyalty-eur">€{tier.min_turnover_12m_eur.toFixed(2)}</span></td>
-                    <td><strong>{tier.discount_percent}%</strong></td>
-                    <td>
-                      <span className={`loyalty-badge ${tier.is_active ? 'loyalty-badge--active' : 'loyalty-badge--inactive'}`}>
-                        {tier.is_active ? 'Активно' : 'Неактивно'}
-                      </span>
-                    </td>
-                    {isAdmin && !isReadOnly && (
-                      <td>
-                        <div className="loyalty-table__btn-group">
-                          <button type="button" className="loyalty-table__btn" onClick={() => handleEdit(tier)}>Редактирай</button>
-                          <button
-                            type="button"
-                            className="loyalty-table__btn loyalty-table__btn--danger"
-                            onClick={() => setDeleteConfirm({ isOpen: true, tierId: tier.id })}
-                          >
-                            Изтрий
-                          </button>
-                        </div>
-                      </td>
-                    )}
-                  </>
-                )}
-              </tr>
-            ))}
+        {/* Add New Tier Card (if adding) */}
+        {isAdding && (
+          <div className="tier-cards__grid">
+            <div className="tier-card tier-card--editing">
+              <div className="tier-card__header">
+                <div className="tier-card__icon">➕</div>
+                <div className="tier-card__info">
+                  <input
+                    type="text"
+                    className="tier-card__name-input"
+                    value={addForm.name}
+                    onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Име на ниво (START, SILVER, GOLD...)"
+                    autoFocus
+                  />
+                  {addErrors.name && <div className="tier-card__error">{addErrors.name}</div>}
+                </div>
+              </div>
 
-            {/* Add new row */}
-            {isAdding && (
-              <tr>
-                <td>
+              <div className="tier-card__body">
+                <div className="tier-card__field">
+                  <label className="tier-card__label">Подредба</label>
                   <input
                     type="number"
-                    className="loyalty-table__input"
+                    className="tier-card__input"
                     value={addForm.sort_order}
                     onChange={e => setAddForm(f => ({ ...f, sort_order: Number(e.target.value) }))}
                     min={0}
-                    style={{ maxWidth: '60px' }}
                   />
-                  {addErrors.sort_order && <div className="loyalty-field-error">{addErrors.sort_order}</div>}
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    className="loyalty-table__input loyalty-table__input--name"
-                    value={addForm.name}
-                    onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
-                    placeholder="Име на ниво"
-                  />
-                  {addErrors.name && <div className="loyalty-field-error">{addErrors.name}</div>}
-                </td>
-                <td>
+                  {addErrors.sort_order && <div className="tier-card__error">{addErrors.sort_order}</div>}
+                </div>
+
+                <div className="tier-card__field">
+                  <label className="tier-card__label">Мин. оборот 12м (€)</label>
                   <input
                     type="number"
-                    className="loyalty-table__input"
+                    className="tier-card__input"
                     value={addForm.min_turnover_12m_eur}
                     onChange={e => setAddForm(f => ({ ...f, min_turnover_12m_eur: Number(e.target.value) }))}
                     min={0}
                     step={10}
-                    placeholder="0.00"
                   />
-                  {addErrors.min_turnover_12m_eur && <div className="loyalty-field-error">{addErrors.min_turnover_12m_eur}</div>}
-                </td>
-                <td>
+                  {addErrors.min_turnover_12m_eur && <div className="tier-card__error">{addErrors.min_turnover_12m_eur}</div>}
+                </div>
+
+                <div className="tier-card__field">
+                  <label className="tier-card__label">Отстъпка %</label>
                   <input
                     type="number"
-                    className="loyalty-table__input"
+                    className="tier-card__input"
                     value={addForm.discount_percent}
                     onChange={e => setAddForm(f => ({ ...f, discount_percent: Number(e.target.value) }))}
                     min={0}
                     max={100}
                     step={0.5}
-                    placeholder="0"
                   />
-                  {addErrors.discount_percent && <div className="loyalty-field-error">{addErrors.discount_percent}</div>}
-                </td>
-                <td>
+                  {addErrors.discount_percent && <div className="tier-card__error">{addErrors.discount_percent}</div>}
+                </div>
+
+                <div className="tier-card__field">
+                  <label className="tier-card__label">Статус</label>
                   <label className="loyalty-toggle">
                     <input
                       type="checkbox"
@@ -306,29 +230,248 @@ export const TiersConfig = ({
                       onChange={e => setAddForm(f => ({ ...f, is_active: e.target.checked }))}
                     />
                     <span className="loyalty-toggle__slider" />
+                    <span className="loyalty-toggle__label">{addForm.is_active ? 'Активно' : 'Неактивно'}</span>
                   </label>
-                </td>
-                <td>
-                  <div className="loyalty-table__btn-group">
-                    <button type="button" className="loyalty-table__btn loyalty-table__btn--save" onClick={handleSaveAdd} disabled={saving}>
-                      {saving ? '...' : 'Добави'}
-                    </button>
-                    <button type="button" className="loyalty-table__btn" onClick={() => setIsAdding(false)}>Откажи</button>
-                  </div>
-                </td>
-              </tr>
-            )}
+                </div>
+              </div>
 
-            {tiers.length === 0 && !isAdding && (
-              <tr>
-                <td colSpan={isAdmin && !isReadOnly ? 6 : 5} className="loyalty__empty">
-                  Няма конфигурирани нива. Натиснете "+ Ново ниво" за да създадете.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              <div className="tier-card__footer">
+                <button
+                  type="button"
+                  className="tier-card__btn tier-card__btn--save"
+                  onClick={handleSaveAdd}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <div className="tier-card__btn-spinner"></div>
+                  ) : (
+                    <>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                      </svg>
+                      Запази
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="tier-card__btn tier-card__btn--cancel"
+                  onClick={() => setIsAdding(false)}
+                  disabled={saving}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  Откажи
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tiers Grid */}
+        <div className="tier-cards__grid">
+          {sortedTiers.map(tier => {
+            const isEditing = editingId === tier.id;
+
+            return (
+              <div
+                key={tier.id}
+                className={`tier-card ${!tier.is_active ? 'tier-card--inactive' : ''} ${isEditing ? 'tier-card--editing' : ''}`}
+              >
+                {isEditing ? (
+                  <>
+                    {/* Edit Mode */}
+                    <div className="tier-card__header">
+                      <div className="tier-card__icon">{getTierIcon(editForm.name)}</div>
+                      <div className="tier-card__info">
+                        <input
+                          type="text"
+                          className="tier-card__name-input"
+                          value={editForm.name}
+                          onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                        />
+                        {editErrors.name && <div className="tier-card__error">{editErrors.name}</div>}
+                      </div>
+                    </div>
+
+                    <div className="tier-card__body">
+                      <div className="tier-card__field">
+                        <label className="tier-card__label">Подредба</label>
+                        <input
+                          type="number"
+                          className="tier-card__input"
+                          value={editForm.sort_order}
+                          onChange={e => setEditForm(f => ({ ...f, sort_order: Number(e.target.value) }))}
+                          min={0}
+                        />
+                        {editErrors.sort_order && <div className="tier-card__error">{editErrors.sort_order}</div>}
+                      </div>
+
+                      <div className="tier-card__field">
+                        <label className="tier-card__label">Мин. оборот 12м (€)</label>
+                        <input
+                          type="number"
+                          className="tier-card__input"
+                          value={editForm.min_turnover_12m_eur}
+                          onChange={e => setEditForm(f => ({ ...f, min_turnover_12m_eur: Number(e.target.value) }))}
+                          min={0}
+                          step={10}
+                        />
+                        {editErrors.min_turnover_12m_eur && <div className="tier-card__error">{editErrors.min_turnover_12m_eur}</div>}
+                      </div>
+
+                      <div className="tier-card__field">
+                        <label className="tier-card__label">Отстъпка %</label>
+                        <input
+                          type="number"
+                          className="tier-card__input"
+                          value={editForm.discount_percent}
+                          onChange={e => setEditForm(f => ({ ...f, discount_percent: Number(e.target.value) }))}
+                          min={0}
+                          max={100}
+                          step={0.5}
+                        />
+                        {editErrors.discount_percent && <div className="tier-card__error">{editErrors.discount_percent}</div>}
+                      </div>
+
+                      <div className="tier-card__field">
+                        <label className="tier-card__label">Статус</label>
+                        <label className="loyalty-toggle">
+                          <input
+                            type="checkbox"
+                            checked={editForm.is_active}
+                            onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
+                          />
+                          <span className="loyalty-toggle__slider" />
+                          <span className="loyalty-toggle__label">{editForm.is_active ? 'Активно' : 'Неактивно'}</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="tier-card__footer">
+                      <button
+                        type="button"
+                        className="tier-card__btn tier-card__btn--save"
+                        onClick={handleSaveEdit}
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <div className="tier-card__btn-spinner"></div>
+                        ) : (
+                          <>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                              <polyline points="17 21 17 13 7 13 7 21" />
+                              <polyline points="7 3 7 8 15 8" />
+                            </svg>
+                            Запази
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        className="tier-card__btn tier-card__btn--cancel"
+                        onClick={handleCancelEdit}
+                        disabled={saving}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                        Откажи
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* View Mode */}
+                    <div className="tier-card__header">
+                      <div className="tier-card__icon">{getTierIcon(tier.name)}</div>
+                      <div className="tier-card__info">
+                        <h4 className="tier-card__name">
+                          <span className={`loyalty-badge ${getTierBadgeClass(tier.name)}`}>{tier.name}</span>
+                        </h4>
+                        <p className="tier-card__order">Подредба: {tier.sort_order}</p>
+                      </div>
+                      <div className="tier-card__status">
+                        <span className={`loyalty-badge ${tier.is_active ? 'loyalty-badge--active' : 'loyalty-badge--inactive'}`}>
+                          {tier.is_active ? 'Активно' : 'Неактивно'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="tier-card__body">
+                      <div className="tier-card__detail">
+                        <span className="tier-card__detail-label">Мин. оборот 12м</span>
+                        <span className="tier-card__detail-value">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                          </svg>
+                          €{tier.min_turnover_12m_eur.toFixed(2)}
+                        </span>
+                      </div>
+
+                      <div className="tier-card__detail">
+                        <span className="tier-card__detail-label">Отстъпка</span>
+                        <span className="tier-card__detail-value tier-card__detail-value--highlight">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                            <polyline points="12 2 12 12 16 14" />
+                          </svg>
+                          {tier.discount_percent}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {isAdmin && !isReadOnly && (
+                      <div className="tier-card__footer">
+                        <button
+                          type="button"
+                          className="tier-card__btn tier-card__btn--edit"
+                          onClick={() => handleEdit(tier)}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          Редактирай
+                        </button>
+                        <button
+                          type="button"
+                          className="tier-card__btn tier-card__btn--delete"
+                          onClick={() => setDeleteConfirm({ isOpen: true, tierId: tier.id })}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                          Изтрий
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+
+          {sortedTiers.length === 0 && !isAdding && (
+            <div className="tier-cards__empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="64" height="64">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <p>Няма конфигурирани нива. Натиснете "Ново ниво" за да създадете.</p>
+            </div>
+          )}
+        </div>
       </div>
+
 
       <ConfirmDialog
         isOpen={deleteConfirm.isOpen}
