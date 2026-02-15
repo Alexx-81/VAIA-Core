@@ -1,0 +1,273 @@
+.loyalty-filters-bar {
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.7), rgba(20, 20, 30, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  animation: filterSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+@keyframes filterSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loyalty-filters-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #FF7A00, #0B4F8A, #FF7A00);
+  background-size: 200% 100%;
+  border-radius: 20px 20px 0 0;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.loyalty-filters-bar__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.loyalty-filters-bar__row:last-child {
+  margin-bottom: 0;
+}
+
+/* Quick Date Filters */
+.loyalty-filters-bar__quick-dates {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.loyalty-filters-bar__quick-btn {
+  background: linear-gradient(135deg, #FF7A00, #FF9500);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  box-shadow: 
+    0 4px 12px rgba(255, 122, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+.loyalty-filters-bar__quick-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.loyalty-filters-bar__quick-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.loyalty-filters-bar__quick-btn:hover {
+  background: linear-gradient(135deg, #FF9500, #FFB000);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(255, 122, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.loyalty-filters-bar__quick-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 8px rgba(255, 122, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* Date Range */
+.loyalty-filters-bar__date-range {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.loyalty-filters-bar__date-range label {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.loyalty-filters-bar__date-input {
+  padding: 0.625rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-weight: 500;
+}
+
+.loyalty-filters-bar__date-input:focus {
+  outline: none;
+  border-color: rgba(255, 122, 0, 0.5);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  box-shadow: 
+    0 0 0 3px rgba(255, 122, 0, 0.15),
+    0 4px 12px rgba(255, 122, 0, 0.2);
+}
+
+.loyalty-filters-bar__date-input:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+/* Filter Dropdowns */
+.loyalty-filters-bar__filter {
+  flex: 1;
+  min-width: 200px;
+}
+
+.loyalty-filters-bar__filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.loyalty-filters-bar__select {
+  padding: 0.625rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 0.3s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-weight: 500;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.loyalty-filters-bar__select:focus {
+  outline: none;
+  border-color: rgba(255, 122, 0, 0.5);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  box-shadow: 
+    0 0 0 3px rgba(255, 122, 0, 0.15),
+    0 4px 12px rgba(255, 122, 0, 0.2);
+}
+
+.loyalty-filters-bar__select:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+.loyalty-filters-bar__select option {
+  background: #2d2d2d;
+  color: #ffffff;
+  padding: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .loyalty-filters-bar__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .loyalty-filters-bar__quick-dates {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .loyalty-filters-bar__quick-dates::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .loyalty-filters-bar__quick-dates::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+  }
+
+  .loyalty-filters-bar__quick-dates::-webkit-scrollbar-thumb {
+    background: rgba(255, 122, 0, 0.4);
+    border-radius: 2px;
+  }
+
+  .loyalty-filters-bar__date-range {
+    width: 100%;
+  }
+
+  .loyalty-filters-bar__filter {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .loyalty-filters-bar {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+
+  .loyalty-filters-bar__quick-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .loyalty-filters-bar__date-input,
+  .loyalty-filters-bar__select {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.875rem;
+  }
+
+  .loyalty-filters-bar__select {
+    padding-right: 2.25rem;
+  }
+}

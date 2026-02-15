@@ -34,3 +34,12 @@ export interface StatisticsSummaryData {
   avgMarginReal: number;
   avgMarginAcc: number;
 }
+
+// Loyalty Statistics Filters
+export interface LoyaltyFilters {
+  dateFrom: string; // YYYY-MM-DD
+  dateTo: string; // YYYY-MM-DD
+  customerId: string | null; // Filter by specific customer
+  tierId: number | null; // Filter by loyalty tier
+  voucherStatus: 'all' | 'issued' | 'redeemed' | 'expired' | 'active'; // Filter by voucher status
+}

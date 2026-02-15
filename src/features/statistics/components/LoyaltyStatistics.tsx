@@ -9,6 +9,8 @@ import {
   type LoyaltyROIStats,
   type LoyaltyTopCustomer,
 } from '../../../lib/api/loyalty';
+import { LoyaltyFiltersBar } from './LoyaltyFiltersBar';
+import type { LoyaltyFilters } from '../types';
 import './LoyaltyStatistics.css';
 
 interface LoyaltyStatisticsProps {
@@ -23,18 +25,41 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
   const [roi, setROI] = useState<LoyaltyROIStats | null>(null);
   const [topCustomers, setTopCustomers] = useState<LoyaltyTopCustomer[]>([]);
 
+  // Initialize filters with current month by default
+  const getCurrentMonthRange = () => {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
+    return {
+      start: firstDay.toISOString().split('T')[0],
+      end: lastDay.toISOString().split('T')[0],
+    };
+  };
+
+  const defaultRange = getCurrentMonthRange();
+  const [filters, setFilters] = useState<LoyaltyFilters>({
+    dateFrom: defaultRange.start,
+    dateTo: defaultRange.end,
+    customerId: null,
+    tierId: null,
+    voucherStatus: 'all',
+  });
+
+  const handleUpdateFilters = (updates: Partial<LoyaltyFilters>) => {
+    setFilters((prev) => ({ ...prev, ...updates }));
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const [distrib, vouchers, roiStats, topCust] = await Promise.all([
           getLoyaltyStatsDistribution(),
-          getLoyaltyStatsVouchers(dateFrom, dateTo),
-          getLoyaltyStatsROI(dateFrom, dateTo),
+          getLoyaltyStatsVouchers(filters.dateFrom, filters.dateTo),
+          getLoyaltyStatsROI(filters.dateFrom, filters.dateTo),
           getLoyaltyStatsTopCustomers(20),
         ]);
-
-        console.log('Loyalty Stats Loaded:', { distrib, vouchers, roiStats, topCust });
 
         setTierDistribution(distrib);
         setVouchersMonthly(vouchers);
@@ -48,10 +73,34 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
     };
 
     fetchData();
-  }, [dateFrom, dateTo]);
+  }, [filters.dateFrom, filters.dateTo]);
+
+  // Apply filters to tier distribution
+  const filteredTierDistribution = tierDistribution.filter((tier) => {
+    if (filters.tierId !== null && tier.tier_id !== filters.tierId) {
+      return false;
+    }
+    return true;
+  });
+
+  // Apply filters to top customers
+  const filteredTopCustomers = topCustomers.filter((customer) => {
+    if (filters.customerId && customer.customer_id !== filters.customerId) {
+      return false;
+    }
+    if (filters.tierId !== null && customer.current_tier_id !== filters.tierId) {
+      return false;
+    }
+    return true;
+  });
 
   if (loading) {
-    return <div className="loyalty-statistics__loading">Зареждане на статистики...</div>;
+    return (
+      <div className="loyalty-statistics">
+        <LoyaltyFiltersBar filters={filters} onUpdateFilters={handleUpdateFilters} />
+        <div className="loyalty-statistics__loading">Зареждане на статистики...</div>
+      </div>
+    );
   }
 
   const formatEur = (value: number) => value.toFixed(2);
@@ -59,102 +108,126 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
 
   return (
     <div className="loyalty-statistics">
-      {/* ROI Metrics */}
-      <div className="loyalty-statistics__section">
-        <h2 className="loyalty-statistics__section-title">📊 ROI Метрики</h2>
-        {roi && (
-          <div className="loyalty-statistics__kpi-grid">
-            <div className="loyalty-statistics__kpi-card">
-              <div className="loyalty-statistics__kpi-value">€{formatEur(roi.total_discounts_eur)}</div>
-              <div className="loyalty-statistics__kpi-label">Общо отстъпки</div>
-              <div className="loyalty-statistics__kpi-detail">
-                Ниво: €{formatEur(roi.total_tier_discounts_eur)} | Ваучери: €{formatEur(roi.total_voucher_discounts_eur)}
-              </div>
-            </div>
-            <div className="loyalty-statistics__kpi-card">
-              <div className="loyalty-statistics__kpi-value">{formatPercent(roi.loyalty_participation_rate)}</div>
-              <div className="loyalty-statistics__kpi-label">Участие в програмата</div>
-              <div className="loyalty-statistics__kpi-detail">
-                {roi.customers_with_loyalty} от {roi.total_customers} клиенти
-              </div>
-            </div>
-            <div className="loyalty-statistics__kpi-card">
-              <div className="loyalty-statistics__kpi-value">€{formatEur(roi.avg_discount_per_sale_eur)}</div>
-              <div className="loyalty-statistics__kpi-label">Средна отстъпка / продажба</div>
-              <div className="loyalty-statistics__kpi-detail">
-                {roi.sales_with_loyalty_count} от {roi.total_sales_count} продажби
-              </div>
-            </div>
+      <LoyaltyFiltersBar filters={filters} onUpdateFilters={handleUpdateFilters} />
+
+      {/* Three Column Layout */}
+      <div className="loyalty-statistics__main-grid">
+        {/* ROI Metrics Card */}
+        <div className="loyalty-statistics__card">
+          <div className="loyalty-statistics__card-header">
+            <div className="loyalty-statistics__card-icon">📊</div>
+            <h2 className="loyalty-statistics__card-title">ROI Метрики</h2>
           </div>
-        )}
-      </div>
-
-      {/* Tier Distribution */}
-      <div className="loyalty-statistics__section">
-        <h2 className="loyalty-statistics__section-title">🏆 Разпределение по нива</h2>
-        <div className="loyalty-statistics__table-wrapper">
-          <table className="loyalty-statistics__table">
-            <thead>
-              <tr>
-                <th>Ниво</th>
-                <th className="text-right">Клиенти</th>
-                <th className="text-right">Среден оборот 12м</th>
-                <th className="text-right">Общ оборот 12м</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tierDistribution.map((tier, idx) => (
-                <tr key={tier.tier_id || `no-tier-${idx}`}>
-                  <td>
-                    <span
-                      className="loyalty-statistics__tier-badge"
-                      style={{ backgroundColor: tier.tier_color }}
-                    >
-                      {tier.tier_name}
-                    </span>
-                  </td>
-                  <td className="text-right">{tier.customer_count}</td>
-                  <td className="text-right">€{formatEur(tier.avg_turnover_12m_eur)}</td>
-                  <td className="text-right">€{formatEur(tier.total_turnover_12m_eur)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="loyalty-statistics__card-body">
+            {roi && (
+              <>
+                <div className="loyalty-statistics__metric-item">
+                  <div className="loyalty-statistics__metric-emoji">💰</div>
+                  <div className="loyalty-statistics__metric-content">
+                    <div className="loyalty-statistics__metric-value">€{formatEur(roi.total_discounts_eur)}</div>
+                    <div className="loyalty-statistics__metric-label">Общо отстъпки</div>
+                    <div className="loyalty-statistics__metric-detail">
+                      Ниво: €{formatEur(roi.total_tier_discounts_eur)}<br/>
+                      Ваучери: €{formatEur(roi.total_voucher_discounts_eur)}
+                    </div>
+                  </div>
+                </div>
+                <div className="loyalty-statistics__metric-item">
+                  <div className="loyalty-statistics__metric-emoji">👥</div>
+                  <div className="loyalty-statistics__metric-content">
+                    <div className="loyalty-statistics__metric-value">{formatPercent(roi.loyalty_participation_rate)}</div>
+                    <div className="loyalty-statistics__metric-label">Участие</div>
+                    <div className="loyalty-statistics__metric-detail">
+                      {roi.customers_with_loyalty} от {roi.total_customers} клиенти
+                    </div>
+                  </div>
+                </div>
+                <div className="loyalty-statistics__metric-item">
+                  <div className="loyalty-statistics__metric-emoji">🎯</div>
+                  <div className="loyalty-statistics__metric-content">
+                    <div className="loyalty-statistics__metric-value">€{formatEur(roi.avg_discount_per_sale_eur)}</div>
+                    <div className="loyalty-statistics__metric-label">Средна отстъпка</div>
+                    <div className="loyalty-statistics__metric-detail">
+                      {roi.sales_with_loyalty_count} от {roi.total_sales_count} продажби
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Vouchers by Month */}
-      <div className="loyalty-statistics__section">
-        <h2 className="loyalty-statistics__section-title">🎟️ Ваучери по месец</h2>
-        <div className="loyalty-statistics__table-wrapper">
-          <table className="loyalty-statistics__table">
-            <thead>
-              <tr>
-                <th>Месец</th>
-                <th className="text-right">Издадени бр.</th>
-                <th className="text-right">Издадени €</th>
-                <th className="text-right">Изплатени бр.</th>
-                <th className="text-right">Изплатени €</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vouchersMonthly.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center">Няма данни за избрания период</td>
-                </tr>
-              ) : (
-                vouchersMonthly.map((vm) => (
-                  <tr key={vm.month}>
-                    <td>{vm.month}</td>
-                    <td className="text-right">{vm.issued_count}</td>
-                    <td className="text-right">€{formatEur(vm.issued_amount_eur)}</td>
-                    <td className="text-right">{vm.redeemed_count}</td>
-                    <td className="text-right">€{formatEur(vm.redeemed_amount_eur)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Tier Distribution Card */}
+        <div className="loyalty-statistics__card">
+          <div className="loyalty-statistics__card-header">
+            <div className="loyalty-statistics__card-icon">🏆</div>
+            <h2 className="loyalty-statistics__card-title">Разпределение по нива</h2>
+          </div>
+          <div className="loyalty-statistics__card-body">
+            {filteredTierDistribution.length === 0 ? (
+              <div className="loyalty-statistics__empty">Няма данни</div>
+            ) : (
+              filteredTierDistribution.map((tier, idx) => (
+                <div key={tier.tier_id || `no-tier-${idx}`} className="loyalty-statistics__tier-item">
+                  <div
+                    className="loyalty-statistics__tier-badge"
+                    style={{ 
+                      backgroundColor: tier.tier_color,
+                      boxShadow: `0 4px 12px ${tier.tier_color}40`
+                    }}
+                  >
+                    {tier.tier_name}
+                  </div>
+                  <div className="loyalty-statistics__tier-stats">
+                    <div className="loyalty-statistics__tier-stat-row">
+                      <span className="loyalty-statistics__tier-stat-label">Клиенти:</span>
+                      <span className="loyalty-statistics__tier-stat-value">{tier.customer_count}</span>
+                    </div>
+                    <div className="loyalty-statistics__tier-stat-row">
+                      <span className="loyalty-statistics__tier-stat-label">Среден оборот:</span>
+                      <span className="loyalty-statistics__tier-stat-value">€{formatEur(tier.avg_turnover_12m_eur)}</span>
+                    </div>
+                    <div className="loyalty-statistics__tier-stat-row">
+                      <span className="loyalty-statistics__tier-stat-label">Общ оборот:</span>
+                      <span className="loyalty-statistics__tier-stat-value">€{formatEur(tier.total_turnover_12m_eur)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Vouchers Card */}
+        <div className="loyalty-statistics__card">
+          <div className="loyalty-statistics__card-header">
+            <div className="loyalty-statistics__card-icon">🎟️</div>
+            <h2 className="loyalty-statistics__card-title">Ваучери по месеци</h2>
+          </div>
+          <div className="loyalty-statistics__card-body">
+            {vouchersMonthly.length === 0 ? (
+              <div className="loyalty-statistics__empty">Няма данни</div>
+            ) : (
+              vouchersMonthly.map((vm) => (
+                <div key={vm.month} className="loyalty-statistics__voucher-item">
+                  <div className="loyalty-statistics__voucher-header">{vm.month}</div>
+                  <div className="loyalty-statistics__voucher-row">
+                    <div className="loyalty-statistics__voucher-col">
+                      <div className="loyalty-statistics__voucher-label">Издадени</div>
+                      <div className="loyalty-statistics__voucher-count">{vm.issued_count} бр.</div>
+                      <div className="loyalty-statistics__voucher-amount">€{formatEur(vm.issued_amount_eur)}</div>
+                    </div>
+                    <div className="loyalty-statistics__voucher-divider"></div>
+                    <div className="loyalty-statistics__voucher-col">
+                      <div className="loyalty-statistics__voucher-label">Изплатени</div>
+                      <div className="loyalty-statistics__voucher-count">{vm.redeemed_count} бр.</div>
+                      <div className="loyalty-statistics__voucher-amount">€{formatEur(vm.redeemed_amount_eur)}</div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
@@ -174,12 +247,12 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo }: LoyaltyStatisticsProps) 
               </tr>
             </thead>
             <tbody>
-              {topCustomers.length === 0 ? (
+              {filteredTopCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center">Няма клиенти с loyalty активност</td>
                 </tr>
               ) : (
-                topCustomers.map((customer) => (
+                filteredTopCustomers.map((customer) => (
                   <tr key={customer.customer_id}>
                     <td>{customer.customer_name}</td>
                     <td>

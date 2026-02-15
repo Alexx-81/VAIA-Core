@@ -4,9 +4,87 @@
 VAIA Core is an ERP/CRM application for managing articles, deliveries, sales, and inventory. Built with React 19, TypeScript, Vite, and Supabase.
 
 ## DB Migrations
-Keep DB migrations in sync:
-Run the DB migrations directly in Supabase using Supabase MCP
-Save each migration script as local SQL file from the Supabase migration history table supabase_migrations.schema_migrations
+
+### Workflow (Using Supabase CLI)
+
+**Always use Supabase CLI to keep local and remote migrations in perfect sync:**
+
+```bash
+# 1. Create new migration file
+npx supabase migration new <migration_name>
+
+# 2. Edit the generated file in supabase/migrations/ directory
+# Example: supabase/migrations/20260215120000_add_loyalty_program.sql
+
+# 3. Apply migration to remote database
+npx supabase db push
+
+# 4. Commit the migration file to git
+git add supabase/migrations/
+git commit -m "feat: add loyalty program tables"
+```
+
+### Benefits of CLI Approach
+- ✅ **Zero divergence** - Local files always match remote
+- ✅ **No warnings** - Supabase tracks migrations properly
+- ✅ **Version control** - All migrations in git history
+- ✅ **Rollback support** - Can revert locally with `npx supabase db reset`
+- ✅ **Type generation** - Auto-updates TypeScript types
+
+### Setup (One-time)
+```bash
+# 1. Initialize Supabase project (creates supabase/ directory)
+npx supabase init
+
+# 2. Set access token (Option A: Login)
+npx supabase login --no-browser
+# Follow link and enter verification code
+
+# OR (Option B: Environment variable)
+# Get token from https://supabase.com/dashboard/account/tokens
+$env:SUPABASE_ACCESS_TOKEN="sbp_your_token_here"  # PowerShell
+export SUPABASE_ACCESS_TOKEN="sbp_your_token_here"  # Bash
+
+# 3. Link to remote project
+npx supabase link --project-ref ptigdekgzraimaepgczt
+
+# 4. Verify sync
+npx supabase migration list
+```
+
+### Migration File Structure
+```sql
+-- supabase/migrations/20260215120000_example.sql
+
+-- Create tables
+CREATE TABLE ...;
+
+-- Add indexes
+CREATE INDEX ...;
+
+-- Set up RLS policies
+ALTER TABLE ... ENABLE ROW LEVEL SECURITY;
+CREATE POLICY ...;
+
+-- Update functions
+CREATE OR REPLACE FUNCTION ...;
+```
+
+### Common Commands
+```bash
+npx supabase migration list              # View all migrations (local vs remote)
+npx supabase db diff                     # Compare local vs remote schema
+npx supabase db push                     # Apply new migrations to remote
+npx supabase db push --dry-run           # Preview what will be applied
+npx supabase gen types typescript        # Regenerate TypeScript types
+```
+
+### ⚠️ Important Rules
+- **Never use Supabase Dashboard SQL Editor** - It breaks sync with local files
+- **Always use `npx supabase migration new`** - Creates timestamped files automatically
+- **Always commit migrations to git** - Keep version history in supabase/migrations/
+- **Always run `npx supabase db push`** - Apply to remote after creating migration
+- **Use npx prefix** - Global CLI installation is not supported, always use npx
 
 ## Tech Stack
 - **React 19** + **TypeScript** + **Vite 7**
