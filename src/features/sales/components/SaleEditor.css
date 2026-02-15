@@ -362,6 +362,20 @@
   color: #ef4444;
 }
 
+.sale-editor__add-hint--discount {
+  color: #10b981;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.sale-editor__add-hint--discount strong {
+  color: #059669;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 /* Live preview chips */
 .sale-editor__add-preview {
   display: flex;

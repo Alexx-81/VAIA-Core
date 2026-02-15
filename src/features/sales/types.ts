@@ -24,6 +24,8 @@ export interface SaleLine {
   kgPerPieceSnapshot: number;
   unitCostPerKgRealSnapshot: number;
   unitCostPerKgAccSnapshot?: number;
+  articleDiscountPercentSnapshot?: number; // Отстъпка от артикула (%)
+  articleDiscountFixedEurSnapshot?: number; // Отстъпка от артикула (EUR)
 }
 
 // Изчислени стойности за ред
@@ -161,4 +163,6 @@ export interface ArticleOption {
   name: string;
   kgPerPiece: number;
   gramsPerPiece: number;
+  discountPercent: number;
+  discountFixedEur: number;
 }

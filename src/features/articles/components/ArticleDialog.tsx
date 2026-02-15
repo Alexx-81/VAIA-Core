@@ -134,6 +134,61 @@ export const ArticleDialog = ({
             </span>
           </div>
 
+          {/* Процент отстъпка */}
+          <div className="article-dialog__field">
+            <label htmlFor="article-discount-percent" className="article-dialog__label">
+              Процент отстъпка (%)
+            </label>
+            <input
+              id="article-discount-percent"
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              value={formData.discountPercent}
+              onChange={(e) => updateField('discountPercent', e.target.value)}
+              placeholder="напр. 10 (за 10% отстъпка)"
+              className={`article-dialog__input ${
+                touched.discountPercent && errors.discountPercent
+                  ? 'article-dialog__input--error'
+                  : ''
+              }`}
+            />
+            <span className="article-dialog__hint">
+              Отстъпка в проценти (0-100%). Опционално.
+            </span>
+            {touched.discountPercent && errors.discountPercent && (
+              <span className="article-dialog__error">{errors.discountPercent}</span>
+            )}
+          </div>
+
+          {/* Фиксирана отстъпка */}
+          <div className="article-dialog__field">
+            <label htmlFor="article-discount-fixed" className="article-dialog__label">
+              Фиксирана отстъпка (€)
+            </label>
+            <input
+              id="article-discount-fixed"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.discountFixedEur}
+              onChange={(e) => updateField('discountFixedEur', e.target.value)}
+              placeholder="напр. 5.00 (за 5€ отстъпка)"
+              className={`article-dialog__input ${
+                touched.discountFixedEur && errors.discountFixedEur
+                  ? 'article-dialog__input--error'
+                  : ''
+              }`}
+            />
+            <span className="article-dialog__hint">
+              Фиксирана отстъпка в евро. Опционално.
+            </span>
+            {touched.discountFixedEur && errors.discountFixedEur && (
+              <span className="article-dialog__error">{errors.discountFixedEur}</span>
+            )}
+          </div>
+
           {/* Статус */}
           <div className="article-dialog__field">
             <label className="article-dialog__label">Статус</label>

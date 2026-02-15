@@ -32,6 +32,8 @@ interface DbSaleLine {
   unit_cost_per_kg_real_snapshot: number | null;
   unit_cost_per_kg_acc_snapshot: number | null;
   is_regular_price: boolean | null;
+  article_discount_percent_snapshot: number | null;
+  article_discount_fixed_eur_snapshot: number | null;
   articles?: { name: string };
 }
 
@@ -66,6 +68,8 @@ interface DbArticle {
   name: string;
   grams_per_piece: number;
   is_active: boolean;
+  discount_percent: number | null;
+  discount_fixed_eur: number | null;
 }
 
 interface DbDeliveryView {
@@ -109,6 +113,8 @@ const mapDbSale = (s: DbSale): Sale => ({
     kgPerPieceSnapshot: l.kg_per_piece_snapshot || 0,
     unitCostPerKgRealSnapshot: l.unit_cost_per_kg_real_snapshot || 0,
     unitCostPerKgAccSnapshot: l.unit_cost_per_kg_acc_snapshot || undefined,
+    articleDiscountPercentSnapshot: l.article_discount_percent_snapshot || undefined,
+    articleDiscountFixedEurSnapshot: l.article_discount_fixed_eur_snapshot || undefined,
   })),
   createdAt: new Date(s.created_at),
   finalizedAt: s.finalized_at ? new Date(s.finalized_at) : undefined,
@@ -146,7 +152,7 @@ export const useSales = () => {
         // Fetch articles
         const { data: articlesData, error: articlesError } = await supabase
           .from('articles')
-          .select('id, name, grams_per_piece, is_active')
+          .select('id, name, grams_per_piece, is_active, discount_percent, discount_fixed_eur')
           .eq('is_active', true)
           .order('name');
 
@@ -232,6 +238,8 @@ export const useSales = () => {
       name: a.name,
       kgPerPiece: a.grams_per_piece / 1000,
       gramsPerPiece: a.grams_per_piece,
+      discountPercent: a.discount_percent ?? 0,
+      discountFixedEur: a.discount_fixed_eur ?? 0,
     }));
   }, [articles]);
 
@@ -420,6 +428,8 @@ export const useSales = () => {
           kg_per_piece_snapshot: article.kgPerPiece,
           unit_cost_per_kg_real_snapshot: realDelivery.unit_cost_per_kg || 0,
           unit_cost_per_kg_acc_snapshot: unitCostPerKgAccSnapshot || 0,
+          article_discount_percent_snapshot: article.discountPercent || null,
+          article_discount_fixed_eur_snapshot: article.discountFixedEur || null,
         });
       }
 

@@ -16,13 +16,24 @@ const initialFilters: ArticleFilters = {
 };
 
 // Map DB format to local format
-const mapDbArticle = (a: { id: string; name: string; grams_per_piece: number; is_active: boolean; created_at: string; last_sold_at: string | null }): Article => ({
+const mapDbArticle = (a: { 
+  id: string; 
+  name: string; 
+  grams_per_piece: number; 
+  is_active: boolean; 
+  created_at: string; 
+  last_sold_at: string | null;
+  discount_percent: number | null;
+  discount_fixed_eur: number | null;
+}): Article => ({
   id: a.id,
   name: a.name,
   gramsPerPiece: a.grams_per_piece,
   isActive: a.is_active,
   createdAt: new Date(a.created_at),
   lastSoldAt: a.last_sold_at ? new Date(a.last_sold_at) : undefined,
+  discountPercent: a.discount_percent ?? 0,
+  discountFixedEur: a.discount_fixed_eur ?? 0,
 });
 
 export const useArticles = () => {
@@ -91,6 +102,8 @@ export const useArticles = () => {
             name: formData.name.trim(),
             grams_per_piece: gramsPerPiece,
             is_active: formData.isActive,
+            discount_percent: formData.discountPercent ? parseFloat(formData.discountPercent) : null,
+            discount_fixed_eur: formData.discountFixedEur ? parseFloat(formData.discountFixedEur) : null,
           })
           .select()
           .single();
@@ -140,6 +153,8 @@ export const useArticles = () => {
             name: formData.name.trim(),
             grams_per_piece: gramsPerPiece,
             is_active: formData.isActive,
+            discount_percent: formData.discountPercent ? parseFloat(formData.discountPercent) : null,
+            discount_fixed_eur: formData.discountFixedEur ? parseFloat(formData.discountFixedEur) : null,
           })
           .eq('id', id)
           .select()

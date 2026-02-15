@@ -19,13 +19,27 @@ export const useArticleForm = ({
     name: '',
     piecesPerKg: '',
     isActive: true,
+    discountPercent: '0',
+    discountFixedEur: '0',
   });
 
-  const [errors, setErrors] = useState<{ name?: string; piecesPerKg?: string }>({});
+  const [errors, setErrors] = useState<{ 
+    name?: string; 
+    piecesPerKg?: string;
+    discountPercent?: string;
+    discountFixedEur?: string;
+  }>({});
   const [warnings, setWarnings] = useState<{ piecesPerKg?: string }>({});
-  const [touched, setTouched] = useState<{ name: boolean; piecesPerKg: boolean }>({
+  const [touched, setTouched] = useState<{ 
+    name: boolean; 
+    piecesPerKg: boolean;
+    discountPercent: boolean;
+    discountFixedEur: boolean;
+  }>({
     name: false,
     piecesPerKg: false,
+    discountPercent: false,
+    discountFixedEur: false,
   });
 
   // Зарежда данни при редакция
@@ -37,17 +51,26 @@ export const useArticleForm = ({
         name: article.name,
         piecesPerKg: piecesPerKg.toFixed(2),
         isActive: article.isActive,
+        discountPercent: article.discountPercent.toString(),
+        discountFixedEur: article.discountFixedEur.toString(),
       });
     } else {
       setFormData({
         name: '',
         piecesPerKg: '',
         isActive: true,
+        discountPercent: '0',
+        discountFixedEur: '0',
       });
     }
     setErrors({});
     setWarnings({});
-    setTouched({ name: false, piecesPerKg: false });
+    setTouched({ 
+      name: false, 
+      piecesPerKg: false,
+      discountPercent: false,
+      discountFixedEur: false,
+    });
   }, [article]);
 
   // Филтрира имената без текущия артикул
@@ -60,7 +83,12 @@ export const useArticleForm = ({
 
   // Валидира форма
   const validate = useCallback(() => {
-    const newErrors: { name?: string; piecesPerKg?: string } = {};
+    const newErrors: { 
+      name?: string; 
+      piecesPerKg?: string;
+      discountPercent?: string;
+      discountFixedEur?: string;
+    } = {};
     const newWarnings: { piecesPerKg?: string } = {};
 
     // Валидация на име
@@ -75,6 +103,18 @@ export const useArticleForm = ({
       newErrors.piecesPerKg = piecesResult.error;
     } else if (piecesResult.warning) {
       newWarnings.piecesPerKg = piecesResult.warning;
+    }
+
+    // Валидация на процент отстъпка
+    const discountPercent = parseFloat(formData.discountPercent);
+    if (isNaN(discountPercent) || discountPercent < 0 || discountPercent > 100) {
+      newErrors.discountPercent = 'Процентът трябва да е между 0 и 100';
+    }
+
+    // Валидация на фиксирана отстъпка
+    const discountFixed = parseFloat(formData.discountFixedEur);
+    if (isNaN(discountFixed) || discountFixed < 0) {
+      newErrors.discountFixedEur = 'Фиксираната отстъпка не може да е отрицателна';
     }
 
     setErrors(newErrors);
@@ -108,7 +148,12 @@ export const useArticleForm = ({
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    setTouched({ name: true, piecesPerKg: true });
+    setTouched({ 
+      name: true, 
+      piecesPerKg: true,
+      discountPercent: true,
+      discountFixedEur: true,
+    });
     
     if (!validate()) {
       return;

@@ -78,6 +78,7 @@ export const SaleEditor = ({
   const [addAccDeliveryId, setAddAccDeliveryId] = useState('');
   const [addQuantity, setAddQuantity] = useState('');
   const [addUnitPrice, setAddUnitPrice] = useState('');
+  const [addBasePriceEur, setAddBasePriceEur] = useState<string>(''); // Базова цена без отстъпка
   const [addErrors, setAddErrors] = useState<AddLineErrors>({});
 
   // Inline edit state
@@ -136,6 +137,48 @@ export const SaleEditor = ({
   }, [deliveryOptionsReal, addRealDeliveryId]);
   const addNeedsAccounting = addRealDelivery && !addRealDelivery.isInvoiced;
 
+  // Selected article in add form
+  const selectedArticle = useMemo(() => {
+    return articleOptions.find(a => a.id === addArticleId);
+  }, [articleOptions, addArticleId]);
+
+  // Calculate discounted price helper (only percent)
+  const calculateDiscountedPrice = useCallback((basePrice: number, discountPercent: number): number => {
+    if (discountPercent > 0) {
+      return basePrice * (1 - discountPercent / 100);
+    }
+    return basePrice;
+  }, []);
+
+  // Handler for isRegularPrice change - applies discount when unchecked
+  const handleIsRegularPriceChange = useCallback((checked: boolean) => {
+    setAddIsRegularPrice(checked);
+    
+    // Determine base price to work with
+    const basePrice = addBasePriceEur ? parseFloat(addBasePriceEur) : (addUnitPrice ? parseFloat(addUnitPrice) : 0);
+    
+    if (!isNaN(basePrice) && basePrice > 0 && selectedArticle && selectedArticle.discountPercent > 0) {
+      if (!checked) {
+        // Unchecked - apply discount to base price
+        const discountedPrice = calculateDiscountedPrice(basePrice, selectedArticle.discountPercent);
+        setAddUnitPrice(discountedPrice.toFixed(2));
+      } else {
+        // Checked - restore base price
+        setAddUnitPrice(basePrice.toFixed(2));
+      }
+    }
+  }, [selectedArticle, addUnitPrice, addBasePriceEur, calculateDiscountedPrice]);
+
+  // Handler for price change - saves as base price
+  const handlePriceChange = useCallback((value: string) => {
+    setAddUnitPrice(value);
+    // Save as base price when manually entered
+    if (value && !isNaN(parseFloat(value))) {
+      setAddBasePriceEur(value);
+    }
+    setAddErrors(prev => ({ ...prev, unitPriceEur: undefined }));
+  }, []);
+
   // Live preview for add-line form
   const addPreview = useMemo(() => {
     const article = articleOptions.find(a => a.id === addArticleId);
@@ -144,6 +187,7 @@ export const SaleEditor = ({
     const kgPerPiece = article?.kgPerPiece || 0;
     const kgLine = qty * kgPerPiece;
     const revenue = qty * price;
+    
     return { kgPerPiece, kgLine, revenue, qty, price };
   }, [addArticleId, addQuantity, addUnitPrice, articleOptions]);
 
@@ -225,6 +269,7 @@ export const SaleEditor = ({
     setAddAccDeliveryId('');
     setAddQuantity('');
     setAddUnitPrice('');
+    setAddBasePriceEur(''); // Reset base price
     setAddIsRegularPrice(true); // Връщане на редовна цена по подразбиране
     setAddErrors({});
     // Re-focus article select after React re-renders
@@ -261,11 +306,15 @@ export const SaleEditor = ({
       return;
     }
 
+    // Price is already discounted if isRegularPrice is FALSE
+    // (discount is applied automatically when checkbox changes)
+    const finalPrice = parseFloat(addUnitPrice);
+
     const newLine: LineFormState = {
       id: generateId(),
       articleId: addArticleId,
       quantity: addQuantity,
-      unitPriceEur: addUnitPrice,
+      unitPriceEur: finalPrice.toFixed(2),
       realDeliveryId: addRealDeliveryId,
       accountingDeliveryId: addNeedsAccounting ? addAccDeliveryId : '',
       isRegularPrice: addIsRegularPrice,
@@ -538,9 +587,22 @@ export const SaleEditor = ({
                 placeholder="0.00"
                 min="0"
                 value={addUnitPrice}
-                onChange={(e) => { setAddUnitPrice(e.target.value); setAddErrors(prev => ({ ...prev, unitPriceEur: undefined })); }}
+                onChange={(e) => handlePriceChange(e.target.value)}
               />
               {addErrors.unitPriceEur && <span className="sale-editor__add-hint sale-editor__add-hint--error">{addErrors.unitPriceEur}</span>}
+              {selectedArticle && selectedArticle.discountPercent > 0 && (
+                <span className="sale-editor__add-hint sale-editor__add-hint--discount">
+                  {addIsRegularPrice ? (
+                    <>
+                      💡 Артикулът има отстъпка {selectedArticle.discountPercent}%, но се игнорира (редовна цена)
+                    </>
+                  ) : (
+                    <>
+                      ✅ Прилага се отстъпка {selectedArticle.discountPercent}% автоматично
+                    </>
+                  )}
+                </span>
+              )}
             </div>
 
             {/* Checkbox за редовна цена */}
@@ -549,7 +611,7 @@ export const SaleEditor = ({
                 <input
                   type="checkbox"
                   checked={addIsRegularPrice}
-                  onChange={(e) => setAddIsRegularPrice(e.target.checked)}
+                  onChange={(e) => handleIsRegularPriceChange(e.target.checked)}
                 />
                 <span className="sale-editor__add-checkbox-text">Редовна цена</span>
               </label>

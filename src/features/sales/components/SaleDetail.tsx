@@ -84,6 +84,7 @@ export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
               <th>Артикул</th>
               <th className="text-right">Бройки</th>
               <th className="text-right">Цена/бр (EUR)</th>
+              <th className="text-center">Отстъпка</th>
               <th className="text-right">Оборот (EUR)</th>
               <th>Real доставка</th>
               <th className="text-right">kg/бр</th>
@@ -101,6 +102,15 @@ export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
                 <td className="font-semibold">{line.articleName}</td>
                 <td className="text-right">{line.quantity}</td>
                 <td className="text-right">{formatEur(line.unitPriceEur)}</td>
+                <td className="text-center">
+                  {line.articleDiscountPercentSnapshot ? (
+                    <span className="sale-detail__discount-badge">
+                      {line.articleDiscountPercentSnapshot}%
+                    </span>
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </td>
                 <td className="text-right font-semibold">{formatEur(line.revenueEur)}</td>
                 <td>
                   <span className="sale-detail__delivery-badge">

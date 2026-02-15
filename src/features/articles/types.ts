@@ -5,6 +5,8 @@ export interface Article {
   name: string;
   gramsPerPiece: number; // Съхраняваме в грамове за точност (integer)
   isActive: boolean;
+  discountPercent: number; // Процент отстъпка (0-100)
+  discountFixedEur: number; // Фиксирана отстъпка в EUR
   createdAt: Date;
   lastSoldAt?: Date; // Последна продажба
 }
@@ -19,6 +21,8 @@ export interface ArticleFormData {
   name: string;
   piecesPerKg: string; // Бройки в 1 kg (потребителят въвежда това)
   isActive: boolean;
+  discountPercent: string; // Процент отстъпка (0-100)
+  discountFixedEur: string; // Фиксирана отстъпка в EUR
 }
 
 export type ArticleStatus = 'all' | 'active' | 'inactive';
