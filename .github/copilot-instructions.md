@@ -86,6 +86,44 @@ npx supabase gen types typescript        # Regenerate TypeScript types
 - **Always run `npx supabase db push`** - Apply to remote after creating migration
 - **Use npx prefix** - Global CLI installation is not supported, always use npx
 
+### 🤖 Automated Git Hooks
+
+**Pre-commit hook automatically syncs migrations** - No need to manually run `npx supabase db push`!
+
+When you commit migration files:
+```bash
+git add supabase/migrations/20260215120000_new_feature.sql
+git commit -m "feat: add new feature"
+
+# Automatically happens:
+# 1. Detects migration files in commit
+# 2. Runs npx supabase db push
+# 3. Shows which migrations are applied
+# 4. If successful → allows commit
+# 5. If failed → blocks commit
+```
+
+**Benefits:**
+- ✅ **Zero-effort sync** - No manual `db push` required
+- ✅ **100% guarantee** - Cannot commit unsynced migrations
+- ✅ **Error prevention** - Blocks commit if migration has errors
+- ✅ **Automatic verification** - Always shows what's being applied
+
+**Manual check (optional):**
+```bash
+npm run check-migrations  # Run sync script manually
+```
+
+**Bypass hook (emergency only):**
+```bash
+git commit --no-verify -m "wip"  # Skip pre-commit hook (not recommended!)
+```
+
+**Setup (first time):**
+```bash
+npm install  # Installs husky and sets up hooks automatically
+```
+
 ## Tech Stack
 - **React 19** + **TypeScript** + **Vite 7**
 - **Supabase** (PostgreSQL backend, auto-generated types)
