@@ -357,6 +357,16 @@
   color: #ef4444;
 }
 
+.sale-detail__total-value.discount {
+  color: #f97316;
+  font-weight: 600;
+}
+
+.sale-detail__total-value.highlight {
+  color: var(--vaia-color);
+  font-size: 1.2rem;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .sale-detail__totals {

@@ -7,18 +7,23 @@ import type {
   PaymentMethod 
 } from '../types';
 
-// Изчисляване на computed стойности за ред
-export const computeSaleLine = (line: SaleLine): SaleLineWithComputed => {
+// Изчисляване на computed стойности за ред (базово - без отстъпка)
+export const computeSaleLine = (line: SaleLine, discountFactor: number = 1): SaleLineWithComputed => {
   const revenueEur = line.quantity * line.unitPriceEur;
   const kgLine = line.quantity * line.kgPerPieceSnapshot;
   const cogsRealEur = kgLine * line.unitCostPerKgRealSnapshot;
   const cogsAccEur = line.unitCostPerKgAccSnapshot 
     ? kgLine * line.unitCostPerKgAccSnapshot 
     : cogsRealEur;
-  const profitRealEur = revenueEur - cogsRealEur;
-  const profitAccEur = revenueEur - cogsAccEur;
-  const marginRealPercent = revenueEur > 0 ? (profitRealEur / revenueEur) * 100 : 0;
-  const marginAccPercent = revenueEur > 0 ? (profitAccEur / revenueEur) * 100 : 0;
+  
+  // Прилагаме пропорционалната отстъпка към оборота на реда
+  const discountedRevenueEur = revenueEur * discountFactor;
+  
+  // Изчисляваме печалба базирано на отстъпнатия оборот
+  const profitRealEur = discountedRevenueEur - cogsRealEur;
+  const profitAccEur = discountedRevenueEur - cogsAccEur;
+  const marginRealPercent = discountedRevenueEur > 0 ? (profitRealEur / discountedRevenueEur) * 100 : 0;
+  const marginAccPercent = discountedRevenueEur > 0 ? (profitAccEur / discountedRevenueEur) * 100 : 0;
 
   return {
     ...line,
@@ -35,19 +40,24 @@ export const computeSaleLine = (line: SaleLine): SaleLineWithComputed => {
 
 // Изчисляване на computed стойности за цяла продажба
 export const computeSale = (sale: Sale): SaleWithComputed => {
-  const computedLines = sale.lines.map(computeSaleLine);
+  // Първо изчисляваме реда без отстъпка за да получим общия оборот
+  const tempLines = sale.lines.map(l => computeSaleLine(l, 1));
+  const totalRevenueEur = tempLines.reduce((sum, l) => sum + l.revenueEur, 0);
+  
+  // Изчисляваме фактор на отстъпка (ако има totalPaidEur)
+  const actualRevenueEur = sale.totalPaidEur ?? totalRevenueEur;
+  const discountFactor = totalRevenueEur > 0 ? actualRevenueEur / totalRevenueEur : 1;
+  
+  // Преизчисляваме редовете с приложена отстъпка
+  const computedLines = sale.lines.map(l => computeSaleLine(l, discountFactor));
   
   const totalPieces = computedLines.reduce((sum, l) => sum + l.quantity, 0);
   const totalKg = computedLines.reduce((sum, l) => sum + l.kgLine, 0);
-  const totalRevenueEur = computedLines.reduce((sum, l) => sum + l.revenueEur, 0);
   const totalCogsRealEur = computedLines.reduce((sum, l) => sum + l.cogsRealEur, 0);
   const totalCogsAccEur = computedLines.reduce((sum, l) => sum + l.cogsAccEur, 0);
+  const totalProfitRealEur = computedLines.reduce((sum, l) => sum + l.profitRealEur, 0);
+  const totalProfitAccEur = computedLines.reduce((sum, l) => sum + l.profitAccEur, 0);
   
-  // Използваме totalPaidEur (след отстъпка) ако има лоялност, иначе totalRevenueEur
-  const actualRevenueEur = sale.totalPaidEur ?? totalRevenueEur;
-  
-  const totalProfitRealEur = actualRevenueEur - totalCogsRealEur;
-  const totalProfitAccEur = actualRevenueEur - totalCogsAccEur;
   const totalMarginRealPercent = actualRevenueEur > 0 ? (totalProfitRealEur / actualRevenueEur) * 100 : 0;
   const totalMarginAccPercent = actualRevenueEur > 0 ? (totalProfitAccEur / actualRevenueEur) * 100 : 0;
 

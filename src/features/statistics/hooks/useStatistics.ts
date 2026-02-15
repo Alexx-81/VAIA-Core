@@ -149,7 +149,10 @@ export const useStatistics = () => {
         count: 0,
       };
 
-      existing.revenue += sale.total_revenue_eur ?? 0;
+      // FIXED: Използваме total_paid_eur ако е налично (при отстъпки), иначе total_revenue_eur
+      const actualRevenue = sale.total_paid_eur ?? sale.total_revenue_eur ?? 0;
+      
+      existing.revenue += actualRevenue;
       existing.costReal += sale.total_cogs_real_eur ?? 0;
       existing.costAcc += sale.total_cogs_acc_eur ?? 0;
       existing.profitReal += sale.total_profit_real_eur ?? 0;

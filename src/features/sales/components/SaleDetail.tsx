@@ -153,6 +153,28 @@ export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
               <span className="sale-detail__total-label">Оборот (EUR)</span>
               <span className="sale-detail__total-value">{formatEur(sale.totalRevenueEur)}</span>
             </div>
+            
+            {/* Показваме отстъпка и крайна сума ако има loyalty/voucher */}
+            {sale.totalPaidEur && sale.totalPaidEur < sale.totalRevenueEur && (
+              <>
+                <div className="sale-detail__total-item">
+                  <span className="sale-detail__total-label">
+                    {sale.loyaltyMode === 'tier' && '📉 Отстъпка ниво (EUR)'}
+                    {sale.loyaltyMode === 'voucher' && '🎟️ Отстъпка ваучер (EUR)'}
+                  </span>
+                  <span className="sale-detail__total-value discount">
+                    - {formatEur(sale.totalRevenueEur - sale.totalPaidEur)}
+                  </span>
+                </div>
+                <div className="sale-detail__total-item">
+                  <span className="sale-detail__total-label">💰 Крайна сума (EUR)</span>
+                  <span className="sale-detail__total-value highlight">
+                    {formatEur(sale.totalPaidEur)}
+                  </span>
+                </div>
+              </>
+            )}
+            
             <div className="sale-detail__total-item">
               <span className="sale-detail__total-label">Себестойност (EUR)</span>
               <span className="sale-detail__total-value">{formatEur(sale.totalCogsRealEur)}</span>
