@@ -27,30 +27,10 @@ export const LoyaltyStatistics = ({ dateFrom, dateTo, onExportData }: LoyaltySta
   const [roi, setROI] = useState<LoyaltyROIStats | null>(null);
   const [topCustomers, setTopCustomers] = useState<LoyaltyTopCustomer[]>([]);
 
-  // Format date to YYYY-MM-DD in local timezone
-  const formatLocalDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  // Initialize filters with current month by default
-  const getCurrentMonthRange = () => {
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
-    return {
-      start: formatLocalDate(firstDay),
-      end: formatLocalDate(lastDay),
-    };
-  };
-
-  const defaultRange = getCurrentMonthRange();
+  // Initialize filters with props from parent component
   const [filters, setFilters] = useState<LoyaltyFilters>({
-    dateFrom: defaultRange.start,
-    dateTo: defaultRange.end,
+    dateFrom: dateFrom,
+    dateTo: dateTo,
     customerId: null,
     tierId: null,
     voucherStatus: 'all',

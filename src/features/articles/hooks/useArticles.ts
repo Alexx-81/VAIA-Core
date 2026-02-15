@@ -102,8 +102,8 @@ export const useArticles = () => {
             name: formData.name.trim(),
             grams_per_piece: gramsPerPiece,
             is_active: formData.isActive,
-            discount_percent: formData.discountPercent ? parseFloat(formData.discountPercent) : null,
-            discount_fixed_eur: formData.discountFixedEur ? parseFloat(formData.discountFixedEur) : null,
+            discount_percent: formData.discountPercent ? parseFloat(formData.discountPercent) : 0,
+            discount_fixed_eur: formData.discountFixedEur ? parseFloat(formData.discountFixedEur) : 0,
           })
           .select()
           .single();
@@ -153,8 +153,8 @@ export const useArticles = () => {
             name: formData.name.trim(),
             grams_per_piece: gramsPerPiece,
             is_active: formData.isActive,
-            discount_percent: formData.discountPercent ? parseFloat(formData.discountPercent) : null,
-            discount_fixed_eur: formData.discountFixedEur ? parseFloat(formData.discountFixedEur) : null,
+            discount_percent: formData.discountPercent ? parseFloat(formData.discountPercent) : 0,
+            discount_fixed_eur: formData.discountFixedEur ? parseFloat(formData.discountFixedEur) : 0,
           })
           .eq('id', id)
           .select()

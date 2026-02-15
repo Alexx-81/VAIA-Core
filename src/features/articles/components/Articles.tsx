@@ -140,6 +140,8 @@ export const Articles = () => {
               name: record.name!,
               piecesPerKg: String(1000 / record.gramsPerPiece!),
               isActive: record.isActive!,
+              discountPercent: '0',
+              discountFixedEur: '0',
             });
           }
 
