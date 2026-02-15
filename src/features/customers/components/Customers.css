@@ -28,6 +28,10 @@
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   position: relative;
   overflow: hidden;
+  /* Fix: force GPU compositing layer to prevent backdrop-filter
+     rotation artifacts inside container-type: inline-size */
+  transform: translateZ(0);
+  isolation: isolate;
 }
 
 .customers__header::before {
