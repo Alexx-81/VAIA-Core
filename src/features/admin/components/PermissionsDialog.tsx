@@ -8,6 +8,7 @@ const TAB_LABELS: Record<string, string> = {
   articles: 'Артикули',
   deliveries: 'Доставки',
   sales: 'Продажби (POS)',
+  customers: 'Клиенти',
   inventory: 'Наличности',
   reports: 'Отчети',
   statistics: 'Статистика',
