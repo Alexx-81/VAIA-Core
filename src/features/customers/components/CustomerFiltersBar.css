@@ -45,10 +45,24 @@
 
   .customer-filters__right {
     justify-content: stretch;
+    flex-wrap: wrap;
   }
 
   .customer-filters__btn {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: max-content;
+  }
+}
+
+@container filters (max-width: 640px) {
+  .customer-filters__btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .customer-filters__select {
+    flex: 1 1 48%;
+    min-width: 140px;
   }
 }
 
@@ -163,9 +177,10 @@
 .customer-filters__btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding-block: 0.625rem;
-  padding-inline: clamp(0.875rem, 2vw, 1.25rem);
+  padding-inline: 1rem;
   border: none;
   border-radius: var(--radius-lg);
   font-size: 0.875rem;
@@ -174,6 +189,7 @@
   transition: all var(--transition-smooth);
   white-space: nowrap;
   min-block-size: 44px;
+  min-inline-size: max-content;
 }
 
 .customer-filters__btn svg {

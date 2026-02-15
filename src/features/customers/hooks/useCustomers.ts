@@ -22,7 +22,24 @@ export const useCustomers = () => {
   const [filters, setFilters] = useState<CustomerFilters>(initialFilters);
 
   // Fetch customers from Supabase
-  const fetchCustomers = useCallback(async () => {
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true);
+        const data = await getCustomers();
+        setCustomers(data);
+      } catch (err) {
+        console.error('Error fetching customers:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
+
+  // Refetch function for manual refresh
+  const refetch = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getCustomers();
@@ -33,10 +50,6 @@ export const useCustomers = () => {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
 
   // Филтрирани клиенти
   const filteredCustomers = useMemo(() => {
@@ -172,6 +185,6 @@ export const useCustomers = () => {
     updateCustomer,
     deleteCustomer,
     existingBarcodes,
-    refetch: fetchCustomers,
+    refetch,
   };
 };
