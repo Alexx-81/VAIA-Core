@@ -116,6 +116,29 @@ export async function manageEmployeeStatus(
   }
 }
 
+/**
+ * Delete employee via Edge Function (deletes DB record + auth user)
+ * Only admins can perform this action.
+ */
+export async function deleteEmployee(employeeId: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Не сте автентикирани');
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-employee`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ employee_id: employeeId }),
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.error || 'Грешка при изтриване на служител');
+  }
+}
+
 // ==========================================
 // Permissions CRUD
 // ==========================================

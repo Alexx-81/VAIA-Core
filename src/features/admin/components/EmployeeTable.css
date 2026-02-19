@@ -359,6 +359,20 @@
   transform: translateY(-2px);
 }
 
+.employee-card__btn--delete {
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.4), rgba(153, 27, 27, 0.3));
+  color: #fca5a5;
+  border: 1px solid rgba(153, 27, 27, 0.6);
+  box-shadow: 0 4px 12px rgba(153, 27, 27, 0.2);
+}
+
+.employee-card__btn--delete:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.55), rgba(153, 27, 27, 0.45));
+  border-color: rgba(220, 38, 38, 0.8);
+  box-shadow: 0 6px 20px rgba(153, 27, 27, 0.35);
+  transform: translateY(-2px);
+}
+
 .employee-card__btn-spinner {
   width: 16px;
   height: 16px;

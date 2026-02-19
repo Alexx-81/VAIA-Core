@@ -5,7 +5,7 @@ import { EmployeeTable } from './EmployeeTable';
 import { EmployeeDialog } from './EmployeeDialog';
 import { PermissionsDialog } from './PermissionsDialog';
 import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
-import { createEmployee, manageEmployeeStatus, updateEmployee, updateEmployeePermissions } from '../../../lib/api/employees';
+import { createEmployee, manageEmployeeStatus, updateEmployee, updateEmployeePermissions, deleteEmployee } from '../../../lib/api/employees';
 import type { Employee } from '../../../lib/supabase/types';
 import type { EmployeeFormData } from '../types';
 import './Admin.css';
@@ -131,6 +131,33 @@ export const Admin = () => {
     setShowEditDialog(true);
   };
 
+  const handleDeleteEmployee = (employee: Employee) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Изтриване на служител',
+      message: `Сигурни ли сте, че искате да изтриете ${employee.full_name} ЗАВИНАГИ? Това ще изтрие акаунта и всички данни на служителя. Действието е необратимо!`,
+      variant: 'danger',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        setActionLoading(employee.id);
+        try {
+          await deleteEmployee(employee.id);
+          await refresh();
+        } catch (err) {
+          setConfirmDialog({
+            isOpen: true,
+            title: 'Грешка',
+            message: err instanceof Error ? err.message : 'Грешка при изтриване на служител',
+            variant: 'danger',
+            onConfirm: () => setConfirmDialog({ ...confirmDialog, isOpen: false }),
+          });
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
+  };
+
   const handleSavePermissions = async (
     permissions: { tab_id: string; can_access: boolean }[]
   ): Promise<{ success: boolean; error?: string }> => {
@@ -218,6 +245,7 @@ export const Admin = () => {
         onToggleStatus={handleToggleStatus}
         onEditPermissions={handleEditPermissions}
         onEdit={handleEdit}
+        onDelete={handleDeleteEmployee}
         isReadOnly={isReadOnly}
       />
 
