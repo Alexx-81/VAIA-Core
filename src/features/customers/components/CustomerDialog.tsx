@@ -1,8 +1,10 @@
+import { useState, useRef } from 'react';
 import type { Customer } from '../../../lib/supabase/types';
 import type { CustomerFormData } from '../types';
 import { useCustomerForm } from '../hooks/useCustomerForm';
 import { useAuth } from '../../../shared/context/AuthContext';
 import { CustomerLoyaltySection } from './CustomerLoyaltyBadge';
+import { getGdprDeclarationUrl, uploadGdprDeclaration } from '../../../lib/api/documents';
 import './CustomerDialog.css';
 
 interface CustomerDialogProps {
@@ -23,6 +25,43 @@ export const CustomerDialog = ({
   onDelete,
 }: CustomerDialogProps) => {
   const { isAdmin } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadError, setUploadError] = useState<string>('');
+
+  const handleDownload = () => {
+    const url = getGdprDeclarationUrl();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Deklaratcia suglasie';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadState('uploading');
+    setUploadError('');
+    const result = await uploadGdprDeclaration(file);
+    if (result.success) {
+      setUploadState('success');
+      setTimeout(() => setUploadState('idle'), 3000);
+    } else {
+      setUploadState('error');
+      setUploadError(result.error ?? 'Грешка при качване');
+    }
+    // reset input so same file can be re-uploaded
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const {
     formData,
     errors,
@@ -223,6 +262,69 @@ export const CustomerDialog = ({
                   />
                   <span>Съгласие за предоставяне на лични данни</span>
                 </label>
+
+                {/* Download / Upload declaration */}
+                <div className="customer-dialog__gdpr-actions">
+                  <button
+                    type="button"
+                    className="customer-dialog__gdpr-btn customer-dialog__gdpr-btn--download"
+                    onClick={handleDownload}
+                    title="Изтегли декларация за съгласие"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Изтегли декларация
+                  </button>
+
+                  {isAdmin && (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".docx,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
+                        className="customer-dialog__gdpr-file-input"
+                        onChange={handleFileChange}
+                        aria-hidden="true"
+                      />
+                      <button
+                        type="button"
+                        className={`customer-dialog__gdpr-btn customer-dialog__gdpr-btn--upload${
+                          uploadState === 'uploading' ? ' customer-dialog__gdpr-btn--loading' : ''
+                        }${uploadState === 'success' ? ' customer-dialog__gdpr-btn--success' : ''
+                        }${uploadState === 'error' ? ' customer-dialog__gdpr-btn--error' : ''}`}
+                        onClick={handleUploadClick}
+                        disabled={uploadState === 'uploading'}
+                        title="Качи нова декларация (.docx или .pdf)"
+                      >
+                        {uploadState === 'uploading' ? (
+                          <span className="customer-dialog__gdpr-spinner" />
+                        ) : uploadState === 'success' ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                          </svg>
+                        )}
+                        {uploadState === 'uploading'
+                          ? 'Качване...'
+                          : uploadState === 'success'
+                          ? 'Качено!'
+                          : 'Качи нова'}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {uploadState === 'error' && (
+                  <span className="customer-dialog__error">{uploadError}</span>
+                )}
               </div>
             </div>
           )}

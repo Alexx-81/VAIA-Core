@@ -9,3 +9,4 @@ export * from './inventory';
 export * from './employees';
 export * from './backup';
 export * from './loyalty';
+export * from './documents';
