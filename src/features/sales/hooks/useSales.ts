@@ -427,7 +427,10 @@ export const useSales = () => {
           is_regular_price: line.isRegularPrice,
           kg_per_piece_snapshot: article.kgPerPiece,
           unit_cost_per_kg_real_snapshot: realDelivery.unit_cost_per_kg || 0,
-          unit_cost_per_kg_acc_snapshot: unitCostPerKgAccSnapshot || 0,
+          // FIX: when real delivery is invoiced (no accounting delivery), use real cost as
+          // accounting cost (mirrors COALESCE(ad.unit_cost_per_kg, rd.unit_cost_per_kg) in finalize_sale).
+          // Using ?? instead of || ensures 0 is not stored when there's no accounting delivery.
+          unit_cost_per_kg_acc_snapshot: unitCostPerKgAccSnapshot ?? (realDelivery.unit_cost_per_kg || 0),
           article_discount_percent_snapshot: article.discountPercent || null,
           article_discount_fixed_eur_snapshot: article.discountFixedEur || null,
         });

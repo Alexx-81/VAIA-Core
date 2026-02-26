@@ -157,6 +157,17 @@ export const useReports = () => {
     return map;
   }, [sales]);
 
+  // Pre-compute total raw revenue per sale (sum of ALL lines for that sale, before any filters).
+  // Used to compute the discount ratio when total_paid_eur < gross revenue (loyalty tiers/vouchers).
+  const saleRawTotalById = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const line of saleLines) {
+      if (!line.sale_id) continue;
+      map.set(line.sale_id, (map.get(line.sale_id) || 0) + (line.revenue_eur ?? 0));
+    }
+    return map;
+  }, [saleLines]);
+
   // Map deliveries by id for quick lookup
   const deliveriesById = useMemo(() => {
     const map = new Map<string, DeliveryInventory>();
@@ -226,7 +237,21 @@ export const useReports = () => {
       if (filters.mode === 'accounting' && !accDelivery?.is_invoiced) {
         continue;
       }
-      
+
+      // Изчисляване на discount ratio за prod с loyalty отстъпка/ваучер.
+      // Ако продажбата има total_paid_eur (след отстъпка), разпределяме намалението
+      // пропорционално между редовете спрямо брутния оборот на продажбата.
+      const saleRawTotal = saleRawTotalById.get(line.sale_id) || 0;
+      const discountRatio =
+        sale.total_paid_eur != null && saleRawTotal > 0
+          ? Number(sale.total_paid_eur) / saleRawTotal
+          : 1;
+
+      const rawRevenueEur = line.revenue_eur ?? 0;
+      const cogsRealEur = line.cogs_real_eur ?? 0;
+      const cogsAccEur = line.cogs_acc_eur ?? 0;
+      const effectiveRevenueEur = rawRevenueEur * discountRatio;
+
       rows.push({
         saleDateTime: saleDate,
         saleNumber: sale.sale_number || '',
@@ -235,22 +260,22 @@ export const useReports = () => {
         pieces: line.quantity ?? 0,
         kg: line.kg_line ?? 0,
         pricePerPieceEur: line.unit_price_eur ?? 0,
-        revenueEur: line.revenue_eur ?? 0,
+        revenueEur: effectiveRevenueEur,
         realDeliveryId: line.real_delivery_id,
         realDeliveryDisplayId: realDelivery.display_id || '',
         accountingDeliveryId: accDeliveryId,
         accountingDeliveryDisplayId: accDelivery?.display_id || realDelivery.display_id || '',
         eurPerKgRealSnapshot: line.unit_cost_per_kg_real_snapshot ?? 0,
         eurPerKgAccSnapshot: line.unit_cost_per_kg_acc_snapshot ?? line.unit_cost_per_kg_real_snapshot ?? 0,
-        cogsRealEur: line.cogs_real_eur ?? 0,
-        cogsAccEur: line.cogs_acc_eur ?? 0,
-        profitRealEur: line.profit_real_eur ?? 0,
-        profitAccEur: line.profit_acc_eur ?? 0,
+        cogsRealEur,
+        cogsAccEur,
+        profitRealEur: effectiveRevenueEur - cogsRealEur,
+        profitAccEur: effectiveRevenueEur - cogsAccEur,
       });
     }
     
     return rows.sort((a, b) => a.saleDateTime.getTime() - b.saleDateTime.getTime());
-  }, [saleLines, salesById, deliveriesById, filters]);
+  }, [saleLines, salesById, saleRawTotalById, deliveriesById, filters]);
 
   // Summary статистики
   const summary = useMemo((): ReportSummary => {

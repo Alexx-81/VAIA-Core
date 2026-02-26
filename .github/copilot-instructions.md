@@ -3,6 +3,8 @@
 ## Project Overview
 VAIA Core is an ERP/CRM application for managing articles, deliveries, sales, and inventory. Built with React 19, TypeScript, Vite, and Supabase.
 
+## Задължително отговаряш на Български език
+
 ## DB Migrations
 
 ### Workflow (Using Supabase CLI)
