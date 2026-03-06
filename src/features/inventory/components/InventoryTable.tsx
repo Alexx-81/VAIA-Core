@@ -9,6 +9,7 @@ interface InventoryTableProps {
   stats: InventoryStats;
   minKgThreshold: number;
   onViewDelivery: (deliveryId: string) => void;
+  onViewSales?: (deliveryId: string, type: 'real' | 'accounting') => void;
 }
 
 export const InventoryTable = ({
@@ -17,6 +18,7 @@ export const InventoryTable = ({
   stats,
   minKgThreshold,
   onViewDelivery,
+  onViewSales,
 }: InventoryTableProps) => {
   const isReal = type === 'real';
   const typeLabel = isReal ? 'Real' : 'Acc';
@@ -210,7 +212,7 @@ export const InventoryTable = ({
             <button className="edit" onClick={() => onViewDelivery(row.deliveryId)}>
               📦 Доставка
             </button>
-            <button className="success" onClick={() => onViewSales(row.deliveryId, type)}>
+            <button className="success" onClick={() => onViewSales?.(row.deliveryId, type)}>
               🛒 Продажби
             </button>
           </>

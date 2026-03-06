@@ -186,7 +186,7 @@ export function ImportSalesDialog({
                                 ? `#${row.accountingDeliveryId}`
                                 : `#${row.deliveryId}`}
                             </td>
-                            <td>{row.paymentMethod === 'no_cash' ? 'Без каса' : 'По каса'}</td>
+                            <td>{row.paymentMethod === 'no-cash' ? 'Без каса' : 'По каса'}</td>
                           </tr>
                         ))}
                       </tbody>

@@ -180,7 +180,7 @@ export const Sales = () => {
             importErrors.push(`Acc. доставка ID "${row.accountingDeliveryId}" (ред ${idx + 2}) не е намерена — ще се използва само реалната доставка.`);
             // Fall back: leave accountingDeliveryId undefined
           } else {
-            accountingDeliveryId = accDelivery.id;
+            accountingDeliveryId = accDelivery.id ?? undefined;
             unitCostPerKgAccSnapshot = accDelivery.unit_cost_per_kg ?? 0;
           }
         } else if (!realIdStr.includes('A')) {
@@ -194,7 +194,7 @@ export const Sales = () => {
           articleName: article.name,
           quantity: row.quantity,
           unitPriceEur: row.unitPrice,
-          realDeliveryId: realDelivery.id,
+          realDeliveryId: realDelivery.id!,
           accountingDeliveryId,
           kgPerPieceSnapshot: article.kgPerPiece,
           unitCostPerKgRealSnapshot: realDelivery.unit_cost_per_kg ?? 0,
