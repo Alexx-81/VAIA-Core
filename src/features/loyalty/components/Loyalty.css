@@ -1,6 +1,7 @@
 /* Loyalty page layout */
 .loyalty {
   padding: 0;
+  padding-block-start: var(--space-xl);
 }
 
 .loyalty__header {

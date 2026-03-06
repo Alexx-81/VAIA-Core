@@ -143,7 +143,7 @@
   flex: 1;
   padding-inline: clamp(1rem, 4vw, 3rem);
   padding-block: var(--space-xl);
-  padding-block-start: clamp(6rem, 12vh, 8rem);
+  padding-block-start: clamp(9.5rem, 16vh, 11rem);
   inline-size: 100%;
   max-inline-size: var(--container-2xl);
   margin-inline: auto;
@@ -223,7 +223,7 @@
   
   .layout-main {
     padding-inline: var(--space-lg);
-    padding-block-start: clamp(5.5rem, 10vh, 7rem);
+    padding-block-start: clamp(8.5rem, 14vh, 10rem);
   }
 }
 

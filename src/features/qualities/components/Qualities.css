@@ -1,5 +1,6 @@
 .qualities {
   padding: 1.5rem;
+  padding-block-start: var(--space-xl);
   max-width: 1400px;
   margin: 0 auto;
   animation: fadeIn 0.5s ease-out;

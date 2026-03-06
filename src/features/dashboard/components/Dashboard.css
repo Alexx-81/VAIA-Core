@@ -1,6 +1,6 @@
 .dashboard {
   padding-inline: clamp(1rem, 3vw, 2rem);
-  padding-block: var(--space-lg);
+  padding-block: var(--space-xl);
   max-inline-size: var(--container-2xl);
   margin-inline: auto;
   animation: fadeIn 0.5s ease-out;

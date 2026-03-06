@@ -1,6 +1,6 @@
 .sales {
   padding: 0;
-  padding-block-start: clamp(1rem, 3vh, 2rem);
+  padding-block-start: var(--space-xl);
   animation: fadeIn 0.5s ease-out;
   container-type: inline-size;
   container-name: sales;
@@ -27,7 +27,7 @@
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 @container sales (max-width: 768px) {

@@ -1,5 +1,5 @@
 .admin {
-  padding-block-start: clamp(1rem, 3vh, 2rem);
+  padding-block-start: var(--space-xl);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

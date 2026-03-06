@@ -1,7 +1,7 @@
 /* ===== DELIVERIES MAIN ===== */
 .deliveries {
   padding-inline: clamp(1rem, 3vw, 2rem);
-  padding-block: var(--space-lg);
+  padding-block: var(--space-xl);
   max-inline-size: 1800px;
   margin-inline: auto;
   animation: fadeIn 0.5s ease-out;

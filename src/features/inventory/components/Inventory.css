@@ -1,6 +1,6 @@
 .inventory {
   padding: 0;
-  padding-block-start: clamp(1rem, 3vh, 2rem);
+  padding-block-start: var(--space-xl);
   animation: fadeIn 0.5s ease-out;
   container-type: inline-size;
   container-name: inventory;
