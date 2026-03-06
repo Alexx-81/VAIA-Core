@@ -138,8 +138,6 @@ export const Statistics = () => {
       <div className="statistics__content">
         {activeTab === 'loyalty' ? (
           <LoyaltyStatistics 
-            dateFrom={filters.dateFrom} 
-            dateTo={filters.dateTo}
             onExportData={setLoyaltyExportData}
           />
         ) : (

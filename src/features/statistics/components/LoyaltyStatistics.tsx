@@ -15,25 +15,33 @@ import type { LoyaltyExportData } from '../utils/exportStatistics';
 import './LoyaltyStatistics.css';
 
 interface LoyaltyStatisticsProps {
-  dateFrom: string;
-  dateTo: string;
   onExportData?: (data: LoyaltyExportData) => void;
 }
 
-export const LoyaltyStatistics = ({ dateFrom, dateTo, onExportData }: LoyaltyStatisticsProps) => {
+const toDateStr = (date: Date): string => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+export const LoyaltyStatistics = ({ onExportData }: LoyaltyStatisticsProps) => {
   const [loading, setLoading] = useState(true);
   const [tierDistribution, setTierDistribution] = useState<LoyaltyTierDistribution[]>([]);
   const [vouchersMonthly, setVouchersMonthly] = useState<LoyaltyVoucherMonthlyStats[]>([]);
   const [roi, setROI] = useState<LoyaltyROIStats | null>(null);
   const [topCustomers, setTopCustomers] = useState<LoyaltyTopCustomer[]>([]);
 
-  // Initialize filters with props from parent component
-  const [filters, setFilters] = useState<LoyaltyFilters>({
-    dateFrom: dateFrom,
-    dateTo: dateTo,
-    customerId: null,
-    tierId: null,
-    voucherStatus: 'all',
+  // Initialize filters with current month by default
+  const [filters, setFilters] = useState<LoyaltyFilters>(() => {
+    const now = new Date();
+    return {
+      dateFrom: toDateStr(new Date(now.getFullYear(), now.getMonth(), 1)),
+      dateTo: toDateStr(now),
+      customerId: null,
+      tierId: null,
+      voucherStatus: 'all',
+    };
   });
 
   const handleUpdateFilters = (updates: Partial<LoyaltyFilters>) => {
