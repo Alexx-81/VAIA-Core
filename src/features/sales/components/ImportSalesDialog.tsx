@@ -39,7 +39,8 @@ export function ImportSalesDialog({
       setErrors(validationErrors);
       setStep('preview');
     } catch (error) {
-      setErrors([error instanceof Error ? error.message : 'Грешка при обработка']);
+      setErrors([error instanceof Error ? error.message : 'Грешка при обработка на файла']);
+      setStep('preview');
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +167,9 @@ export function ImportSalesDialog({
                           <th>Брой</th>
                           <th>Цена</th>
                           <th>Общо</th>
-                          <th>Доставка</th>
+                          <th>Real дост.</th>
+                          <th>Acc. доставка</th>
+                          <th>Плащане</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -178,6 +181,12 @@ export function ImportSalesDialog({
                             <td>{row.unitPrice.toFixed(2)} €</td>
                             <td>{(row.quantity * row.unitPrice).toFixed(2)} €</td>
                             <td>#{row.deliveryId}</td>
+                            <td>
+                              {String(row.deliveryId).toUpperCase().includes('A') && row.accountingDeliveryId
+                                ? `#${row.accountingDeliveryId}`
+                                : `#${row.deliveryId}`}
+                            </td>
+                            <td>{row.paymentMethod === 'no_cash' ? 'Без каса' : 'По каса'}</td>
                           </tr>
                         ))}
                       </tbody>

@@ -2,7 +2,7 @@
   background-color: var(--surface-color);
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  overflow: clip;
 }
 
 .inventory-table__header {
@@ -45,7 +45,8 @@
 }
 
 .inventory-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
 }
@@ -82,6 +83,7 @@
   border-right: 1px solid var(--border-color);
   color: var(--text-color);
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .inventory-table td:last-child {
@@ -237,45 +239,7 @@
   color: var(--text-secondary);
 }
 
-/* Actions */
-.inventory-table__actions {
-  display: flex;
-  gap: 0.4rem;
-  justify-content: center;
-}
 
-.inventory-table__action-btn {
-  padding: 0.35rem 0.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
-}
-
-.inventory-table__action-btn.view {
-  background: linear-gradient(135deg, rgba(255, 122, 0, 0.15) 0%, rgba(255, 122, 0, 0.08) 100%);
-  color: var(--vaia-color);
-  box-shadow: inset 0 0 0 1px rgba(255, 122, 0, 0.3);
-}
-
-.inventory-table__action-btn.view:hover {
-  background: linear-gradient(135deg, var(--vaia-color) 0%, #FF9A33 100%);
-  color: white;
-  transform: translateY(-1px);
-}
-
-.inventory-table__action-btn.sales {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
-  color: #3b82f6;
-  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3);
-}
-
-.inventory-table__action-btn.sales:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  transform: translateY(-1px);
-}
 
 /* Empty state */
 .inventory-table__empty {

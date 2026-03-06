@@ -6,9 +6,14 @@ import { InventoryComparison } from './InventoryComparison';
 import { Toast } from '../../../shared/components/Toast';
 import { exportToCSV, exportComparisonToCSV, exportToExcel, exportComparisonToExcel, formatKg, formatEur } from '../utils/inventoryUtils';
 import type { InventoryTab } from '../types';
+import type { TabId } from '../../../shared/components/Tabs';
 import './Inventory.css';
 
-export const Inventory = () => {
+interface InventoryProps {
+  onTabChange?: (tab: TabId) => void;
+}
+
+export const Inventory = ({ onTabChange }: InventoryProps) => {
   const {
     realInventory,
     accInventory,
@@ -32,14 +37,14 @@ export const Inventory = () => {
 
   // Handlers
   const handleViewDelivery = useCallback((deliveryId: string) => {
-    // TODO: Navigate to deliveries tab with selected delivery
-    console.log('View delivery:', deliveryId);
-    setToast({
-      isOpen: true,
-      message: `Навигация към доставка ${deliveryId} (TODO: интеграция с таб Доставки)`,
-      variant: 'info',
-    });
-  }, []);
+    if (onTabChange) {
+      // URL state — записваме deliveryId в sessionStorage за да може Deliveries да го прочете
+      sessionStorage.setItem('highlight_delivery_id', deliveryId);
+      onTabChange('deliveries');
+    } else {
+      console.log('View delivery:', deliveryId);
+    }
+  }, [onTabChange]);
 
   const formatLocalDate = (date: Date): string => {
     const year = date.getFullYear();
@@ -47,16 +52,6 @@ export const Inventory = () => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-
-  const handleViewSales = useCallback((deliveryId: string, type: InventoryTab) => {
-    // TODO: Navigate to sales tab with filter
-    console.log('View sales for delivery:', deliveryId, 'type:', type);
-    setToast({
-      isOpen: true,
-      message: `Навигация към продажби за доставка ${deliveryId} (${type}) (TODO: интеграция с таб Продажби)`,
-      variant: 'info',
-    });
-  }, []);
 
   const handleExport = useCallback(() => {
     const now = formatLocalDate(new Date());
@@ -180,7 +175,6 @@ export const Inventory = () => {
             stats={realStats}
             minKgThreshold={filters.minKgThreshold}
             onViewDelivery={handleViewDelivery}
-            onViewSales={handleViewSales}
           />
           <h3 className="inventory__section-title" style={{ marginTop: '32px' }}>📋 Счетоводни наличности</h3>
           <InventoryTable
@@ -189,7 +183,6 @@ export const Inventory = () => {
             stats={accStats}
             minKgThreshold={filters.minKgThreshold}
             onViewDelivery={handleViewDelivery}
-            onViewSales={handleViewSales}
           />
         </>
       )}
@@ -201,7 +194,6 @@ export const Inventory = () => {
           stats={realStats}
           minKgThreshold={filters.minKgThreshold}
           onViewDelivery={handleViewDelivery}
-          onViewSales={handleViewSales}
         />
       )}
 
@@ -212,7 +204,6 @@ export const Inventory = () => {
           stats={accStats}
           minKgThreshold={filters.minKgThreshold}
           onViewDelivery={handleViewDelivery}
-          onViewSales={handleViewSales}
         />
       )}
 

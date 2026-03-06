@@ -709,6 +709,7 @@ export const useSales = () => {
     getSaleById,
     stats,
     articleOptions,
+    deliveries,
     getDeliveryOptionsReal,
     getDeliveryOptionsAccounting,
     refreshSales,

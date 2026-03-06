@@ -3,14 +3,26 @@ import { formatDateTime, formatEur, formatKg, formatPercent, getPaymentMethodLab
 import { useAuth } from '../../../shared/context/AuthContext';
 import './SaleDetail.css';
 
+interface DeliveryInfo {
+  id: string | null;
+  display_id: string | null;
+}
+
 interface SaleDetailProps {
   sale: SaleWithComputed;
   onBack: () => void;
   onDelete?: () => void;
+  deliveries?: DeliveryInfo[];
 }
 
-export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
+export const SaleDetail = ({ sale, onBack, onDelete, deliveries = [] }: SaleDetailProps) => {
   const { isAdmin } = useAuth();
+
+  const getDisplayId = (uuid: string | undefined): string => {
+    if (!uuid) return '—';
+    const found = deliveries.find(d => d.id === uuid);
+    return found?.display_id ? `#${found.display_id}` : `#${uuid.slice(0, 8)}…`;
+  };
   const getPaymentIcon = (method: string): string => {
     switch (method) {
       case 'cash': return '💵';
@@ -114,7 +126,7 @@ export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
                 <td className="text-right font-semibold">{formatEur(line.revenueEur)}</td>
                 <td>
                   <span className="sale-detail__delivery-badge">
-                    {line.realDeliveryId}
+                    {getDisplayId(line.realDeliveryId)}
                   </span>
                 </td>
                 <td className="text-right text-muted">{formatKg(line.kgPerPieceSnapshot)}</td>
@@ -134,10 +146,12 @@ export const SaleDetail = ({ sale, onBack, onDelete }: SaleDetailProps) => {
                 <td>
                   {line.accountingDeliveryId ? (
                     <span className="sale-detail__delivery-badge accounting">
-                      {line.accountingDeliveryId}
+                      {getDisplayId(line.accountingDeliveryId)}
                     </span>
                   ) : (
-                    <span className="text-muted">—</span>
+                    <span className="sale-detail__delivery-badge">
+                      {getDisplayId(line.realDeliveryId)}
+                    </span>
                   )}
                 </td>
               </tr>

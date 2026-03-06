@@ -1,4 +1,4 @@
-import type { InventoryRealRow, InventoryAccRow, InventoryStats, InventoryTab } from '../types';
+import type { InventoryRealRow, InventoryAccRow, InventoryStats } from '../types';
 import { formatKg, formatEur, formatPercent, formatDate, getStockStatusClass, getEarnedClass } from '../utils/inventoryUtils';
 import { DataCards } from '../../../shared/components/DataCards';
 import './InventoryTable.css';
@@ -9,7 +9,6 @@ interface InventoryTableProps {
   stats: InventoryStats;
   minKgThreshold: number;
   onViewDelivery: (deliveryId: string) => void;
-  onViewSales: (deliveryId: string, type: InventoryTab) => void;
 }
 
 export const InventoryTable = ({
@@ -18,7 +17,6 @@ export const InventoryTable = ({
   stats,
   minKgThreshold,
   onViewDelivery,
-  onViewSales,
 }: InventoryTableProps) => {
   const isReal = type === 'real';
   const typeLabel = isReal ? 'Real' : 'Acc';
@@ -83,7 +81,6 @@ export const InventoryTable = ({
               <th className="text-right">Стойност ост.</th>
               <th className="text-right">Оборот ({typeLabel})</th>
               <th className="text-right">Пари изк. ({typeLabel})</th>
-              <th className="text-center">Действия</th>
             </tr>
           </thead>
           <tbody>
@@ -133,22 +130,6 @@ export const InventoryTable = ({
                     <span className={`inventory-table__earned ${getEarnedClass(earned)}`}>
                       {formatEur(earned)}
                     </span>
-                  </td>
-                  <td className="text-center inventory-table__actions">
-                    <button
-                      className="inventory-table__action-btn view"
-                      onClick={() => onViewDelivery(row.deliveryId)}
-                      title="Отвори доставка"
-                    >
-                      📦
-                    </button>
-                    <button
-                      className="inventory-table__action-btn sales"
-                      onClick={() => onViewSales(row.deliveryId, type)}
-                      title="Виж продажбите"
-                    >
-                      🛒
-                    </button>
                   </td>
                 </tr>
               );

@@ -109,7 +109,7 @@ function AppContent() {
       case 'loyalty':
         return <Loyalty />;
       case 'inventory':
-        return <Inventory />;
+        return <Inventory onTabChange={handleTabChange} />;
       case 'reports':
         return <Reports />;
       case 'statistics':
